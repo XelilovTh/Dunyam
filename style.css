@@ -1132,3 +1132,114 @@ input[type="range"]::-moz-range-thumb {
   color: var(--gold);
   background: rgba(212,175,55,.08);
 }
+
+/* ════════════════════════════
+   SPLASH / INTRO SCREEN
+════════════════════════════ */
+#splashScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  /* Exit transition */
+  transition: opacity .9s cubic-bezier(.4,0,.2,1), transform .9s cubic-bezier(.4,0,.2,1);
+  transform: translateY(0);
+}
+
+/* Visible state — triggered by JS */
+#splashScreen.splash-visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Exit state — fade up and out */
+#splashScreen.splash-exit {
+  opacity: 0;
+  transform: translateY(-18px);
+}
+
+/* Content wrapper */
+.splash-content {
+  text-align: center;
+  padding: 2rem;
+  /* Entrance: scale + fade in */
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 1.1s cubic-bezier(.16,1,.3,1), transform 1.1s cubic-bezier(.16,1,.3,1);
+}
+
+/* When splash is visible, animate the content in */
+#splashScreen.splash-visible .splash-content {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Ornament star */
+.splash-ornament {
+  font-size: 1.4rem;
+  background: linear-gradient(135deg, #F9E79F 0%, #D4AF37 45%, #B7950B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  margin-bottom: 1.6rem;
+  animation: splash-pulse 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(212,175,55,.7));
+}
+
+/* Main title */
+.splash-line1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.6rem, 10vw, 5.2rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.1;
+  letter-spacing: .04em;
+  background: linear-gradient(135deg, #F9E79F 0%, #D4AF37 45%, #B7950B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 22px rgba(212,175,55,.55));
+  margin-bottom: 1.2rem;
+}
+
+/* Divider */
+.splash-divider {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  max-width: 260px;
+  margin: 0 auto 1.3rem;
+}
+.splash-divider span:not(.splash-diamond) {
+  flex: 1;
+  height: 1px;
+  background: rgba(212,175,55,.5);
+}
+.splash-diamond {
+  font-size: .5rem;
+  color: #D4AF37;
+  flex: none !important;
+}
+
+/* Subtitle names */
+.splash-line2 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(.85rem, 3vw, 1.05rem);
+  font-weight: 300;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: rgba(240,230,200,.65);
+}
+
+/* Pulsing glow on the ornament */
+@keyframes splash-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(212,175,55,.5));  opacity: 1; }
+  50%       { filter: drop-shadow(0 0 20px rgba(212,175,55,.9)); opacity: .7; }
+}
