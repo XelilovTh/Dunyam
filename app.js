@@ -207,14 +207,7 @@ document.addEventListener('keydown', (e) => {
 window.checkPassword = function () {
   const val = document.getElementById('pwInput').value.trim();
   if (val === SECRET_PASSWORD) {
-    const lock = document.getElementById('lockScreen');
-    lock.style.transition = 'opacity .7s ease';
-    lock.style.opacity = '0';
-    setTimeout(() => {
-      lock.style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      initApp();
-    }, 700);
+    showSplashThenApp();
   } else {
     const err   = document.getElementById('pwError');
     const field = document.querySelector('.lock-field');
@@ -780,4 +773,37 @@ function escHtml (str) {
     .replace(/>/g,  '&gt;')
     .replace(/"/g,  '&quot;')
     .replace(/'/g,  '&#39;');
+}
+
+// ══════════════════════════════════════
+//  SPLASH INTRO — triggered after correct password
+// ══════════════════════════════════════
+function showSplashThenApp () {
+  const lock   = document.getElementById('lockScreen');
+  const splash = document.getElementById('splashScreen');
+  const app    = document.getElementById('app');
+
+  // 1. Fade out lock screen
+  lock.style.transition = 'opacity .6s ease';
+  lock.style.opacity    = '0';
+
+  setTimeout(() => {
+    lock.style.display = 'none';
+
+    // 2. Show splash and trigger entrance animation
+    splash.classList.add('splash-visible');
+
+    // 3. After 3.2s hold → fade out splash → show app
+    setTimeout(() => {
+      splash.classList.add('splash-exit');
+
+      setTimeout(() => {
+        splash.style.display = 'none';
+        app.style.display    = 'block';
+        initApp();
+      }, 900); // matches splash-exit transition duration
+
+    }, 3200); // total visible time on screen
+
+  }, 600); // wait for lock fade-out
 }
