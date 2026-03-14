@@ -2,7 +2,7 @@
 //  BIZIM DUNYAMIZ — app.js v4.0
 //  Firebase Realtime Database (Modular SDK v9)
 //  Design: Black & Gold Romance
-// ══════════════════════════════════════
+// ═════════════════════════════════════
 
 import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, onValue, push, remove }
