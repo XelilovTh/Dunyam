@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bizim Dünyamız – Giriş</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <canvas id="starfield"></canvas>
+  <div id="hearts-container"></div>
+
+  <div id="login-page">
+    <div id="login-date"></div>
+
+    <div class="login-card glass-gold">
+      <span class="heart-icon">❤️</span>
+      <h1>Bizim Dünyamız</h1>
+      <p class="subtitle">Şifrə : Xəyalımızın adı</p>
+
+      <div class="input-wrap">
+        <span class="lock-icon">🔒</span>
+        <input
+          type="password"
+          id="code-input"
+          placeholder="Kodu daxil edin"
+          autocomplete="off"
+          maxlength="8"
+        />
+      </div>
+
+      <div class="error-msg" id="error-msg">Yanlış kod. Yenidən cəhd et.</div>
+
+      <button class="btn-login" id="login-btn" onclick="handleLogin()">
+        Daxil ol
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    initStarfield();
+    initFloatingHearts();
+    setDateDisplay('login-date');
+
+    document.getElementById('code-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleLogin();
+    });
+  </script>
+</body>
+</html>
