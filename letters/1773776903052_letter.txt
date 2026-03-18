@@ -1,4 +1,4 @@
-şağıdakı təlimatlara uyğun olaraq layihəyə 'Tam Ekran Baxış' (Lightbox) funksiyasını əlavə et. Vacib Qeyd: Mövcud olan GitHub download_url məntiqini və fayl yükləmə sistemini qətiyyən pozma.
+GitHubəlimatlara uyğun olaraq layihəyə 'Tam Ekran Baxış' (Lightbox) funksiyasını əlavə et. Vacib Qeyd: Mövcud olan GitHub download_url məntiqini və fayl yükləmə sistemini qətiyyən pozma.
 1. HTML Yeniləməsi (main.html):
 body teqinin sonuna, lakin skriptlərdən əvvəl #lightbox-overlay adlı bir blok əlavə et.
 İçində mərkəzləşmiş #lightbox-content konteyneri və sağ yuxarıda ✕ simvollu #lightbox-close düyməsi olsun.
