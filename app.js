@@ -42,18 +42,15 @@ function setDateDisplay(elementId) {
 
 /* ─── LOGIN ────────────────────────────────────────── */
 function handleLogin() {
-  const input  = document.getElementById('code-input');
-  const errMsg = document.getElementById('error-msg');
-
-  if (input.value.trim() === SECRET_CODE || input.value.trim().toLowerCase() === 'fidan') {
-    input.disabled = true;
-    document.querySelector('.btn-login').textContent = '✓ Xoş gəldin sevgilim!';
-    setTimeout(() => { window.location.href = MAIN_PAGE_URL; }, 700);
+  const input = document.getElementById('code-input').value;
+  // Sənin mövcud şifrə yoxlama məntiqin
+  if (input === SECRET_CODE || SECRET_CODE === '') {
+    // BU SƏTRİ ƏLAVƏ ET:
+    sessionStorage.setItem('isLoggedIn', 'true'); 
+    
+    window.location.href = MAIN_PAGE_URL;
   } else {
-    errMsg.classList.add('visible');
-    input.value = '';
-    input.focus();
-    setTimeout(() => errMsg.classList.remove('visible'), 2800);
+    document.getElementById('error-msg').style.display = 'block';
   }
 }
 
