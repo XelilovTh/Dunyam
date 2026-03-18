@@ -236,25 +236,34 @@ function parseLetterFilename(name) {
 
 /* ─── GITHUB KONTENTİ YÜKLƏYİCİ ───────────────────── */
 async function loadGitHubContent() {
-  // Şəkillər — təzədən köhnəyə
-  const images = await githubFetchFiles('images');
-  const imgFiles = images.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name)).reverse();
-  const albumEl = document.getElementById('album-content');
-  if (albumEl) {
-    if (imgFiles.length > 0) {
-      albumEl.innerHTML = `<div class="album-grid">${
-        imgFiles.map(f => `<div class="album-item" style="cursor:pointer;"><img src="${f.download_url}" alt="${f.name}" loading="lazy"/></div>`).join('')
-      }</div>`;
-      const items = albumEl.querySelectorAll('.album-item');
-      imgFiles.forEach((file, i) => {
-        items[i].addEventListener('click', () => {
-          openLightbox(file.download_url, 'image');
-        });
+  const folders = ['images', 'music', 'letters'];
+
+  for (const folder of folders) {
+    // Keşi sındırmaq üçün vaxt damğası yaradırıq
+    const cacheBuster = new Date().getTime();
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${folder}?t=${cacheBuster}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
       });
-    } else {
-      albumEl.innerHTML = `<div class="empty-section"><div class="empty-icon">[◉°]</div><h2>Albom</h2><p>Hələlik şəkil yüklənməyib.</p></div>`;
+
+      if (!response.ok) throw new Error(`${folder} yüklənə bilmədi`);
+
+      const data = await response.json();
+      
+      // Məlumatları müvafiq massivlərə (imagesData, musicData, lettersData) 
+      // ötürən mövcud məntiqini burada saxla...
+      renderContent(folder, data); 
+
+    } catch (error) {
+      console.error(`${folder} xətası:`, error);
     }
   }
+}
 
   // Məktublar — təzədən köhnəyə, başlıq + önizləmə
   const letters = await githubFetchFiles('letters');
