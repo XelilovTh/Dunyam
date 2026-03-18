@@ -1,1 +1,16 @@
-Testtststsyjsdknssnmdsjsk
+Aşağıdakı təlimatlara uyğun olaraq layihəyə 'Tam Ekran Baxış' (Lightbox) funksiyasını əlavə et. Vacib Qeyd: Mövcud olan GitHub download_url məntiqini və fayl yükləmə sistemini qətiyyən pozma.
+1. HTML Yeniləməsi (main.html):
+body teqinin sonuna, lakin skriptlərdən əvvəl #lightbox-overlay adlı bir blok əlavə et.
+İçində mərkəzləşmiş #lightbox-content konteyneri və sağ yuxarıda ✕ simvollu #lightbox-close düyməsi olsun.
+2. CSS Yeniləməsi (styles.css):
+#lightbox-overlay üçün: position: fixed, inset: 0, z-index: 2000, background: rgba(0,0,0,0.9), backdrop-filter: blur(10px) və display: none tətbiq et.
+Animasiya: İçindəki kontent açılarkən opacity: 0 və scale(0.8) vəziyyətindən opacity: 1 və scale(1) vəziyyətinə 0.3 saniyəlik zərif bir keçidlə gəlsin.
+Məktub Dizaynı: Böyüdülmüş məktublar üçün .letter-paper klassı yarat. Qızılı haşiyəli, Dancing Script fontu ilə yazılmış, sürüşdürülə bilən (max-height: 80vh) zərif bir kağız effekti ver.
+3. JavaScript Yeniləməsi (app.js):
+Funksiya: openLightbox(content, type) adlı funksiya yaz.
+Əgər type === 'image'-dirsə, content (URL) bir <img> elementi kimi göstərilsin.
+Əgər type === 'letter'-dirsə, content (mətn) formatlı şəkildə .letter-paper içində göstərilsin.
+Təhlükəsiz Link İstifadəsi: Albomdakı şəkillərə və məktub siyahısına klik hadisəsi əlavə edərkən mütləq GitHub-dan gələn file.download_url dəyişənindən istifadə et (adi səhifə linkindən yox!).
+Məktub Oxuma: Məktub kartına basanda əvvəlcə fetch(file.download_url) edib mətni tam oxu, sonra Lightbox-da aç.
+Bağlama: ✕ düyməsinə və ya overlay-in boş hissəsinə basıldıqda pəncərəni bağla və body-nin skrolunu geri qaytar.
+Xəbərdarlıq: Kodun strukturunu dəyişərkən loadGitHubContent funksiyasındakı mövcud API sorğularını və GITHUB_OWNER/GITHUB_REPO dəyişənlərini olduğu kimi saxla."
