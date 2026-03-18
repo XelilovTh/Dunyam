@@ -171,6 +171,13 @@
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
   </div>
 
+  <script>
+  if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    window.location.href = 'index.html';
+  }
+  </script>
+  
+
   <script src="app.js"></script>
   <script>
     initStarfield();
