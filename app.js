@@ -245,7 +245,7 @@ async function loadGitHubContent() {
 
         try {
             // ARTIQ GITHUB-A DEYİL, ÖZ VERCEL APİ-MİZƏ SORĞU GÖNDƏRİRİK
-            const response = await fetch(/api/github?folder=${folder});
+            const response = await fetch(`/api/github?folder=${folder}`);
 
             if (!response.ok) throw new Error("API xətası");
 
