@@ -237,85 +237,53 @@ function parseLetterFilename(name) {
 
 /* ─── GITHUB KONTENTİ YÜKLƏYİCİ ───────────────────── */
 async function loadGitHubContent() {
-  // Şəkillər — təzədən köhnəyə
-  const images = await githubFetchFiles('images');
-  const imgFiles = images.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name)).reverse();
-  const albumEl = document.getElementById('album-content');
-  if (albumEl) {
-    if (imgFiles.length > 0) {
-      albumEl.innerHTML = `<div class="album-grid">${
-        imgFiles.map(f => `<div class="album-item" style="cursor:pointer;"><img src="${f.download_url}" alt="${f.name}" loading="lazy"/></div>`).join('')
-      }</div>`;
-      const items = albumEl.querySelectorAll('.album-item');
-      imgFiles.forEach((file, i) => {
-        items[i].addEventListener('click', () => {
-          openLightbox(file.download_url, 'image');
-        });
-      });
-    } else {
-      albumEl.innerHTML = `<div class="empty-section"><div class="empty-icon">[◉°]</div><h2>Albom</h2><p>Hələlik şəkil yüklənməyib.</p></div>`;
-    }
-  }
+    const folders = ['images', 'music', 'letters'];
 
-  // Məktublar — təzədən köhnəyə, başlıq + önizləmə
-  const letters = await githubFetchFiles('letters');
-  const txtFiles = letters.filter(f => /\.txt$/i.test(f.name)).reverse();
-  const lettersEl = document.getElementById('letters-content');
-  if (lettersEl) {
-    if (txtFiles.length > 0) {
-      const loaded = await Promise.all(txtFiles.map(async f => {
-        const { title: filenameTitle, dateStr } = parseLetterFilename(f.name);
+    for (const folder of folders) {
+        const container = document.getElementById(`${folder}-container`);
+        if (!container) continue;
+
         try {
-          const r = await fetch(f.download_url);
-          const raw = await r.text();
-          let title = filenameTitle;
-          let text = raw;
-          const sepIdx = raw.indexOf('\n---\n');
-          if (sepIdx !== -1) {
-            const headerLine = raw.slice(0, sepIdx).trim();
-            if (headerLine) title = headerLine;
-            text = raw.slice(sepIdx + 5);
-          }
-          const preview = text.replace(/\s+/g, ' ').trim().slice(0, 50);
-          return { file: f, title, dateStr, text, preview };
-        } catch (_) {
-          return { file: f, title: filenameTitle, dateStr, text: '', preview: '' };
+            // 1. API-dən qovluq siyahısını istəyirik
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${folder}`, {
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            });
+
+            // Əgər cavab "OK" deyilsə (məs. 401 və ya 403), xəta fırladırıq
+            if (!response.ok) {
+                throw new Error(`GitHub-dan cavab alınmadı: ${response.status}`);
+            }
+
+            const files = await response.json();
+            container.innerHTML = ''; // Yüklənir yazısını təmizləyirik
+
+            for (const file of files) {
+                try {
+                    // Hər bir faylı yükləyərkən ayrıca try-catch istifadə edirik
+                    // Beləcə, bir məktub xarabdırsa, digər 9-u yüklənəcək
+                    if (folder === 'letters') {
+                        const contentRes = await fetch(file.download_url);
+                        if (!contentRes.ok) throw new Error("Fayl oxunmadı");
+                        const content = await contentRes.text();
+                        renderLetter(file.name, content);
+                    } else if (folder === 'images') {
+                        renderImage(file.download_url);
+                    } else if (folder === 'music') {
+                        renderMusic(file.name, file.download_url);
+                    }
+                } catch (fileError) {
+                    console.warn(`${file.name} yüklənərkən xəta:`, fileError.message);
+                    // Bir fayl xətalıdırsa, keçirik növbəti fayla
+                    continue;
+                }
+            }
+
+        } catch (error) {
+            // Əgər bütün qovluq (məsələn 'letters') yüklənə bilmədisə
+            console.error(`${folder} yüklənmə xətası:`, error);
+            container.innerHTML = `<p class="error-msg">Məlumat yüklənə bilmədi (Xəta: ${error.message})</p>`;
         }
-      }));
-
-      lettersEl.innerHTML = loaded.map(l => {
-        const displayTitle = l.title || l.dateStr;
-        const previewText = l.preview ? l.preview + (l.text.length > 50 ? '...' : '') : '';
-        return `<div class="letter-card" style="cursor:pointer;" data-download-url="${l.file.download_url}" data-date="${l.dateStr}" data-title="${displayTitle}" data-full-text="${encodeURIComponent(l.text)}">
-          <div class="letter-date">${l.dateStr}</div>
-          <div class="letter-title-bold">${displayTitle}</div>
-          ${previewText ? `<div class="letter-preview">${previewText}</div>` : ''}
-        </div>`;
-      }).join('');
-
-      lettersEl.querySelectorAll('.letter-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const dateStr = card.getAttribute('data-date');
-          const title = card.getAttribute('data-title');
-          const text = decodeURIComponent(card.getAttribute('data-full-text'));
-          const innerHtml = `<span class="letter-paper-date">${dateStr}</span><div class="letter-paper-title">${title}</div><div class="letter-paper-text">${text}</div>`;
-          openLightbox(innerHtml, 'letter');
-        });
-      });
-    } else {
-      lettersEl.innerHTML = `<div class="empty-section"><div class="empty-icon">જ⁀➴</div><h2>Məktublar</h2><p>Burada sizin səmimi sözləriniz olacaq.</p></div>`;
     }
-  }
-
-  // Musiqilər — təzədən köhnəyə
-  const musicFiles = await githubFetchFiles('music');
-  const audioFiles = musicFiles.filter(f => /\.(mp3|ogg|wav|m4a|aac|flac)$/i.test(f.name)).reverse();
-  songs = audioFiles.map(f => ({ name: f.name.replace(/\.[^.]+$/, ''), url: f.download_url }));
-  renderMusicList();
-}
-
-function formatSongName(raw) {
-  return raw.replace(/^\d+_/, '').replace(/_/g, ' ');
 }
 
 function renderMusicList() {
