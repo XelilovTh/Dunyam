@@ -1,3 +1,22 @@
 Ssnvdh
 ---
-Rxrrctcvtbhnhnhfvexrzrcgc
+.letter-paper-text {
+  /* İstədiyin şrift: 'Dancing Script' (əl yazısı) və ya 'Quicksand' (düz yazı) */
+  font-family: 'Dancing Script', cursive; 
+  
+  /* Yazı ölçüsü - ehtiyaca görə artırıb azalda bilərsən */
+  font-size: 1.5rem; 
+  
+  /* Sətirlər arası məsafə (daha rahat oxunması üçün) */
+  line-height: 1.6; 
+  
+  /* Yazı rəngi */
+  color: #ffffff; 
+  
+  /* Yazını hər iki tərəfə bərabər yaymaq üçün */
+  text-align: left; 
+  
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 10px;
+}
