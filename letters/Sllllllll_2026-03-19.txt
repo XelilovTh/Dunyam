@@ -1,0 +1,26 @@
+Sllllllll
+---
+.letter-paper-text {
+  /* Quicksand modern və yumşaq (qeyri-klassik) düz yazıdır */
+  font-family: 'Quicksand', sans-serif;
+  
+  /* Yazı ölçüsü - 1.2rem modern görünüş üçün idealdır */
+  font-size: 1.25rem; 
+  
+  /* Yazının qalınlığı: 500 (orta) nə çox rəsmi, nə çox nazik görünür */
+  font-weight: 500; 
+  
+  /* Sətir aralığı: Yazının nəfəs alması üçün vacibdir */
+  line-height: 1.8; 
+  
+  /* Hərflər arasındakı məsafəni bir az artırırıq ki, modern görünsün */
+  letter-spacing: 0.02em; 
+  
+  /* Yazı rəngi: Tam ağ deyil, bir az yumşaq ağ */
+  color: rgba(255, 255, 255, 0.95); 
+  
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 5px 10px;
+}
