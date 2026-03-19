@@ -238,53 +238,39 @@ function parseLetterFilename(name) {
 /* ─── GITHUB KONTENTİ YÜKLƏYİCİ ───────────────────── */
 async function loadGitHubContent() {
     const folders = ['images', 'music', 'letters'];
-
+    
     for (const folder of folders) {
         const container = document.getElementById(`${folder}-container`);
         if (!container) continue;
 
         try {
-            // 1. API-dən qovluq siyahısını istəyirik
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${folder}`, {
-                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
-            });
+            // ARTIQ GITHUB-A DEYİL, ÖZ VERCEL APİ-MİZƏ SORĞU GÖNDƏRİRİK
+            const response = await fetch(`/api/github?folder=${folder}`);
 
-            // Əgər cavab "OK" deyilsə (məs. 401 və ya 403), xəta fırladırıq
-            if (!response.ok) {
-                throw new Error(`GitHub-dan cavab alınmadı: ${response.status}`);
-            }
+            if (!response.ok) throw new Error("API xətası");
 
             const files = await response.json();
-            container.innerHTML = ''; // Yüklənir yazısını təmizləyirik
+            container.innerHTML = ''; 
 
             for (const file of files) {
-                try {
-                    // Hər bir faylı yükləyərkən ayrıca try-catch istifadə edirik
-                    // Beləcə, bir məktub xarabdırsa, digər 9-u yüklənəcək
-                    if (folder === 'letters') {
-                        const contentRes = await fetch(file.download_url);
-                        if (!contentRes.ok) throw new Error("Fayl oxunmadı");
-                        const content = await contentRes.text();
-                        renderLetter(file.name, content);
-                    } else if (folder === 'images') {
-                        renderImage(file.download_url);
-                    } else if (folder === 'music') {
-                        renderMusic(file.name, file.download_url);
-                    }
-                } catch (fileError) {
-                    console.warn(`${file.name} yüklənərkən xəta:`, fileError.message);
-                    // Bir fayl xətalıdırsa, keçirik növbəti fayla
-                    continue;
+                // Köhnə render məntiqləri eynilə qalır...
+                if (folder === 'letters') {
+                    const contentRes = await fetch(file.download_url);
+                    const content = await contentRes.text();
+                    renderLetter(file.name, content);
+                } else if (folder === 'images') {
+                    renderImage(file.download_url);
+                } else if (folder === 'music') {
+                    renderMusic(file.name, file.download_url);
                 }
             }
-
         } catch (error) {
-            // Əgər bütün qovluq (məsələn 'letters') yüklənə bilmədisə
-            console.error(`${folder} yüklənmə xətası:`, error);
-            container.innerHTML = `<p class="error-msg">Məlumat yüklənə bilmədi (Xəta: ${error.message})</p>`;
+            console.error(error);
+            container.innerHTML = `<p style="color:red;">Yükləmə alınmadı.</p>`;
         }
     }
 }
+
 
 function renderMusicList() {
   const el = document.getElementById('music-list-content');
