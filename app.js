@@ -236,74 +236,92 @@ function parseLetterFilename(name) {
 
 /* ─── GITHUB KONTENTİ YÜKLƏYİCİ ───────────────────── */
 async function loadGitHubContent() {
-  // Şəkillər — təzədən köhnəyə
-  const images = await githubFetchFiles('images');
-  const imgFiles = images.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name)).reverse();
-  const albumEl = document.getElementById('album-content');
-  if (albumEl) {
-    if (imgFiles.length > 0) {
-      albumEl.innerHTML = `<div class="album-grid">${
-        imgFiles.map(f => `<div class="album-item" style="cursor:pointer;"><img src="${f.download_url}" alt="${f.name}" loading="lazy"/></div>`).join('')
-      }</div>`;
-      const items = albumEl.querySelectorAll('.album-item');
-      imgFiles.forEach((file, i) => {
-        items[i].addEventListener('click', () => {
-          openLightbox(file.download_url, 'image');
-        });
-      });
-    } else {
-      albumEl.innerHTML = `<div class="empty-section"><div class="empty-icon">[◉°]</div><h2>Albom</h2><p>Hələlik şəkil yüklənməyib.</p></div>`;
+  try {
+    // 1. Paralel Yükləmə: Bütün qovluqları eyni anda çəkirik
+    const [images, letters, musicFiles] = await Promise.all([
+      githubFetchFiles('images'),
+      githubFetchFiles('letters'),
+      githubFetchFiles('music')
+    ]);
+
+    // --- Şəkillər Bölməsi ---
+    const albumEl = document.getElementById('album-content');
+    if (albumEl) {
+      const imgFiles = images.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name)).reverse();
+      
+      if (imgFiles.length > 0) {
+        albumEl.innerHTML = `<div class="album-grid">${
+          imgFiles.map(f => `<div class="album-item" style="cursor:pointer;" data-url="${f.download_url}"><img src="${f.download_url}" alt="${f.name}" loading="lazy"/></div>`).join('')
+        }</div>`;
+
+        // Event Delegation: Tək bir listener ilə bütün şəkilləri idarə edirik
+        albumEl.querySelector('.album-grid').onclick = (e) => {
+          const item = e.target.closest('.album-item');
+          if (item) openLightbox(item.dataset.url, 'image');
+        };
+      } else {
+        albumEl.innerHTML = `<div class="empty-section"><div class="empty-icon">[◉°]</div><h2>Albom</h2><p>Hələlik şəkil yüklənməyib.</p></div>`;
+      }
     }
-                                             }
-  // Məktublar — təzədən köhnəyə, başlıq + önizləmə
-  const letters = await githubFetchFiles('letters');
-  const txtFiles = letters.filter(f => /\.txt$/i.test(f.name)).reverse();
-  const lettersEl = document.getElementById('letters-content');
-  if (lettersEl) {
-    if (txtFiles.length > 0) {
-      const loaded = await Promise.all(txtFiles.map(async f => {
-        const { title: filenameTitle, dateStr } = parseLetterFilename(f.name);
-        try {
-          const r = await fetch(f.download_url);
-          const raw = await r.text();
-          let title = filenameTitle;
-          let text = raw;
-          const sepIdx = raw.indexOf('\n---\n');
-          if (sepIdx !== -1) {
-            const headerLine = raw.slice(0, sepIdx).trim();
-            if (headerLine) title = headerLine;
-            text = raw.slice(sepIdx + 5);
+
+    // --- Məktublar Bölməsi ---
+    const lettersEl = document.getElementById('letters-content');
+    if (lettersEl) {
+      const txtFiles = letters.filter(f => /\.txt$/i.test(f.name)).reverse();
+      
+      if (txtFiles.length > 0) {
+        // Məktub mətnlərini də PARALEL yükləyirik (Ən böyük sürət artımı buradadır)
+        const loaded = await Promise.all(txtFiles.map(async f => {
+          const { title: filenameTitle, dateStr } = parseLetterFilename(f.name);
+          try {
+            const r = await fetch(f.download_url);
+            const raw = await r.text();
+            let title = filenameTitle, text = raw;
+            const sepIdx = raw.indexOf('\n---\n');
+            if (sepIdx !== -1) {
+              const header = raw.slice(0, sepIdx).trim();
+              if (header) title = header;
+              text = raw.slice(sepIdx + 5);
+            }
+            const preview = text.replace(/\s+/g, ' ').trim().slice(0, 50);
+            return { dateStr, title, text, preview };
+          } catch {
+            return { dateStr, title: filenameTitle, text: '', preview: '' };
           }
-          const preview = text.replace(/\s+/g, ' ').trim().slice(0, 50);
-          return { file: f, title, dateStr, text, preview };
-        } catch (_) {
-          return { file: f, title: filenameTitle, dateStr, text: '', preview: '' };
-        }
-      }));
+        }));
 
-      lettersEl.innerHTML = loaded.map(l => {
-        const displayTitle = l.title || l.dateStr;
-        const previewText = l.preview ? l.preview + (l.text.length > 50 ? '...' : '') : '';
-        return `<div class="letter-card" style="cursor:pointer;" data-download-url="${l.file.download_url}" data-date="${l.dateStr}" data-title="${displayTitle}" data-full-text="${encodeURIComponent(l.text)}">
-          <div class="letter-date">${l.dateStr}</div>
-          <div class="letter-title-bold">${displayTitle}</div>
-          ${previewText ? `<div class="letter-preview">${previewText}</div>` : ''}
-        </div>`;
-      }).join('');
+        lettersEl.innerHTML = loaded.map(l => `
+          <div class="letter-card" style="cursor:pointer;" 
+               data-date="${l.dateStr}" 
+               data-title="${l.title}" 
+               data-text="${encodeURIComponent(l.text)}">
+            <div class="letter-date">${l.dateStr}</div>
+            <div class="letter-title-bold">${l.title}</div>
+            ${l.preview ? `<div class="letter-preview">${l.preview}${l.text.length > 50 ? '...' : ''}</div>` : ''}
+          </div>`).join('');
 
-      lettersEl.querySelectorAll('.letter-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const dateStr = card.getAttribute('data-date');
-          const title = card.getAttribute('data-title');
-          const text = decodeURIComponent(card.getAttribute('data-full-text'));
-          const innerHtml = `<span class="letter-paper-date">${dateStr}</span><div class="letter-paper-title">${title}</div><div class="letter-paper-text">${text}</div>`;
-          openLightbox(innerHtml, 'letter');
-        });
-      });
-    } else {
-      lettersEl.innerHTML = `<div class="empty-section"><div class="empty-icon">જ⁀➴</div><h2>Məktublar</h2><p>Burada sizin səmimi sözləriniz olacaq.</p></div>`;
+        lettersEl.onclick = (e) => {
+          const card = e.target.closest('.letter-card');
+          if (card) {
+            const { date, title, text } = card.dataset;
+            const content = `<span class="letter-paper-date">${date}</span><div class="letter-paper-title">${title}</div><div class="letter-paper-text">${decodeURIComponent(text)}</div>`;
+            openLightbox(content, 'letter');
+          }
+        };
+      } else {
+        lettersEl.innerHTML = `<div class="empty-section"><div class="empty-icon">જ⁀➴</div><h2>Məktublar</h2><p>Burada sizin səmimi sözləriniz olacaq.</p></div>`;
+      }
     }
+
+    // --- Musiqi Bölməsi ---
+    const audioFiles = musicFiles.filter(f => /\.(mp3|ogg|wav|m4a|aac|flac)$/i.test(f.name)).reverse();
+    songs = audioFiles.map(f => ({ name: f.name.replace(/\.[^.]+$/, ''), url: f.download_url }));
+    renderMusicList();
+
+  } catch (error) {
+    console.error("Məlumat yüklənərkən xəta baş verdi:", error);
   }
+}
 
   // Musiqilər — təzədən köhnəyə
   const musicFiles = await githubFetchFiles('music');
