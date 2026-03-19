@@ -238,70 +238,43 @@ function parseLetterFilename(name) {
 /* ─── GITHUB KONTENTİ YÜKLƏYİCİ ───────────────────── */
 async function loadGitHubContent() {
     const folders = ['images', 'music', 'letters'];
-    
+
     for (const folder of folders) {
         const container = document.getElementById(`${folder}-container`);
         if (!container) continue;
 
         try {
-            // ARTIQ GITHUB-A DEYİL, ÖZ VERCEL APİ-MİZƏ SORĞU GÖNDƏRİRİK
+            // 1. Siyahını öz Vercel API-ndən çəkirik
             const response = await fetch(`/api/github?folder=${folder}`);
-
-            if (!response.ok) throw new Error("API xətası");
+            if (!response.ok) throw new Error("Siyahı alınmadı");
 
             const files = await response.json();
             container.innerHTML = ''; 
 
             for (const file of files) {
-                // Köhnə render məntiqləri eynilə qalır...
+                // GitHub-ın birbaşa fayl linkini düzəldirik
+                // Bu link həmişə işləyir və token tələb etmir (ictimai fayllar üçün)
+                const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${folder}/${file.name}`;
+
                 if (folder === 'letters') {
-                    const contentRes = await fetch(file.download_url);
-                    const content = await contentRes.text();
-                    renderLetter(file.name, content);
-                } else if (folder === 'images') {
-                    renderImage(file.download_url);
-                } else if (folder === 'music') {
-                    renderMusic(file.name, file.download_url);
+                    try {
+                        const contentRes = await fetch(rawUrl);
+                        const content = await contentRes.text();
+                        renderLetter(file.name, content);
+                    } catch (e) { console.error("Məktub oxunmadı:", file.name); }
+                } 
+                else if (folder === 'images') {
+                    renderImage(rawUrl);
+                } 
+                else if (folder === 'music') {
+                    renderMusic(file.name, rawUrl);
                 }
             }
         } catch (error) {
-            console.error(error);
-            container.innerHTML = `<p style="color:red;">Yükləmə alınmadı.</p>`;
+            console.error(`${folder} yüklənmədi:`, error);
+            container.innerHTML = `<p style="color:red;">Yükləmə xətası.</p>`;
         }
     }
-}
-
-
-function renderMusicList() {
-  const el = document.getElementById('music-list-content');
-  if (!el) return;
-
-  if (songs.length === 0) {
-    el.innerHTML = `<div class="empty-section"><div class="empty-icon">🎵</div><h2>Musiqilər</h2><p>Hələlik musiqi yüklənməyib. Admin panel ilə əlavə et.</p></div>`;
-    return;
-  }
-
-  el.innerHTML = `<div class="music-list">
-    <div class="music-list-header">
-      <span class="music-list-title">🎶 Pleylist</span>
-      <span class="music-list-count">${songs.length} mahnı</span>
-    </div>
-    ${songs.map((s, i) => `
-      <div class="music-track${i === currentSongIndex ? ' active' : ''}" onclick="selectSong(${i})">
-        <div class="music-track-icon">
-          ${i === currentSongIndex && isPlaying
-            ? '<span class="music-wave"><span></span><span></span><span></span></span>'
-            : `<span class="music-track-num">${i + 1}</span>`
-          }
-        </div>
-        <div class="music-track-info">
-          <div class="music-track-name">${formatSongName(s.name)}</div>
-          <div class="music-track-sub">Fidan &amp; Təhmaz</div>
-        </div>
-        <div class="music-track-play">${i === currentSongIndex && isPlaying ? '❚❚' : '▶'}</div>
-      </div>
-    `).join('')}
-  </div>`;
 }
 
 /* ─── MUSİQİ PLEYERİ ───────────────────────────────── */
