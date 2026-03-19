@@ -324,62 +324,7 @@ async function loadGitHubContent() {
   }
 
   // Məktublar — təzədən köhnəyə, başlıq + önizləmə
-  const letters = await githubFetchFiles('letters');
-  const txtFiles = letters.filter(f => /\.txt$/i.test(f.name)).reverse();
-  const lettersEl = document.getElementById('letters-content');
-  if (lettersEl) {
-    if (txtFiles.length > 0) {
-      const loaded = await Promise.all(txtFiles.map(async f => {
-        const { title: filenameTitle, dateStr } = parseLetterFilename(f.name);
-        try {
-          const r = await fetch(f.download_url);
-          const raw = await r.text();
-          let title = filenameTitle;
-          let text = raw;
-          const sepIdx = raw.indexOf('\n---\n');
-          if (sepIdx !== -1) {
-            const headerLine = raw.slice(0, sepIdx).trim();
-            if (headerLine) title = headerLine;
-            text = raw.slice(sepIdx + 5);
-          }
-          const preview = text.replace(/\s+/g, ' ').trim().slice(0, 50);
-          return { file: f, title, dateStr, text, preview };
-        } catch (_) {
-          return { file: f, title: filenameTitle, dateStr, text: '', preview: '' };
-        }
-      }));
-
-      lettersEl.innerHTML = loaded.map(l => {
-        const displayTitle = l.title || l.dateStr;
-        const previewText = l.preview ? l.preview + (l.text.length > 50 ? '...' : '') : '';
-        return `<div class="letter-card" style="cursor:pointer;" data-download-url="${l.file.download_url}" data-date="${l.dateStr}" data-title="${displayTitle}" data-full-text="${encodeURIComponent(l.text)}">
-          <div class="letter-date">${l.dateStr}</div>
-          <div class="letter-title-bold">${displayTitle}</div>
-          ${previewText ? `<div class="letter-preview">${previewText}</div>` : ''}
-        </div>`;
-      }).join('');
-
-      lettersEl.querySelectorAll('.letter-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const dateStr = card.getAttribute('data-date');
-          const title = card.getAttribute('data-title');
-          const text = decodeURIComponent(card.getAttribute('data-full-text'));
-          const innerHtml = `<span class="letter-paper-date">${dateStr}</span><div class="letter-paper-title">${title}</div><div class="letter-paper-text">${text}</div>`;
-          openLightbox(innerHtml, 'letter');
-        });
-      });
-    } else {
-      lettersEl.innerHTML = `<div class="empty-section"><div class="empty-icon">જ⁀➴</div><h2>Məktublar</h2><p>Burada sizin səmimi sözləriniz olacaq.</p></div>`;
-    }
-  }
-
-  // Musiqilər — təzədən köhnəyə
-  const musicFiles = await githubFetchFiles('music');
-  const audioFiles = musicFiles.filter(f => /\.(mp3|ogg|wav|m4a|aac|flac)$/i.test(f.name)).reverse();
-  songs = audioFiles.map(f => ({ name: f.name.replace(/\.[^.]+$/, ''), url: f.download_url }));
-  renderMusicList();
-                                                                 }
-
+albumEl.innerHTML
 function formatSongName(raw) {
   return raw.replace(/^\d+_/, '').replace(/_/g, ' ');
 }
