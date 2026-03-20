@@ -4,7 +4,7 @@
    Musiqi Pleyeri, Şəkil Sıxlaşdırma, SPA
 ═══════════════════════════════════════════════════ */
 
-const SECRET_CODE   = 'l';          // boş = istənilən şifrə ilə giriş
+const SECRET_CODE   = '2023';          // boş = istənilən şifrə ilə giriş
 const ADMIN_CODE    = '2023';      // gizli admin şifrəsi
 const START_DATE    = new Date('2023-02-01');
 const MAIN_PAGE_URL = 'main.html';
