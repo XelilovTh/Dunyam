@@ -8,6 +8,13 @@
   <link rel="stylesheet" href="memory.css" />
 </head>
 <body>
+
+<script>
+  // Login yoxlaması - əgər login olunmayıbsa, əsas səhifəyə yönləndir
+  if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    window.location.href = 'index.html';
+  }
+</script>
   
   <canvas id="dynamic-bg"></canvas>
   <canvas id="starfield"></canvas>
