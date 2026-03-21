@@ -11,7 +11,7 @@ const START_DATE    = new Date('2023-02-01');
 const MAIN_PAGE_URL = 'main.html';
 
 // GitHub konfiqurasiyası
-const GITHUB_TOKEN   = '';
+const GITHUB_TOKEN   = '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';
 const GITHUB_OWNER = 'XelilovTh';
 const GITHUB_REPO  = 'Dunyam';
 
