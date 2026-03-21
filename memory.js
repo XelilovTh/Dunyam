@@ -1,4 +1,5 @@
 /* Fidanın Ad Günü Səhifəsi - JavaScript */
+/* YENİLƏNİB: Ardıcıl (sequential) yükləmə sistemi ilə qalereya */
 
 // ========== AÇILIŞ ==========
 function enterBirthdayPage() {
@@ -120,32 +121,46 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// ========== XATİRƏ ŞƏKİLLƏRİ QALEREYASI ==========
+// ========== XATİRƏ ŞƏKİLLƏRİ QALEREYASI (YENİLƏNİB - SEQUENTIAL) ==========
 var currentGalleryIndex = 0;
 var galleryImages = [];
 
-// memory.js faylında initGallery funksiyasını YENİLƏ
-
+/**
+ * Qalereyanı ardıcıl (sequential) yükləyir
+ * Hər şəkil yükləndikcə DOM-a real-time əlavə olunur
+ */
 async function initGallery() {
   const container = document.getElementById('gallery-container');
   const dotsContainer = document.getElementById('gallery-dots');
   
   if (!container) return;
   
-  // Yükləmə zamanı loader
+  // Yükləmə zamanı loader göstər
   container.innerHTML = '<div class="empty-gallery">⟳ Şəkillər ardıcıl yüklənir...</div>';
+  if (dotsContainer) dotsContainer.innerHTML = '';
+  
+  // galleryImages array-ını təmizlə
+  galleryImages = [];
+  currentGalleryIndex = 0;
   
   try {
     if (typeof githubFetchFilesSequential === 'function') {
-      // Sequential yükləmə
+      console.log('📸 Xatirə şəkilləri ardıcıl yüklənir...');
+      
+      // Sequential yükləmə - hər şəkil yükləndikcə callback çağırılır
       const images = await githubFetchFilesSequential('special_images', (img, index, total) => {
-        // Hər şəkil yükləndikcə galleryImages array-ına əlavə et
-        if (!galleryImages.some(i => i.name === img.name)) {
-          galleryImages.push({ name: img.name, download_url: img.download_url });
-        }
+        console.log(`🖼️ Şəkil yükləndi: ${img.name} (${index + 1}/${total})`);
         
-        // Qalereyanı yenidən render et
-        renderGallery();
+        // Təkrar əlavənin qarşısını al
+        if (!galleryImages.some(i => i.name === img.name && i.download_url === img.download_url)) {
+          galleryImages.push({ 
+            name: img.name, 
+            download_url: img.download_url 
+          });
+          
+          // Hər yeni şəkil əlavə edildikdə qalereyanı yenidən render et
+          renderGallery();
+        }
       });
       
       // Əgər heç şəkil yoxdursa
@@ -154,24 +169,35 @@ async function initGallery() {
         if (dotsContainer) dotsContainer.innerHTML = '';
       }
       
+      console.log(`✅ Qalereya yüklənməsi tamamlandı! Cəmi ${galleryImages.length} şəkil.`);
+      
     } else if (typeof githubFetchFiles === 'function') {
-      // Fallback - köhnə üsul
+      // Fallback - köhnə üsul (paralel yükləmə)
+      console.log('⚠️ Sequential funksiya tapılmadı, fallback üsul istifadə olunur...');
       const images = await githubFetchFiles('special_images');
       galleryImages = images.filter(function(f) {
         return /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name);
       });
       renderGallery();
+    } else {
+      console.error('GitHub funksiyaları tapılmadı!');
+      container.innerHTML = '<div class="empty-gallery">⚠️ GitHub bağlantısı xətası</div>';
     }
     
   } catch(e) {
-    console.log('Şəkillər yüklənə bilmədi', e);
-    container.innerHTML = '<div class="empty-gallery">📸 Şəkillər yüklənərkən xəta</div>';
+    console.error('Şəkillər yüklənərkən xəta:', e);
+    container.innerHTML = '<div class="empty-gallery">📸 Şəkillər yüklənərkən xəta baş verdi</div>';
   }
 }
 
+/**
+ * Qalereyanı render et - bütün şəkilləri göstər
+ * Hər dəfə tam render olunur (dots və slider üçün)
+ */
 function renderGallery() {
-  var container = document.getElementById('gallery-container');
-  var dotsContainer = document.getElementById('gallery-dots');
+  const container = document.getElementById('gallery-container');
+  const dotsContainer = document.getElementById('gallery-dots');
+  
   if (!container) return;
 
   if (!galleryImages || galleryImages.length === 0) {
@@ -180,18 +206,21 @@ function renderGallery() {
     return;
   }
 
+  // Şəkilləri HTML-ə çevir
   var imagesHtml = '';
   for (var i = 0; i < galleryImages.length; i++) {
-    imagesHtml += '<div class="gallery-item"><img src="' + galleryImages[i].download_url + '" alt="Xatirə" onclick="openGalleryImage(' + i + ')"></div>';
+    imagesHtml += '<div class="gallery-item"><img src="' + galleryImages[i].download_url + '" alt="Xatirə" loading="lazy" onclick="openGalleryImage(' + i + ')"></div>';
   }
   container.innerHTML = imagesHtml;
 
+  // Dots (səhifə göstəriciləri) yarat
   var dotsHtml = '';
   for (var j = 0; j < galleryImages.length; j++) {
     dotsHtml += '<span class="gallery-dot ' + (j === currentGalleryIndex ? 'active' : '') + '" onclick="goToGallery(' + j + ')"></span>';
   }
   if (dotsContainer) dotsContainer.innerHTML = dotsHtml;
 
+  // Slider mövqeyini yenilə
   updateGalleryPosition();
 }
 
