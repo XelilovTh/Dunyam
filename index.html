@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Bizim Dünyamız</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+</head>
+<body>
+
+  <canvas id="starfield"></canvas>
+  <div id="hearts-container"></div>
+  <div class="bg-stars-layer" id="bg-stars-layer"></div>
+
+  <!-- ════════════════════════════════════════════
+       LOGIN SƏHİFƏSİ
+  ════════════════════════════════════════════ -->
+  <div id="login-page">
+    <div id="login-date"></div>
+    <div class="login-card glass-gold">
+      <span class="heart-icon">❤️</span>
+      <h1>Bizim Dünyamız</h1>
+      <p class="subtitle">Şifrə : Xəyalımızın adı</p>
+      <div class="input-wrap">
+        <span class="lock-icon">🔒</span>
+        <input type="password" id="code-input" placeholder="Kodu daxil edin" autocomplete="off" maxlength="8" />
+      </div>
+      <div class="error-msg" id="error-msg">Yanlış kod. Yenidən cəhd et.</div>
+      <button class="btn-login" id="login-btn" onclick="handleLogin()">Daxil ol</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       ANA SƏHİFƏ
+  ════════════════════════════════════════════ -->
+  <div id="main-page">
+
+    <!-- ADMIN MODAL -->
+    <div id="admin-overlay" class="admin-overlay" style="display:none;" onclick="adminOverlayClick(event)">
+      <div class="admin-modal">
+        <button class="admin-close" onclick="closeAdmin()">✕</button>
+        <div class="admin-title">⚙️ Admin Panel</div>
+        <div class="admin-subtitle">Gizli İdarəetmə</div>
+        <div class="admin-section">
+          <label>Qovluq seçimi</label>
+          <select class="admin-select" id="admin-folder" onchange="adminFolderChange()">
+            <option value="images">🖼️ images/ — Şəkillər</option>
+            <option value="music">🎵 music/ — Musiqi</option>
+            <option value="letters">💌 letters/ — Məktublar</option>
+          </select>
+        </div>
+        <div class="admin-section" id="admin-file-section">
+          <label id="admin-file-label">Fayl seç (Şəkil)</label>
+          <input type="file" id="admin-file-input" style="display:none;" onchange="adminFileChange()" />
+          <button class="admin-file-btn" id="admin-file-btn" onclick="document.getElementById('admin-file-input').click()">+ Fayl seç</button>
+          <div class="file-selected" id="admin-file-info" style="display:none;"></div>
+        </div>
+        <div class="admin-section" id="admin-letter-section" style="display:none;">
+          <label>Məktub Başlığı</label>
+          <input type="text" class="admin-title-input" id="admin-letter-title" placeholder="Məs: Darıxanda Oxu..." />
+          <label style="margin-top:12px;display:block;">Məktub mətni</label>
+          <textarea class="admin-textarea" id="admin-letter" placeholder="Ürəyindən gələni yaz..."></textarea>
+        </div>
+        <div id="admin-status" style="display:none;"></div>
+        <button class="admin-submit" id="admin-submit-btn" onclick="adminUpload()">🚀 GitHub-a Yüklə</button>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <header id="main-header">
+      <div id="main-header-date"></div>
+      <div id="hero-card" class="glass-gold">
+        <h1>Fidan &amp; Təhmaz</h1>
+      </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content">
+
+      <!-- HOME -->
+      <section id="section-home" class="section active">
+        <div class="counter-card glass">
+          <span class="counter-heart" id="counter-heart">❤️</span>
+          <div class="counter-label">01.02.2023 - dən bu günə</div>
+          <div class="counter-number" id="days-count">0</div>
+          <div class="counter-unit">Gün</div>
+          <div id="detailed-counter">
+            <span id="hours-count">00</span>s
+            <span id="minutes-count">00</span>d
+            <span id="seconds-count">00</span>san
+          </div>
+        </div>
+        <div class="quote-card glass-gold">
+          <span class="quote-sparkle">✨</span>
+          <div class="quote-title">Günün Sözü</div>
+          <div class="quote-text" id="daily-quote"></div>
+          <span class="quote-sparkle">✨</span>
+        </div>
+        <div class="stats-section">
+          <h2 class="section-title">∞ Xatirə Statistikası ∞</h2>
+          <div id="statistics-content">
+            <div class="empty-section">
+              <div class="empty-icon">♡</div>
+              <h2>Statistika</h2>
+              <p>Yüklənir...</p>
+            </div>
+          </div>
+        </div>
+        <div class="memory-btn-container">
+          <button class="memory-btn" onclick="openMemoryView()">
+            <span class="memory-btn-icon">🎉</span>
+            <span class="memory-btn-text">Sürprizlərə Keçid</span>
+            <span class="memory-btn-icon">🎉</span>
+            <span class="memory-btn-arrow">→</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ALBUM -->
+      <section id="section-album" class="section">
+        <h2 class="section-title">Şəkillərimiz🤍</h2>
+        <div id="album-content">
+          <div class="empty-section">
+            <div class="empty-icon">[◉°]</div>
+            <h2>Albom</h2>
+            <p>Hələlik şəkil yüklənməyib.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- LETTERS -->
+      <section id="section-letters" class="section">
+        <h2 class="section-title">Məktublarımız</h2>
+        <div id="letters-content">
+          <div class="empty-section">
+            <div class="empty-icon">જ⁀➴</div>
+            <h2>Məktublar</h2>
+            <p>Burada sizin səmimi sözləriniz olacaq.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- MUSIC -->
+      <section id="section-music" class="section">
+        <h2 class="section-title">Playlistimiz ♪</h2>
+        <div id="music-list-content">
+          <div class="empty-section">
+            <div class="empty-icon">𝄞𝄢</div>
+            <h2>Musiqilər</h2>
+            <p>Hələlik musiqi yüklənməyib. Admin panel ilə əlavə et.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- CONTROL CENTER -->
+    <div id="control-center">
+      <div id="player-row">
+        <div id="player-info-controls">
+          <div id="player-info">
+            <div id="player-thumb">🎵</div>
+            <div>
+              <div id="song-title">Bizim Mahnımız</div>
+              <div id="song-artist">Fidan &amp; Təhmaz</div>
+            </div>
+          </div>
+          <div id="player-controls">
+            <button class="ctrl-btn" onclick="prevSong()">⏮</button>
+            <button id="play-btn" onclick="togglePlay()">▶</button>
+            <button class="ctrl-btn" onclick="nextSong()">⏭</button>
+          </div>
+        </div>
+        <div id="progress-bar-wrap" onclick="seekTo(event)">
+          <div id="progress-bar-fill"></div>
+        </div>
+      </div>
+      <div class="player-divider"></div>
+      <nav id="nav-row">
+        <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+          <span class="nav-icon">♡⌂</span>
+          <span class="nav-label">Ana Səhifə</span>
+        </button>
+        <button class="nav-btn" id="nav-album" onclick="switchTab('album')">
+          <span class="nav-icon">[◉°]</span>
+          <span class="nav-label">Albom</span>
+        </button>
+        <button class="nav-btn" id="nav-letters" onclick="switchTab('letters')">
+          <span class="nav-icon">જ⁀➴</span>
+          <span class="nav-label">Məktublar</span>
+        </button>
+        <button class="nav-btn" id="nav-music" onclick="switchTab('music')">
+          <span class="nav-icon">𝄞𝄢</span>
+          <span class="nav-label">Musiqilər</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox-overlay" onclick="lightboxOverlayClick(event)">
+      <div id="lightbox-content"></div>
+      <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MEMORY / DOĞUM GÜNÜ SƏHİFƏSİ
+  ════════════════════════════════════════════ -->
+  <div id="memory-view" style="display:none;">
+    <canvas id="dynamic-bg"></canvas>
+
+    <!-- AÇILIŞ ANİMASİYASI -->
+    <div id="birthday-overlay" class="birthday-overlay">
+      <div class="light-rays"></div>
+      <div class="floating-confetti" id="floating-confetti"></div>
+      <div class="birthday-animation">
+        <div class="sparkle-star star-1">⭐</div>
+        <div class="sparkle-star star-2">✨</div>
+        <div class="sparkle-star star-3">💫</div>
+        <div class="sparkle-star star-4">🌟</div>
+        <div class="sparkle-star star-5">⭐</div>
+        <div class="sparkle-star star-6">✨</div>
+        <div class="balloons-container">
+          <div class="birthday-balloon balloon-1">🎈</div>
+          <div class="birthday-balloon balloon-2">🎈</div>
+          <div class="birthday-balloon balloon-3">🎈</div>
+          <div class="birthday-balloon balloon-4">🎈</div>
+          <div class="birthday-balloon balloon-5">🎈</div>
+          <div class="birthday-balloon balloon-6">🎈</div>
+          <div class="birthday-balloon balloon-7">🎈</div>
+          <div class="birthday-balloon balloon-8">🎈</div>
+        </div>
+        <div class="birthday-cake-wrapper">
+          <div class="birthday-cake">
+            <div class="cake-candle">
+              <div class="candle-flame"></div>
+              <div class="candle-glow"></div>
+            </div>
+            <div class="cake-layer layer-1"></div>
+            <div class="cake-layer layer-2"></div>
+            <div class="cake-layer layer-3"></div>
+          </div>
+        </div>
+        <h1 class="birthday-title">
+          <span class="title-word">🎉</span>
+          <span class="title-word">Doğum</span>
+          <span class="title-word">Günün</span>
+          <span class="title-word">Kutlu</span>
+          <span class="title-word">Olsun</span>
+          <span class="title-word">🎉</span>
+        </h1>
+        <h2 class="birthday-name">
+          <span class="name-letter">F</span>
+          <span class="name-letter">i</span>
+          <span class="name-letter">d</span>
+          <span class="name-letter">a</span>
+          <span class="name-letter">n</span>
+          <span class="name-heart">❤️</span>
+        </h2>
+        <div class="birthday-message">
+          <p class="message-line message-1">✨ Bu səhifə sənin üçün xüsusi hazırlandı ✨</p>
+          <p class="message-line message-2">💝 17 yaşın mübarək olsun gözəlim 💝</p>
+          <p class="birthday-from">Sevgi ilə, Təhmaz</p>
+        </div>
+        <button class="birthday-btn" onclick="enterBirthdayPage()">
+          <span class="btn-text">🎂 Sürprizlərə Başla 🎂</span>
+          <span class="btn-sparkle">✨</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MEMORY ƏSAS MƏZMUNu -->
+    <div id="memory-page" style="display:none;">
+      <button class="back-btn" onclick="closeMemoryView()">
+        <span class="back-icon">←</span> Geri
+      </button>
+      <header class="memory-header">
+        <h1 class="memory-title" id="memory-title-typewriter"></h1>
+        <p class="memory-subtitle">Sənin üçün xüsusi hazırlanmış sürprizlər</p>
+      </header>
+      <main class="memory-content">
+        <div class="love-letter-section">
+          <div class="section-header">
+            <span class="section-icon">💌</span>
+            <h3>Sevgi Məktubu</h3>
+          </div>
+          <div class="love-letter-card" id="loveLetterCard">
+            <div class="letter-preview">
+              <p class="letter-preview-text">Canım Fidan...</p>
+              <p class="letter-preview-excerpt">17 yaşın mübarək olsun gözəlim...</p>
+            </div>
+            <div class="letter-open-btn">📖 Aç</div>
+          </div>
+        </div>
+        <div class="surprise-boxes-section">
+          <div class="section-header">
+            <span class="section-icon">🎁</span>
+            <h3>17 Sürpriz Qutusu</h3>
+            <p class="section-desc">Hər qutuda fərqli bir xatirə səni gözləyir</p>
+          </div>
+          <div class="boxes-grid" id="surprise-boxes"></div>
+        </div>
+        <div class="memory-gallery-section">
+          <div class="section-header">
+            <span class="section-icon">📸</span>
+            <h3>Xatirə Şəkillərimiz</h3>
+            <p class="section-desc">Birlikdə keçirdiyimiz gözəl anlar</p>
+          </div>
+          <div class="gallery-slider">
+            <div class="gallery-container" id="gallery-container"></div>
+            <button class="gallery-prev" onclick="prevGallery()">❮</button>
+            <button class="gallery-next" onclick="nextGallery()">❯</button>
+          </div>
+          <div class="gallery-dots" id="gallery-dots"></div>
+        </div>
+        <div class="wish-section">
+          <div class="section-header">
+            <span class="section-icon">✨</span>
+            <h3>Dilək Tutma</h3>
+            <p class="section-desc">Bir ulduza toxun, diləyin göyə qalxsın</p>
+          </div>
+          <div class="wish-star-container" onclick="makeWish()">
+            <div class="wish-star">⭐</div>
+            <div class="wish-text">Dilək Tut</div>
+          </div>
+          <textarea id="wish-input" class="wish-input" placeholder="Diləyini yaz..."></textarea>
+          <button class="send-wish-btn" onclick="sendWish()">🌟 Diləyimi Göndər</button>
+          <div id="wish-message" class="wish-message" style="display:none;"></div>
+        </div>
+      </main>
+
+      <!-- MODALLAR -->
+      <div id="surprise-modal" class="surprise-modal" style="display:none;">
+        <div class="surprise-modal-content">
+          <button class="modal-close" onclick="closeSurpriseModal()">✕</button>
+          <div class="surprise-icon" id="surprise-icon">🎁</div>
+          <h3 id="surprise-title">Sürpriz!</h3>
+          <p id="surprise-message"></p>
+        </div>
+      </div>
+
+      <div id="letter-modal" class="letter-modal" style="display:none;">
+        <div class="letter-modal-content">
+          <button class="modal-close" onclick="closeLetterModal()">✕</button>
+          <div class="full-letter">
+            <h2>Canım Fidan,</h2>
+            <p>17 yaşın mübarək olsun gözəlim! 🎂</p>
+            <p>Hər gün səninlə keçən anım daha da gözəlləşir. Sən mənim həyatımdakı ən böyük sürprizsən. Gülüşün, səsindəki sevgi, gözlərindəki parıltı... Hər şeyinlə mənim dünyamı işıqlandırırsan.</p>
+            <p>Bu səhifəni sənin 17-ci yaşın üçün hazırladım. Hər qutuda, hər şəkildə, hər sözdə sənə olan sevgimi hiss etməni istədim.</p>
+            <p>Ümid edirəm ki, bu ad günün sənin üçün ən xüsusi günlərdən biri olar. Səni çox sevirəm! ❤️</p>
+            <p class="letter-sign">Sonsuz sevgi ilə,<br>Təhmaz</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
