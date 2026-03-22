@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bizim Dünyamız 💕</title>
+  <meta name="description" content="Fidan & Təhmaz — bizim gözəl sevgi hekayəmiz" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- canvas-confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     STAR CANVAS (persistent background)
+════════════════════════════════════════ -->
+<canvas id="star-canvas"></canvas>
+
+<!-- ════════════════════════════════════════
+     NOTIFICATION BAR
+════════════════════════════════════════ -->
+<div id="notif-bar">🔒 Şifrə səhvdir! Yenidən cəhd edin.</div>
+
+<!-- ════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="login-screen">
+  <div id="login-box" class="glass-dark">
+
+    <!-- Animated heart -->
+    <div style="margin-bottom:22px">
+      <div class="animate-hb" style="display:inline-block">
+        <svg viewBox="0 0 24 24" fill="#e91e63" width="68" height="68"
+             style="filter:drop-shadow(0 0 22px rgba(233,30,99,.85))">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1 id="login-title" class="vibes text-glow">Bizim Dünyamız</h1>
+    <p  id="login-sub"   class="cursive">Fidan &amp; Təhmaz</p>
+
+    <form id="login-form">
+      <div class="inp-wrap">
+        <svg class="inp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" width="18" height="18">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <input id="login-inp" type="password" class="inp"
+               placeholder="Xəyalımızın adı..."
+               autocomplete="new-password" />
+      </div>
+      <button type="submit" class="btn">💕 Daxil ol 💕</button>
+    </form>
+
+    <div class="login-dots">
+      <div class="dot" style="opacity:.3"></div>
+      <div class="dot" style="opacity:.6"></div>
+      <div class="dot" style="opacity:.9"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MAIN APP  (hidden until login)
+════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- ── Header ── -->
+  <div id="header">
+    <button id="heart-btn" title="❤️" style="font-size:22px;cursor:pointer;user-select:none;background:none;border:none;opacity:0;pointer-events:none">❤️</button>
+    <h1 id="header-title" class="vibes text-glow">Bizim Dünyamız</h1>
+  </div>
+
+  <!-- ── Pages ── -->
+  <div id="content">
+
+    <!-- HOME -->
+    <div id="home-page" class="page">
+
+      <!-- Hero -->
+      <div style="text-align:center;padding:28px 0 20px">
+        <div class="animate-float" style="font-size:58px;margin-bottom:10px" id="home-hero-heart" ondblclick="document.getElementById('admin-panel').classList.add('open')" title="Admin">🤍</div>
+        <h2 class="vibes text-glow" style="font-size:4rem;color:#e91e63;line-height:1.2;margin-bottom:5px">
+          Bizim Dünyamız
+        </h2>
+        <p class="cursive" style="font-size:2rem;color:rgba(255,255,255,.7);margin-bottom:3px">
+          Fidan &amp; Təhmaz
+        </p>
+      </div>
+
+      <!-- Counter -->
+      <div class="glass" style="padding:26px 18px;text-align:center;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:6px">
+          <svg viewBox="0 0 24 24" fill="#e91e63" class="animate-hb" width="20" height="20">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span class="cursive" style="font-size:2.3rem;color:#e91e63">Birlikdə olduğumuz vaxt</span>
+          <svg viewBox="0 0 24 24" fill="#e91e63" class="animate-hb" width="20" height="20">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <p class="cursive" style="font-size:1.55rem;color:rgba(255,255,255,.5);margin-bottom:18px">
+          01 Fevral 2023-dən bu yana
+        </p>
+        <div id="counter-grid">
+          <div id="ctr-day-block">
+            <div class="ctr-val" id="ctr-d">000</div>
+            <div class="ctr-lbl">Gün</div>
+          </div>
+          <div id="ctr-time-row">
+            <div class="ctr-box"><div class="ctr-val ctr-small" id="ctr-h">00</div><div class="ctr-lbl">Saat</div></div>
+            <div class="ctr-box"><div class="ctr-val ctr-small" id="ctr-m">00</div><div class="ctr-lbl">Dəqiqə</div></div>
+            <div class="ctr-box"><div class="ctr-val ctr-small" id="ctr-s">00</div><div class="ctr-lbl">Saniyə</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div id="stats-row">
+        <div class="stat-card"><div class="stat-val" id="stat-photos">0</div><div class="stat-lbl">[◉°] Şəkil</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-songs">0</div><div class="stat-lbl">𝄞𝄢 Mahnı</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-letters">0</div><div class="stat-lbl">જ⁀➴ Məktub</div></div>
+      </div>
+
+      <!-- Quote -->
+      <div class="quote-card">
+        <p class="quote-text" id="quote-text">"..."</p>
+        <p class="quote-date" id="quote-date"></p>
+      </div>
+
+      <!-- Surprise button -->
+      <div id="surprise-btn" style="margin-top:16px">
+        <button class="btn pulse-glow" style="font-size:1rem;padding:16px"
+                onclick="navigateTo('birthday')">
+          Sürprizə Keç ✨
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+               width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Love footer -->
+      <div class="love-bar glass" style="margin-top:12px">
+        <svg viewBox="0 0 24 24" fill="#e91e63" class="animate-hb" width="24" height="24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span>S️əni çox seviəm Fidanım</span>
+        <svg viewBox="0 0 24 24" fill="#e91e63" class="animate-hb" width="24" height="24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+    </div><!-- /home-page -->
+
+    <!-- GALLERY -->
+    <div id="gallery-page" class="page">
+      <div class="sec-hd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2" width="22" height="22">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <h2>Şəkillərimiz</h2>
+      </div>
+      <div id="gallery-grid" class="photo-grid"></div>
+    </div>
+
+    <!-- LETTERS -->
+    <div id="letters-page" class="page">
+      <div class="sec-hd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2" width="22" height="22">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <h2>Məktublarımız</h2>
+      </div>
+      <div id="letters-list"></div>
+    </div>
+
+    <!-- MUSIC -->
+    <div id="music-page" class="page">
+      <div class="sec-hd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2" width="22" height="22">
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+        <h2>Musiqilərimiz</h2>
+      </div>
+      <div id="music-list"></div>
+    </div>
+
+    <!-- BIRTHDAY -->
+    <div id="birthday-page" class="page">
+
+      <!-- Header -->
+      <div class="birthday-header" style="position:relative">
+        <!-- Back button -->
+      <button id="birthday-back" onclick="navigateTo('home')" style="position:absolute;top:16px;left:16px;background:rgba(233,30,99,.25);border:1px solid rgba(233,30,99,.5);border-radius:50px;padding:8px 16px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.85rem;font-family:'Inter',sans-serif;transition:all .3s;z-index:10">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+        Geri
+      </button>
+      <div style="font-size:56px;margin-bottom:12px">🎂</div>
+        <h2 class="bday-title vibes text-glow">Doğum Günün Kutlu Olsun Fidan!</h2>
+        <p class="bday-sub cursive">🌸 17 Yaşın Mübarək! 🌸</p>
+        <p class="bday-hint">Hər gün daha gözəl, hər an daha xoşbəxt olasan 💕</p>
+      </div>
+
+      <!-- Special photos strip -->
+      <div id="special-photos" style="display:flex;gap:8px;overflow-x:auto;padding:0 16px 14px;"></div>
+
+      <!-- Gift boxes -->
+      <div style="padding:0 16px 18px;position:relative;z-index:2">
+        <div style="text-align:center;margin-bottom:14px">
+          <p class="cursive" style="font-size:1.2rem;color:#e91e63">⭐ 17 Sürpriz Qutu ⭐</p>
+          <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-top:4px">Hər qutuya klikləyin ✨</p>
+        </div>
+        <div id="gift-grid" class="gift-grid"></div>
+      </div>
+
+      <!-- Wish section -->
+      <div style="padding:0 16px 24px;position:relative;z-index:2">
+        <div class="glass" style="padding:24px">
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px">
+            <span style="font-size:22px">⭐</span>
+            <span class="cursive" style="font-size:1.3rem;color:#e91e63">Dilək Tut</span>
+            <span style="font-size:22px">⭐</span>
+          </div>
+
+          <!-- Wish form -->
+          <div id="wish-form">
+            <p style="text-align:center;font-size:.83rem;color:rgba(255,255,255,.5);margin-bottom:14px">
+              Diləyini yaz, ulduzlar eşidəcək 🌠
+            </p>
+            <textarea id="wish-ta" class="textarea" placeholder="Diləyini bura yaz..."></textarea>
+            <button id="wish-btn" class="btn" style="margin-top:12px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                   width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Diləyimi Göndər 💫
+            </button>
+          </div>
+
+          <!-- Success state -->
+          <div id="wish-success">
+            <div style="font-size:46px;margin-bottom:12px">🌟</div>
+            <p class="ws-title">Diləyin qəbul olacaq!</p>
+            <p style="color:rgba(255,255,255,.6);font-size:.9rem">Ulduzlar diləyini eşitdi ✨</p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /birthday-page -->
+
+  </div><!-- /content -->
+
+  <!-- ── Music Player ── -->
+  <div id="music-player">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
+      <div style="width:32px;height:32px;border-radius:50%;background:rgba(233,30,99,.28);
+                  border:1px solid rgba(233,30,99,.5);display:flex;align-items:center;
+                  justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2"
+             width="14" height="14">
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+      </div>
+      <div id="mp-song" style="flex:1;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+    </div>
+    <div id="mp-seek-wrap">
+      <span class="mp-time" id="mp-cur">0:00</span>
+      <input id="mp-seek" type="range" min="0" max="100" value="0" />
+      <span class="mp-time" id="mp-dur" style="text-align:right">0:00</span>
+    </div>
+    <div id="mp-controls">
+      <button class="mp-btn" id="mp-prev">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <button id="mp-play">
+        <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+      <button class="mp-btn" id="mp-next">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Bottom Nav ── -->
+  <nav id="bottom-nav">
+    <button class="nav-item" data-page="home">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Ana Səhifə
+    </button>
+    <button class="nav-item" data-page="gallery">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+      </svg>
+      Albom
+    </button>
+    <button class="nav-item" data-page="letters">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      Məktublar
+    </button>
+    <button class="nav-item" data-page="music">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+      </svg>
+      Musiqilər
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ════════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════ -->
+<div id="lightbox">
+  <button class="lb-btn" id="lb-close" title="Bağla">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <button class="lb-btn" id="lb-prev" title="Əvvəlki">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <img id="lb-img" src="" alt="" />
+  <button class="lb-btn" id="lb-next" title="Növbəti">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="20" height="20"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  <button class="lb-btn" id="lb-zo" title="Kiçilt">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+  </button>
+  <button class="lb-btn" id="lb-zi" title="Böyüt">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+  </button>
+  <div id="lb-counter">1 / 1</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     LETTER MODAL
+════════════════════════════════════════ -->
+<div id="letter-modal">
+  <div id="letter-box" class="glass-dark">
+    <div id="letter-head">
+      <span class="cursive" id="letter-modal-title" style="font-size:1.15rem;color:#e91e63">જ⁀➴</span>
+      <button id="letter-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="letter-body"></div>
+    <div id="letter-foot">❤️ ❤️</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     GIFT MODAL
+════════════════════════════════════════ -->
+<div id="gift-modal">
+  <div id="gift-box-inner" class="glass-dark pulse-glow">
+    <button id="gift-close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div style="font-size:40px;margin-bottom:14px">💝</div>
+    <p id="gift-msg" class="cursive" style="font-size:1.2rem;color:#fff;line-height:1.65"></p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     ADMIN PANEL
+════════════════════════════════════════ -->
+<div id="admin-panel">
+  <div class="admin-inner">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <div>
+        <h2 class="cursive" style="font-size:1.5rem;color:#e91e63">Admin Panel</h2>
+        <p style="font-size:.8rem;color:rgba(255,255,255,.4)">Məzmun idarəetmə</p>
+      </div>
+      <button id="admin-close" style="background:rgba(233,30,99,.28);border:1px solid rgba(233,30,99,.42);
+              border-radius:50%;width:40px;height:40px;display:flex;align-items:center;
+              justify-content:center;cursor:pointer;color:#fff">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Şəkil
+      </button>
+      <button class="admin-tab" data-tab="letter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Məktub
+      </button>
+      <button class="admin-tab" data-tab="music">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Musiqi
+      </button>
+    </div>
+
+    <!-- Photo panel -->
+    <div id="admin-photo" class="admin-content-panel glass" style="padding:22px">
+      <h3 style="color:#e91e63;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Şəkil Yüklə
+      </h3>
+      <div class="upload-zone" id="photo-zone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,99,.65)" stroke-width="2" width="36" height="36" style="margin-bottom:8px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        <p id="photo-zone-label" style="color:rgba(255,255,255,.6);font-size:.9rem">Şəkil seçin</p>
+        <input id="photo-file" type="file" accept="image/*" style="display:none" />
+      </div>
+      <div id="photo-status" class="status-msg" style="display:none"></div>
+      <button id="photo-upload-btn" class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        Şəkil Əlavə Et
+      </button>
+    </div>
+
+    <!-- Letter panel -->
+    <div id="admin-letter" class="admin-content-panel glass" style="padding:22px;display:none">
+      <h3 style="color:#e91e63;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2" width="18" height="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Məktub Yaz
+      </h3>
+      <input id="al-title" type="text" class="inp" placeholder="Məktubun başlığı..."
+             style="border-radius:12px;padding-left:18px;margin-bottom:12px" />
+      <textarea id="al-body" class="textarea" placeholder="Məktubun mətni..." style="min-height:160px;margin-bottom:12px"></textarea>
+      <div id="letter-status" class="status-msg" style="display:none"></div>
+      <button id="letter-upload-btn" class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Məktub Əlavə Et
+      </button>
+    </div>
+
+    <!-- Music panel -->
+    <div id="admin-music" class="admin-content-panel glass" style="padding:22px;display:none">
+      <h3 style="color:#e91e63;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Musiqi Yüklə
+      </h3>
+      <div class="upload-zone" id="music-zone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,99,.65)" stroke-width="2" width="36" height="36" style="margin-bottom:8px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <p id="music-zone-label" style="color:rgba(255,255,255,.6);font-size:.9rem">Musiqi fayli seçin</p>
+        <p style="color:rgba(255,255,255,.3);font-size:.75rem;margin-top:4px">MP3, WAV, OGG, M4A</p>
+        <input id="music-file" type="file" accept="audio/*" style="display:none" />
+      </div>
+      <div id="music-status" class="status-msg" style="display:none"></div>
+      <button id="music-upload-btn" class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        Musiqi Əlavə Et
+      </button>
+    </div>
+
+  </div>
+</div><!-- /admin-panel -->
+
+<script src="script.js"></script>
+</body>
+</html>
