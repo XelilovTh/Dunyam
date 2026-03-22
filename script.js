@@ -13,7 +13,7 @@ function initLogin() {
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (inp.value === "elehmed") {
+    if (inp.value === "2023") {
       scr.style.opacity = "0";
       setTimeout(() => {
         scr.style.display = "none";
