@@ -1,3 +1,6 @@
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+
 // netlify/functions/get-github-data.js
 const fetch = require('node-fetch'); // Əgər node mühitində fetch yoxdursa lazımdır
 
