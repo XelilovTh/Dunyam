@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sevgililər Günü Sürprizi | I LOVE YOU FİDAN</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', 'Microsoft YaHei', 'Poppins', sans-serif;
+        }
+        /* Ekranın altında minimal məlumat */
+        #info {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 10;
+            font-family: monospace;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255,30,77,0.5);
+            background: rgba(0,0,0,0.4);
+            display: inline-block;
+            width: auto;
+            margin: 0 auto;
+            padding: 4px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) {
+            #info { font-size: 9px; bottom: 8px; white-space: nowrap; }
+        }
+    </style>
+</head>
+<body>
+    <div id="info">❤️ Sonsuz sevgi | I LOVE YOU FİDAN ❤️</div>
+
+    <!-- Three.js və əlavə kitabxanalar -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- Konfiqurasiya ---
+        const AD = "FİDAN";  // Tam ad: FİDAN - heç vaxt yarımçıq qalmayacaq
+        const FULL_NAME = "FİDAN";
+        
+        // Səhnə, Kamera, Renderer
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000); // Tamamilə qara
+        scene.fog = new THREE.FogExp2(0x000000, 0.007); // Dərinlik effekti üçün yüngül duman
+
+        // Perspektiv kamera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 5);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // --- Yardımçı funksiyalar ---
+        function randomRange(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        // --- Mətn texture yaratma (tam sözlər, heç vaxt yarımçıq) ---
+        function createTextTexture(message, colorHex, fontSize = 80, fontFamily = "Arial Black") {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            // Ölçüləri mətnin uzunluğuna görə geniş tutaq ki, bütün yazılar tam görünsün
+            canvas.width = 1200;
+            canvas.height = 512;
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            ctx.fillStyle = colorHex;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            // Kölgə effekti ilə neon hissi
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = colorHex;
+            ctx.fillText(message, canvas.width/2, canvas.height/2);
+            
+            // İkinci keçid: parıltı üçün
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = colorHex;
+            ctx.fillText(message, canvas.width/2, canvas.height/2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+        
+        // --- BÜTÜN SÖZLƏR TAM YAZILACAQ: heç bir yarımçıq ifadə yoxdur ---
+        // Yalnız tam və düzgün mesajlar istifadə olunur
+        const baseMessage = `I LOVE YOU ${AD}`;
+        
+        // Bütün variantlar tam yazılmışdır, heç biri "Fida" kimi yarımçıq deyil
+        const variants = [
+            `I LOVE YOU ${AD}`,
+            `${AD} 🤍`,
+            `I ♥ U ${AD}`,
+            `LOVE ${AD}`,
+            `MY LOVE🤍`,
+            `${AD}IM`,
+            `SEVİRAM ${AD}`,
+            `I LOVE YOU ${AD} FOREVER`,
+            `${AD} ❤️❤️❤️`,
+            `SENI SEVİREM ${AD}`,
+            `${AD} HEYATIM`,
+            `I LOVE YOU MY ${AD}`,
+            `BEST LOVE ${AD}`,
+            `LOVE ${AD}🤍`
+        ];
+        
+        // Bütün mesajların tam olduğundan əmin olmaq üçün yoxlama
+        const allMessages = [baseMessage, ...variants];
+        allMessages.forEach(msg => {
+            if (msg.includes('FIDA') && !msg.includes('FİDAN')) {
+                console.warn('Yarımçıq ad tapıldı:', msg);
+            }
+        });
+        
+        const textsGroup = [];
+        const TEXT_COUNT = 110; // Daha sıx və zəngin görünüş
+        
+        for (let i = 0; i < TEXT_COUNT; i++) {
+            // Təsadüfi ölçü
+            const scaleVal = randomRange(0.55, 2.2);
+            // Rəng seçimi: ağ və ya neon çəhrayı tonları
+            let colorHex;
+            const colorType = Math.random();
+            if (colorType < 0.7) { // 70% neon/pink tonları
+                const neonColors = ["#ff1e4d", "#ff4d6d", "#ff69b4", "#ff3366", "#ff1493", "#ff66cc", "#ff2a5e"];
+                colorHex = neonColors[Math.floor(Math.random() * neonColors.length)];
+            } else {
+                colorHex = "#ffffff";
+            }
+            
+            // Mətn seçimi: HƏMİŞƏ TAM MƏTN (heç vaxt yarımçıq deyil)
+            let msg;
+            if (Math.random() > 0.2) {
+                msg = baseMessage; // "I LOVE YOU FİDAN" - tam
+            } else {
+                msg = variants[Math.floor(Math.random() * variants.length)]; // bütün variantlar tam
+            }
+            
+            // Əlavə təhlükəsizlik: əgər hər hansı səbəbdən mesajda "FIDA" varsa və "FİDAN" deyilsə, düzəldirik
+            if (msg.includes('FIDA') && !msg.includes('FİDAN')) {
+                msg = msg.replace('FIDA', 'FİDAN');
+            }
+            if (msg.includes('FIDAN') === false && msg.includes(AD) === false && msg.includes('❤️') === false && msg.includes('JANIM') === false && msg.includes('CANIM') === false) {
+                // Əgər ad yoxdursa, adı əlavə edək
+                msg = `${msg} ${AD}`;
+            }
+            
+            // Yazı tipi ölçüsü
+            const fontSizeVal = Math.floor(45 + scaleVal * 50);
+            const texture = createTextTexture(msg, colorHex, fontSizeVal, "Poppins, 'Arial Black', 'Segoe UI Black'");
+            const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.96, blending: THREE.AdditiveBlending });
+            const sprite = new THREE.Sprite(material);
+            
+            // Pozisiyalar: geniş diapazon
+            const posX = randomRange(-7.5, 7.5);
+            const posY = randomRange(-4.5, 5.5);
+            const posZ = randomRange(-35, 24);
+            sprite.position.set(posX, posY, posZ);
+            sprite.scale.set(scaleVal * 2.2, scaleVal * 1.05, 1);
+            
+            scene.add(sprite);
+            
+            // Hərəkət sürəti
+            const speed = randomRange(0.08, 0.34);
+            
+            textsGroup.push({
+                mesh: sprite,
+                speed: speed,
+                resetZ: -35,
+                maxZ: 26,
+                originalScale: sprite.scale.clone()
+            });
+        }
+        
+        // --- Ürək effektləri (daha çox ürək, romantik) ---
+        const hearts = [];
+        const HEART_COUNT = 180;
+        
+        function createHeartTexture(color = "#ff3366") {
+            const canvas = document.createElement('canvas');
+            canvas.width = 80;
+            canvas.height = 80;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 80, 80);
+            ctx.fillStyle = color;
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            const x = 40, y = 40, size = 32;
+            ctx.moveTo(x, y + size/4);
+            ctx.bezierCurveTo(x, y - size/2, x - size, y - size/2, x - size/2, y + size/4);
+            ctx.bezierCurveTo(x - size/3, y + size/1.8, x, y + size, x, y + size);
+            ctx.bezierCurveTo(x, y + size, x + size/3, y + size/1.8, x + size/2, y + size/4);
+            ctx.bezierCurveTo(x + size, y - size/2, x, y - size/2, x, y + size/4);
+            ctx.fill();
+            ctx.fillStyle = color;
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = color;
+            ctx.fill();
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+        
+        const heartColors = ["#ff3366", "#ff1e4d", "#ff4d6d", "#ff6699", "#ff1493", "#ff6b6b", "#ff2a5e", "#ff5e7e"];
+        
+        for (let i = 0; i < HEART_COUNT; i++) {
+            const randomColor = heartColors[Math.floor(Math.random() * heartColors.length)];
+            const heartTex = createHeartTexture(randomColor);
+            const materialHeart = new THREE.SpriteMaterial({ map: heartTex, transparent: true, blending: THREE.AdditiveBlending });
+            const heartSprite = new THREE.Sprite(materialHeart);
+            const heartScale = randomRange(0.1, 0.6);
+            heartSprite.scale.set(heartScale, heartScale, 1);
+            const posX = randomRange(-8.5, 8.5);
+            const posY = randomRange(-5, 6);
+            const posZ = randomRange(-42, 32);
+            heartSprite.position.set(posX, posY, posZ);
+            scene.add(heartSprite);
+            
+            hearts.push({
+                mesh: heartSprite,
+                speed: randomRange(0.04, 0.25),
+                resetZ: -42,
+                maxZ: 34,
+                originX: posX,
+                originY: posY,
+                time: Math.random() * Math.PI * 2,
+                rotationSpeed: randomRange(0.005, 0.025)
+            });
+        }
+        
+        // --- Parıldayan hissəciklər (ulduzlar və qızıl toz) ---
+        const starCount = 1500;
+        const starGeometry = new THREE.BufferGeometry();
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i*3] = randomRange(-24, 24);
+            starPositions[i*3+1] = randomRange(-15, 15);
+            starPositions[i*3+2] = randomRange(-80, 50);
+        }
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffaa99, size: 0.08, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+        
+        // Çəhrayı/qırmızı toz hissəcikləri
+        const dustCount = 1000;
+        const dustGeometry = new THREE.BufferGeometry();
+        const dustPositions = new Float32Array(dustCount * 3);
+        for (let i = 0; i < dustCount; i++) {
+            dustPositions[i*3] = randomRange(-10, 10);
+            dustPositions[i*3+1] = randomRange(-6, 7);
+            dustPositions[i*3+2] = randomRange(-55, 45);
+        }
+        dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+        const dustMaterial = new THREE.PointsMaterial({ color: 0xff6699, size: 0.06, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending });
+        const dustParticles = new THREE.Points(dustGeometry, dustMaterial);
+        scene.add(dustParticles);
+        
+        // --- Animasiya ---
+        let time = 0;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.015;
+            
+            // 1. Mətnləri hərəkət etdir (kameraya doğru gəlirmiş kimi)
+            for (let obj of textsGroup) {
+                obj.mesh.position.z += obj.speed;
+                
+                if (obj.mesh.position.z > obj.maxZ) {
+                    obj.mesh.position.z = obj.resetZ;
+                    // Yeni koordinatlar
+                    obj.mesh.position.x = randomRange(-7.5, 7.5);
+                    obj.mesh.position.y = randomRange(-4.8, 5.8);
+                    // Yeni ölçü
+                    const newScaleVal = randomRange(0.55, 2.2);
+                    obj.mesh.scale.set(newScaleVal * 2.2, newScaleVal * 1.05, 1);
+                    
+                    // YENİ MƏTN: HƏMİŞƏ TAM VƏ DÜZGÜN
+                    const newIsNeon = Math.random() > 0.35;
+                    let newColor;
+                    if (newIsNeon) {
+                        const neonOpts = ["#ff1e4d", "#ff4d6d", "#ff69b4", "#ff3366", "#ff1493", "#ff2a5e"];
+                        newColor = neonOpts[Math.floor(Math.random() * neonOpts.length)];
+                    } else {
+                        newColor = "#ffffff";
+                    }
+                    
+                    // Tam mesaj seçimi - heç vaxt yarımçıq deyil
+                    let newMsg;
+                    if (Math.random() > 0.25) {
+                        newMsg = `I LOVE YOU ${AD}`; // TAM
+                    } else {
+                        newMsg = variants[Math.floor(Math.random() * variants.length)];
+                    }
+                    
+                    // Təhlükəsizlik yoxlaması
+                    if (newMsg.includes('FIDA') && !newMsg.includes('FİDAN')) {
+                        newMsg = newMsg.replace('FIDA', 'FİDAN');
+                    }
+                    if (newMsg.includes('FİDAN') === false && newMsg.includes(AD) === false && !newMsg.includes('❤️') && !newMsg.includes('JANIM') && !newMsg.includes('CANIM')) {
+                        newMsg = `I LOVE YOU ${AD}`;
+                    }
+                    
+                    const newFontSize = 45 + Math.floor(newScaleVal * 50);
+                    const newTexture = createTextTexture(newMsg, newColor, newFontSize, "Poppins, 'Arial Black'");
+                    obj.mesh.material.map = newTexture;
+                    obj.mesh.material.needsUpdate = true;
+                    obj.speed = randomRange(0.08, 0.34);
+                }
+            }
+            
+            // 2. Ürəkləri hərəkət etdir
+            for (let heart of hearts) {
+                heart.mesh.position.z += heart.speed;
+                heart.time += 0.028;
+                const offsetX = Math.sin(heart.time * 1.6) * 0.05;
+                const offsetY = Math.cos(heart.time * 1.4) * 0.055;
+                heart.mesh.position.x = heart.originX + offsetX;
+                heart.mesh.position.y = heart.originY + offsetY;
+                heart.mesh.material.rotation = Math.sin(heart.time * heart.rotationSpeed) * 0.35;
+                
+                if (heart.mesh.position.z > heart.maxZ) {
+                    heart.mesh.position.z = heart.resetZ;
+                    heart.originX = randomRange(-8.5, 8.5);
+                    heart.originY = randomRange(-5.2, 6.2);
+                    heart.mesh.position.x = heart.originX;
+                    heart.mesh.position.y = heart.originY;
+                    const newScale = randomRange(0.12, 0.62);
+                    heart.mesh.scale.set(newScale, newScale, 1);
+                    heart.speed = randomRange(0.05, 0.26);
+                    
+                    if (Math.random() > 0.7) {
+                        const newCol = heartColors[Math.floor(Math.random() * heartColors.length)];
+                        const newTex = createHeartTexture(newCol);
+                        heart.mesh.material.map = newTex;
+                        heart.mesh.material.needsUpdate = true;
+                    }
+                }
+            }
+            
+            // 3. Ulduzlar və toz hissəcikləri
+            stars.rotation.y += 0.0009;
+            stars.rotation.x += 0.0005;
+            dustParticles.rotation.z += 0.0006;
+            dustParticles.rotation.y += 0.0004;
+            
+            // 4. Kamera hərəkəti (parallax + zoom effekti)
+            const breath = Math.sin(time * 0.5) * 0.05;
+            camera.position.z = 4.65 + breath;
+            camera.position.x = Math.sin(time * 0.28) * 0.08;
+            camera.position.y = Math.cos(time * 0.3) * 0.07;
+            camera.lookAt(0, 0, -3);
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // --- Responsive ---
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Konsol mesajı
+        console.log(`%c💖 SEVGİLİLƏR GÜNÜ MÜBARƏK, ${AD}! 💖`, 'color: #ff4d6d; font-size: 16px; font-weight: bold;');
+        console.log(`%cBütün sözlər tam və düzgün yazılmışdır. Sonsuz sevgi səninlə... ❤️`, 'color: #ff99cc; font-size: 14px;');
+        
+        // Animasiya üçün stil
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes subtlePulse {
+                0% { opacity: 0.6; }
+                100% { opacity: 1; }
+            }
+            #info {
+                animation: subtlePulse 2s infinite alternate;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
