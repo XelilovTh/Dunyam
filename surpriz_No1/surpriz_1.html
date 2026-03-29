@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="az" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ad Günün Mübarək, Fidanım 🤍</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&family=Quicksand:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- LOADING SCREEN -->
+  <div id="loader">
+    <div class="loader-heart">
+      <div class="beat-ring"></div>
+      <svg viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 85 C50 85 5 55 5 28 C5 13 17 3 30 3 C38 3 46 8 50 15 C54 8 62 3 70 3 C83 3 95 13 95 28 C95 55 50 85 50 85Z"/>
+      </svg>
+    </div>
+    <p class="loader-text">Hazırlanır...</p>
+  </div>
+
+  <!-- MUSIC CONTROL -->
+  <div id="musicControl">
+    <button id="musicBtn" title="Musiqi">
+      <span id="musicIcon">♪</span>
+    </button>
+    <div class="music-wave">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- CANVAS for floating hearts/stars -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- CUSTOM CURSOR -->
+  <div id="cursor"></div>
+  <div id="cursorTrail"></div>
+
+  <!-- ===== HERO ===== -->
+  <section id="hero">
+    <div class="hero-content">
+      <div class="crown-emoji">🤍</div>
+      <h1 class="hero-title">
+        <span class="line1">Ad günün mübarək</span>
+        <span class="line2 name-glow">Fidanım 🤍</span>
+
+      </h1>
+      <p class="hero-sub">Bu gün sənin günündür, mənim şahzadəm</p>
+      <div class="scroll-hint">
+        <span>Aşağı davam et</span>
+        <div class="scroll-arrow">↓</div>
+      </div>
+    </div>
+    <div id="character">
+      <div class="char-body">
+        <div class="char-face">
+          <div class="char-eyes">
+            <div class="eye left-eye"><div class="pupil"></div></div>
+            <div class="eye right-eye"><div class="pupil"></div></div>
+          </div>
+          <div class="char-blush"></div>
+          <div class="char-mouth">💕</div>
+        </div>
+        <div class="char-heart-hold">💞</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LETTER ===== -->
+  <section id="letter" class="section">
+    <div class="section-header">
+      <h2 class="section-title">Sənə məktubum <span>💌</span></h2>
+    </div>
+    <div class="letter-wrapper">
+      <div class="letter-paper">
+        <div class="letter-decoration top-left">🩷</div>
+        <div class="letter-decoration top-right">🩷</div>
+        <p class="letter-date">Bu xüsusi günün şərəfinə...</p>
+        <div class="letter-body" id="letterBody"></div>
+        <p class="letter-sign">Sonsuz sevgilə<br><em>Səni hər şeyə rəğmən sevən</em> 💕</p>
+        <div class="letter-decoration bottom-left">🩷</div>
+        <div class="letter-decoration bottom-right">🩷</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SURPRISE ===== -->
+  <section id="surprise" class="section">
+    <div class="section-header">
+      <h2 class="section-title">Xüsusi sürpriz <span>🎁</span></h2>
+      <p class="section-sub">Hazırsan?</p>
+    </div>
+    <div class="surprise-center">
+      <button id="surpriseBtn" class="surprise-btn">
+        <span class="btn-inner">
+          <span class="gift-icon">🎁</span>
+          <span>Sürprizi aç</span>
+        </span>
+        <div class="btn-ripple"></div>
+      </button>
+    </div>
+    <div id="surpriseMsg" class="surprise-message hidden">
+      <div class="msg-heart-big">❤️</div>
+      <h3>Səni çox sevirəm, Fidanım !</h3>
+      <p>Dünyada sən olmasan, heç nə mənasız olardı. Hər gülüşün, hər baxışın, hər sözün mənim üçün bir xəzinədir. Sən mənim ən böyük sevincim, ən gözəl arzumsun.</p>
+      <p>Ad günün mübarək olsun, mənim bütün dünyam! ❤️</p>
+    </div>
+  </section>
+
+  <!-- ===== WISHES ===== -->
+  <section id="wishes" class="section">
+    <div class="section-header">
+      <h2 class="section-title">Diləyini yaz <span>✨</span></h2>
+      <p class="section-sub">Ürəyindəki ən xüsusi diləyi yaz ✨</p>
+    </div>
+
+    <div class="wish-card">
+      <div class="wish-card-deco tl">🩷</div>
+      <div class="wish-card-deco tr">🩷</div>
+      <div class="wish-card-deco bl">🩷</div>
+      <div class="wish-card-deco br">🩷</div>
+
+
+
+      <div class="wish-field">
+        <label class="wish-label" for="wishText">      💫 Diləyin</label>
+        <textarea
+          id="wishText"
+          class="wish-textarea"
+          placeholder="Bu il ən böyük diləyim..."
+          maxlength="50000"
+          rows="5"
+        ></textarea>
+        <div class="wish-char-count"><span id="charCount">0</span> </div>
+      </div>
+
+      <button id="sendWishBtn" class="send-wish-btn">
+        <span class="send-inner">
+          <span>✨</span>
+          <span>Diləyimi göndər</span>
+        </span>
+        <div class="send-shimmer"></div>
+      </button>
+
+      <div id="wishStatus" class="wish-status hidden"></div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer id="footer">
+    <div class="footer-hearts">
+      <span>❤️</span><span>💕</span><span>💗</span><span>💓</span><span>❤️</span>
+    </div>
+    <p>Sənin üçün hazırlanmışdır 💝</p>
+    <p class="footer-year">2026 ✨</p>
+  </footer>
+
+  <canvas id="confettiCanvas"></canvas>
+  <script src="script.js"></script>
+</body>
+</html>
