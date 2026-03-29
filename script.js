@@ -13,7 +13,7 @@ function initLogin() {
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (inp.value === "passwd") {
+    if (inp.value === "pass") {
       scr.style.opacity = "0";
       setTimeout(() => {
         scr.style.display = "none";
@@ -35,7 +35,7 @@ function initLogin() {
 /* ─── GitHub Config ─── */
 const GH_OWNER  = "XelilovTh";
 const GH_REPO   = "Dunyam";
-const GH_TOKEN  = "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";
+const GH_TOKEN  = "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";
 const GH_BASE   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`;
 const GH_HDR    = { Authorization: `token ${GH_TOKEN}`, Accept: "application/vnd.github.v3+json" };
 
