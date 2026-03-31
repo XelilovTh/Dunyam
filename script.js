@@ -35,7 +35,7 @@ function initLogin() {
 /* ─── GitHub Config ─── */
 const GH_OWNER  = "XelilovTh";
 const GH_REPO   = "Dunyam";
-const GH_TOKEN  = "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";
+const GH_TOKEN = process.env.MY_TOKEN;
 const GH_BASE   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`;
 const GH_HDR    = { Authorization: `token ${GH_TOKEN}`, Accept: "application/vnd.github.v3+json" };
 
