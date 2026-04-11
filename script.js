@@ -1,0 +1,2022 @@
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║                    FİDAN & TƏHMAZ • DÜNYAMIZ                      ║
+   ║                  Professional • JavaScript                         ║
+   ╚══════════════════════════════════════════════════════════════════╝
+   Version: 2.0.0 | Lines: 2000+ | Author: Təhmaz
+   
+   📌 Funksionallıqlar:
+   ✓ Şifrə ilə giriş (2023)
+   ✓ Canlı vaxt sayğacı
+   ✓ Günlük sitat sistemi
+   ✓ GitHub API inteqrasiyası
+   ✓ Şəkil qalereyası və lightbox
+   ✓ Məktub sistemi və modal
+   ✓ Musiqi pleyeri (play/pause/next/prev/seek/volume)
+   ✓ Sürprizlər menyusu
+   ✓ Admin panel (şəkil/məktub/musiqi yükləmə)
+   ✓ Bildiriş sistemi
+   ✓ Swipe və toxunma dəstəyi
+   ✓ Local storage ilə vəziyyət saxlama
+   ✓ Canvas ulduz animasiyası
+*/
+
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════════════
+   KONFİQURASİYA VƏ SABİTLƏR
+   ═══════════════════════════════════════════════════════════════════ */
+
+// GitHub API konfiqurasiyası
+const GITHUB_CONFIG = {
+    owner: 'XelilovTh',
+    repo: 'Dunyam',
+    token: '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',
+    baseUrl: 'https://api.github.com'
+};
+
+// API headers
+const API_HEADERS = {
+    'Authorization': `token ${GITHUB_CONFIG.token}`,
+    'Accept': 'application/vnd.github.v3+json'
+};
+
+// Tətbiq sabitləri
+const APP_CONFIG = {
+    password: '2023',
+    startDate: new Date('2023-02-01T00:00:00'),
+    version: '2.0.0',
+    maxFileSize: {
+        image: 10 * 1024 * 1024, // 10MB
+        music: 30 * 1024 * 1024  // 30MB
+    }
+};
+
+// Günlük sitatlar
+const DAILY_QUOTES = [
+    { text: 'Sən mənim ən gözəl xəyalımsan.', author: 'Təhmaz' },
+    { text: 'Hər nəfəsimdə sənin adın var.', author: 'Təhmaz' },
+    { text: 'Sevgi — iki ürəyin bir olmasıdır.', author: 'Təhmaz' },
+    { text: 'Sən olmadan dünyam mənasızdır.', author: 'Təhmaz' },
+    { text: 'Gözlərindəki işıq mənim günəşimdir.', author: 'Təhmaz' },
+    { text: 'Sənin gülüşün ən gözəl melodiyadır.', author: 'Təhmaz' },
+    { text: 'Sən mənim ən qiymətli xəzinəmsən.', author: 'Təhmaz' },
+    { text: 'Sevgi sözsüz başa düşülür, sən kimi.', author: 'Təhmaz' },
+    { text: 'Sən olanda hər gün bayramdır.', author: 'Təhmaz' },
+    { text: 'Ürəyimin ən gizli guşəsindəsən.', author: 'Təhmaz' },
+    { text: 'Sən mənim yazdığım ən gözəl şeirsən.', author: 'Təhmaz' },
+    { text: 'Gecənin qaranlığında sən mənim işığımsan.', author: 'Təhmaz' },
+    { text: 'Sənin sevgin həyatımın mənasıdır.', author: 'Təhmaz' },
+    { text: 'Hər günəş doğuşu sənə olan sevgimi artırır.', author: 'Təhmaz' },
+    { text: 'Sən mənim dünyamdakı ən gözəl möcüzəsən.', author: 'Təhmaz' },
+    { text: 'Uzaqlarda da olsa, ürəyim yanındadır.', author: 'Təhmaz' },
+    { text: 'Sən olmadan heç nə tamamlanmır.', author: 'Təhmaz' },
+    { text: 'Sevgin qəlbimi həmişə isidər.', author: 'Təhmaz' },
+    { text: 'Gözlərinə baxanda zamanın durduğunu hiss edirəm.', author: 'Təhmaz' },
+    { text: 'Sənin səsin ən gözəl musiqidir.', author: 'Təhmaz' },
+    { text: 'Yaddaşımın ən şirin hissəsindəsən.', author: 'Təhmaz' },
+    { text: 'Sevgi sözlərə sığmaz, sən kimi.', author: 'Təhmaz' },
+    { text: 'Hər ulduz sənin adını pıçıldayır.', author: 'Təhmaz' },
+    { text: 'Sən mənim əbədi baharımsan.', author: 'Təhmaz' },
+    { text: 'Ürəyimdəki sevgi sonsuzluqdur.', author: 'Təhmaz' },
+    { text: 'Sən mənim nəfəs aldığım havasan.', author: 'Təhmaz' },
+    { text: 'Qəlbim yalnız sənin üçün döyünür.', author: 'Təhmaz' },
+    { text: 'Sənin gözlərindəki məhəbbət bənzərsizdir.', author: 'Təhmaz' },
+    { text: 'Sən mənim ən şirin xəyalımsan.', author: 'Təhmaz' },
+    { text: 'Həyat səninlə məna kəsb edir.', author: 'Təhmaz' },
+    { text: 'Sən — mənim hər şeyim.', author: 'Təhmaz' }
+];
+
+/* ═══════════════════════════════════════════════════════════════════
+   QLOBAL STATE (VƏZİYYƏT İDARƏSİ)
+   ═══════════════════════════════════════════════════════════════════ */
+
+const AppState = {
+    // Giriş vəziyyəti
+    isLoggedIn: false,
+    
+    // Cari səhifə
+    currentSection: 'home',
+    
+    // Məlumatlar
+    photos: [],
+    letters: [],
+    songs: [],
+    
+    // Musiqi pleyeri
+    player: {
+        currentIndex: -1,
+        isPlaying: false,
+        currentTime: 0,
+        duration: 0,
+        volume: 0.7,
+        isMuted: false,
+        isVisible: false,
+        shuffle: false,
+        repeat: false
+    },
+    
+    // Lightbox
+    lightbox: {
+        isOpen: false,
+        currentIndex: 0,
+        photos: []
+    },
+    
+    // Admin panel
+    admin: {
+        isOpen: false,
+        currentTab: 'photos'
+    },
+    
+    // Yükləmə vəziyyəti
+    isLoading: {
+        photos: false,
+        letters: false,
+        songs: false
+    },
+    
+    // Cache
+    cache: new Map(),
+    
+    // Statistikalar
+    stats: {
+        photos: 0,
+        letters: 0,
+        songs: 0
+    }
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   DOM ELEMENTLƏRİ (CACHED)
+   ═══════════════════════════════════════════════════════════════════ */
+
+const DOM = {
+    // Login
+    loginScreen: document.getElementById('loginScreen'),
+    loginForm: document.getElementById('loginForm'),
+    passwordInput: document.getElementById('passwordInput'),
+    
+    // App
+    appContainer: document.getElementById('appContainer'),
+    
+    // Sections
+    sections: {
+        home: document.getElementById('homeSection'),
+        gallery: document.getElementById('gallerySection'),
+        letters: document.getElementById('lettersSection'),
+        music: document.getElementById('musicSection'),
+        surprises: document.getElementById('surprisesSection')
+    },
+    
+    // Navigation
+    navItems: document.querySelectorAll('.nav-item'),
+    
+    // Counter
+    daysCounter: document.getElementById('daysCounter'),
+    hoursCounter: document.getElementById('hoursCounter'),
+    minutesCounter: document.getElementById('minutesCounter'),
+    secondsCounter: document.getElementById('secondsCounter'),
+    loveProgressBar: document.getElementById('loveProgressBar'),
+    
+    // Stats
+    photoCount: document.getElementById('photoCount'),
+    letterCount: document.getElementById('letterCount'),
+    songCount: document.getElementById('songCount'),
+    
+    // Quote
+    dailyQuote: document.getElementById('dailyQuote'),
+    quoteDate: document.getElementById('quoteDate'),
+    
+    // Gallery
+    galleryGrid: document.getElementById('galleryGrid'),
+    
+    // Letters
+    lettersList: document.getElementById('lettersList'),
+    
+    // Music
+    musicPlaylist: document.getElementById('musicPlaylist'),
+    
+    // Player
+    musicPlayer: document.getElementById('musicPlayer'),
+    currentSongTitle: document.getElementById('currentSongTitle'),
+    currentSongArtist: document.getElementById('currentSongArtist'),
+    playPauseBtn: document.getElementById('playPauseBtn'),
+    prevSongBtn: document.getElementById('prevSongBtn'),
+    nextSongBtn: document.getElementById('nextSongBtn'),
+    progressSlider: document.getElementById('progressSlider'),
+    progressFill: document.getElementById('progressFill'),
+    currentTime: document.getElementById('currentTime'),
+    durationTime: document.getElementById('durationTime'),
+    volumeSlider: document.getElementById('volumeSlider'),
+    volumeBtn: document.getElementById('volumeBtn'),
+    closePlayerBtn: document.getElementById('closePlayerBtn'),
+    
+    // Lightbox
+    lightboxModal: document.getElementById('lightboxModal'),
+    lightboxImage: document.getElementById('lightboxImage'),
+    lightboxCaption: document.getElementById('lightboxCaption'),
+    lightboxCounter: document.getElementById('lightboxCounter'),
+    lightboxClose: document.getElementById('lightboxClose'),
+    lightboxPrev: document.getElementById('lightboxPrev'),
+    lightboxNext: document.getElementById('lightboxNext'),
+    
+    // Letter Modal
+    letterModal: document.getElementById('letterModal'),
+    letterModalTitle: document.getElementById('letterModalTitle'),
+    letterModalBody: document.getElementById('letterModalBody'),
+    letterModalClose: document.getElementById('letterModalClose'),
+    
+    // Admin
+    adminPanel: document.getElementById('adminPanel'),
+    adminClose: document.getElementById('adminClose'),
+    adminTabs: document.querySelectorAll('.admin-tab'),
+    adminPanes: {
+        photos: document.getElementById('adminPhotosPane'),
+        letters: document.getElementById('adminLettersPane'),
+        music: document.getElementById('adminMusicPane')
+    },
+    
+    // Notification
+    notificationBar: document.getElementById('notificationBar'),
+    notificationMessage: document.getElementById('notificationMessage'),
+    
+    // Buttons
+    surpriseButton: document.getElementById('surpriseButton'),
+    backFromSurprises: document.getElementById('backFromSurprises'),
+    adminTrigger: document.getElementById('adminTrigger'),
+    heroHeart: document.getElementById('heroHeart')
+};
+
+// Audio elementi
+const audioPlayer = new Audio();
+
+/* ═══════════════════════════════════════════════════════════════════
+   UTILITY FUNKSİYALARI
+   ═══════════════════════════════════════════════════════════════════ */
+
+// Format vaxt (saniyə -> MM:SS)
+function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Format fayl ölçüsü
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Tarix formatı
+function formatDate(date) {
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return new Date(date).toLocaleDateString('az-AZ', options);
+}
+
+// XSS qorunması
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Debounce funksiyası
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Throttle funksiyası
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Random ədəd
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Fayl adından təmiz ad çıxar
+function cleanFileName(filename) {
+    return filename
+        .replace(/^\d+\s*/, '')
+        .replace(/\.(jpg|jpeg|png|gif|webp|avif|mp3|wav|ogg|aac|flac|m4a|txt|md)$/i, '')
+        .replace(/[_\-]/g, ' ')
+        .trim();
+}
+
+// Timestamp çıxar
+function extractTimestamp(filename) {
+    const parts = filename.replace(/\.(txt|md)$/i, '').split('_');
+    const lastPart = parts[parts.length - 1];
+    return /^\d+$/.test(lastPart) ? parseInt(lastPart, 10) : 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BİLDİRİŞ SİSTEMİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+function showNotification(message, type = 'info', duration = 2000) {
+    const bar = DOM.notificationBar;
+    const msg = DOM.notificationMessage;
+    
+    msg.textContent = message;
+    bar.className = 'notification-bar';
+    bar.classList.add(type, 'show');
+    
+    setTimeout(() => {
+        bar.classList.remove('show');
+    }, duration);
+}
+
+function showError(message, duration = 2000) {
+    showNotification(message, 'error', duration);
+}
+
+function showSuccess(message, duration = 1000) {
+    showNotification(message, 'success', duration);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GİRİŞ SİSTEMİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initLogin() {
+    // Şifrə HƏÇ VAXT keşlənmir - hər dəfə şifrə tələb olunur
+    
+    DOM.loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const password = DOM.passwordInput.value;
+        
+        if (password === APP_CONFIG.password) {
+            // localStorage-a şifrə saxlamırıq
+            performLogin();
+        } else {
+            DOM.passwordInput.classList.add('shake');
+            setTimeout(() => DOM.passwordInput.classList.remove('shake'), 500);
+            showError('❌ Şifrə yanlışdır! Yenidən cəhd et.');
+            DOM.passwordInput.value = '';
+        }
+    });
+    
+    // Enter düyməsi
+    DOM.passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            DOM.loginForm.dispatchEvent(new Event('submit'));
+        }
+    });
+}
+
+function performLogin() {
+    AppState.isLoggedIn = true;
+    
+    // Animasiya ilə keçid
+    DOM.loginScreen.style.opacity = '0';
+    DOM.loginScreen.style.transition = 'opacity 0.8s ease-out';
+    
+    setTimeout(() => {
+        DOM.loginScreen.classList.add('hidden');
+        DOM.appContainer.classList.add('visible');
+        
+        // Tətbiqi başlat
+        initApp();
+        
+        
+    }, 800);
+}
+
+function logout() {
+    localStorage.removeItem('dunyamiz_logged_in');
+    AppState.isLoggedIn = false;
+    AppState.currentSection = 'home';
+    
+    // Bütün section active class-larını sıfırla
+    Object.values(DOM.sections).forEach(el => {
+        if (el) el.classList.remove('active');
+    });
+    
+    DOM.appContainer.classList.remove('visible');
+    DOM.loginScreen.classList.remove('hidden');
+    DOM.loginScreen.style.opacity = '1';
+    DOM.passwordInput.value = '';
+    
+    // Musiqini dayandır
+    if (AppState.player.isPlaying) {
+        audioPlayer.pause();
+        AppState.player.isPlaying = false;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TƏTBİQ BAŞLATMA
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initApp() {
+    // Vaxt sayğacını başlat
+    initCounter();
+    
+    // Sitatı təyin et
+    setDailyQuote();
+    
+    // Naviqasiyanı başlat
+    initNavigation();
+    
+    // Musiqi pleyerini başlat
+    initMusicPlayer();
+    
+    // Lightbox-u başlat
+    initLightbox();
+    
+    // Məktub modalını başlat
+    initLetterModal();
+    
+    // Admin paneli başlat
+    initAdminPanel();
+    
+    // Sürpriz düymələrini başlat
+    initSurpriseButtons();
+    
+    // Canvas ulduzları başlat
+    initStarsCanvas();
+    
+    
+    // İlk məlumatları yüklə
+    loadInitialData();
+    
+    // Ana səhifəni aktiv et (ilk açılışda görünsün)
+    AppState.currentSection = 'home';
+    if (DOM.sections.home) {
+        DOM.sections.home.classList.add('active');
+    }
+    DOM.navItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.section === 'home');
+    });
+    
+    // Auto-save vəziyyəti
+    initAutoSave();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VAXT SAYĞACI
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initCounter() {
+    updateCounter();
+    setInterval(updateCounter, 1000);
+}
+
+function updateCounter() {
+    const now = new Date();
+    const start = APP_CONFIG.startDate;
+    const diff = now - start;
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    DOM.daysCounter.textContent = String(days).padStart(4, '0');
+    DOM.hoursCounter.textContent = String(hours).padStart(2, '0');
+    DOM.minutesCounter.textContent = String(minutes).padStart(2, '0');
+    DOM.secondsCounter.textContent = String(seconds).padStart(2, '0');
+    
+    // İrəliləyiş barı - günün tamamlanma faizi
+    const secondsInDay = 24 * 60 * 60;
+    const currentDaySeconds = (hours * 60 * 60) + (minutes * 60) + seconds;
+    const progress = (currentDaySeconds / secondsInDay) * 100;
+    
+    if (DOM.loveProgressBar) {
+        DOM.loveProgressBar.style.setProperty('--progress', progress + '%');
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GÜNLÜK SİTAT
+   ═══════════════════════════════════════════════════════════════════ */
+
+function setDailyQuote() {
+    const now = new Date();
+    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const quote = DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
+    
+    DOM.dailyQuote.textContent = `"${quote.text}"`;
+    DOM.quoteDate.textContent = formatDate(now);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NAVİQASİYA
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initNavigation() {
+    DOM.navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const section = item.dataset.section;
+            if (section) {
+                navigateTo(section);
+            }
+        });
+    });
+}
+
+function navigateTo(section) {
+    if (AppState.currentSection === section) return;
+    
+    // Aktiv sinfi yenilə
+    AppState.currentSection = section;
+    
+    // Bütün bölmələri gizlət
+    Object.values(DOM.sections).forEach(el => {
+        if (el) el.classList.remove('active');
+    });
+    
+    // Seçilmiş bölməni göstər
+    if (DOM.sections[section]) {
+        DOM.sections[section].classList.add('active');
+    }
+    
+    // Naviqasiya aktivliyini yenilə
+    DOM.navItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.section === section);
+    });
+    
+    // Bölməyə uyğun məlumatları yüklə
+    loadSectionData(section);
+    
+    // Başlığı yenilə
+    document.title = getSectionTitle(section);
+}
+
+function getSectionTitle(section) {
+    const titles = {
+        home: '🏠 Ana Səhifə • Dünyamız',
+        gallery: '📸 Xatirələrimiz • Dünyamız',
+        letters: '💌 Məktublarımız • Dünyamız',
+        music: '🎵 Musiqilərimiz • Dünyamız',
+        surprises: '🎁 Sürprizlər • Dünyamız'
+    };
+    return titles[section] || 'Fidan & Təhmaz • Dünyamız';
+}
+
+function loadSectionData(section) {
+    switch (section) {
+        case 'gallery':
+            if (!AppState.isLoading.photos && AppState.photos.length === 0) {
+                loadPhotos();
+            }
+            break;
+        case 'letters':
+            if (!AppState.isLoading.letters && AppState.letters.length === 0) {
+                loadLetters();
+            }
+            break;
+        case 'music':
+            if (!AppState.isLoading.songs && AppState.songs.length === 0) {
+                loadSongs();
+            }
+            break;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GITHUB API İNTEQRASİYASI
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function githubRequest(endpoint, options = {}) {
+    const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${endpoint}`;
+    
+    try {
+        const response = await fetch(url, {
+            headers: API_HEADERS,
+            cache: 'no-store',
+            ...options
+        });
+        
+        if (!response.ok) {
+            throw new Error(`GitHub API xətası: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('GitHub API xətası:', error);
+        throw error;
+    }
+}
+
+async function githubListFolder(folder) {
+    try {
+        return await githubRequest(folder);
+    } catch {
+        return [];
+    }
+}
+
+async function githubGetFile(path) {
+    try {
+        const data = await githubRequest(path);
+        if (data.encoding === 'base64' && data.content) {
+            return decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+        }
+        return data.content || '';
+    } catch {
+        return '';
+    }
+}
+
+async function githubUploadFile(path, content, message) {
+    try {
+        const body = {
+            message,
+            content: btoa(unescape(encodeURIComponent(content)))
+        };
+        
+        // Əgər fayl mövcuddursa, SHA əldə et
+        try {
+            const existing = await githubRequest(path);
+            if (existing.sha) {
+                body.sha = existing.sha;
+            }
+        } catch {
+            // Fayl yoxdur, yeni yaradılacaq
+        }
+        
+        const response = await fetch(
+            `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
+            {
+                method: 'PUT',
+                headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }
+        );
+        
+        return response.ok;
+    } catch (error) {
+        console.error('Fayl yükləmə xətası:', error);
+        return false;
+    }
+}
+
+async function githubUploadBinary(path, file, message) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64 = e.target.result.split(',')[1];
+            
+            try {
+                const body = { message, content: base64 };
+                
+                const response = await fetch(
+                    `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
+                    {
+                        method: 'PUT',
+                        headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    }
+                );
+                
+                resolve(response.ok);
+            } catch {
+                resolve(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   İLK MƏLUMATLARI YÜKLƏ
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function loadInitialData() {
+    await loadStats();
+    
+    // Cache-dən məlumatları yükləməyə çalış
+    const cachedStats = localStorage.getItem('dunyamiz_stats');
+    if (cachedStats) {
+        try {
+            const stats = JSON.parse(cachedStats);
+            updateStatsDisplay(stats);
+        } catch {}
+    }
+}
+
+async function loadStats() {
+    try {
+        // Şəkil sayı
+        const photos = await githubListFolder('images');
+        AppState.stats.photos = Array.isArray(photos) ? photos.filter(f => 
+            /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(f.name)
+        ).length : 0;
+        
+        // Məktub sayı
+        const letters = await githubListFolder('letters');
+        AppState.stats.letters = Array.isArray(letters) ? letters.filter(f => 
+            /\.(txt|md)$/i.test(f.name)
+        ).length : 0;
+        
+        // Musiqi sayı
+        const songs = await githubListFolder('music');
+        AppState.stats.songs = Array.isArray(songs) ? songs.filter(f => 
+            /\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(f.name)
+        ).length : 0;
+        
+        updateStatsDisplay(AppState.stats);
+        localStorage.setItem('dunyamiz_stats', JSON.stringify(AppState.stats));
+        
+    } catch (error) {
+        console.error('Statistika yükləmə xətası:', error);
+    }
+}
+
+function updateStatsDisplay(stats) {
+    DOM.photoCount.textContent = stats.photos || 0;
+    DOM.letterCount.textContent = stats.letters || 0;
+    DOM.songCount.textContent = stats.songs || 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ŞƏKİL QALEREYASI
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function loadPhotos() {
+    if (AppState.isLoading.photos) return;
+    
+    AppState.isLoading.photos = true;
+    showGalleryLoading();
+    
+    try {
+        const files = await githubListFolder('images');
+        AppState.photos = Array.isArray(files) 
+            ? files.filter(f => /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(f.name))
+                   .sort((a, b) => b.name.localeCompare(a.name))
+            : [];
+        
+        renderGallery();
+    } catch (error) {
+        showError('Şəkillər yüklənə bilmədi');
+        showGalleryEmpty();
+    } finally {
+        AppState.isLoading.photos = false;
+    }
+}
+
+function showGalleryLoading() {
+    DOM.galleryGrid.innerHTML = `
+        <div class="gallery-loading">
+            <div class="loading-spinner"></div>
+            <p>Xatirələr yüklənir...</p>
+        </div>
+    `;
+}
+
+function showGalleryEmpty() {
+    DOM.galleryGrid.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-images"></i>
+            <h4>Hələ şəkil yoxdur</h4>
+            <p>Admin paneldən şəkil əlavə edə bilərsiniz</p>
+        </div>
+    `;
+}
+
+function renderGallery() {
+    if (AppState.photos.length === 0) {
+        showGalleryEmpty();
+        return;
+    }
+    
+    let html = '';
+    AppState.photos.forEach((photo, index) => {
+        html += `
+            <div class="gallery-item" data-index="${index}">
+                <img src="${photo.download_url}" alt="Xatirə" loading="lazy">
+                <div class="gallery-item-overlay">
+                    <span><i class="fas fa-heart"></i></span>
+                </div>
+            </div>
+        `;
+    });
+    
+    DOM.galleryGrid.innerHTML = html;
+    
+    // Click hadisələrini əlavə et
+    DOM.galleryGrid.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.dataset.index);
+            openLightbox(index);
+        });
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHTBOX
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initLightbox() {
+    // Bağlama
+    DOM.lightboxClose.addEventListener('click', closeLightbox);
+    DOM.lightboxModal.addEventListener('click', (e) => {
+        if (e.target === DOM.lightboxModal) {
+            closeLightbox();
+        }
+    });
+    
+    // Naviqasiya
+    DOM.lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
+    DOM.lightboxNext.addEventListener('click', () => navigateLightbox(1));
+    
+    // Klaviatura naviqasiyası
+    document.addEventListener('keydown', (e) => {
+        if (!AppState.lightbox.isOpen) return;
+        
+        switch (e.key) {
+            case 'Escape': closeLightbox(); break;
+            case 'ArrowLeft': navigateLightbox(-1); break;
+            case 'ArrowRight': navigateLightbox(1); break;
+        }
+    });
+    
+    // Toxunma dəstəyi (swipe)
+    let touchStartX = 0;
+    DOM.lightboxModal.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+    });
+    
+    DOM.lightboxModal.addEventListener('touchend', (e) => {
+        if (!AppState.lightbox.isOpen) return;
+        
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > 50) {
+            navigateLightbox(diff > 0 ? 1 : -1);
+        }
+    });
+}
+
+function openLightbox(index) {
+    AppState.lightbox.isOpen = true;
+    AppState.lightbox.currentIndex = index;
+    AppState.lightbox.photos = AppState.photos;
+    
+    updateLightboxImage();
+    DOM.lightboxModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    AppState.lightbox.isOpen = false;
+    DOM.lightboxModal.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function navigateLightbox(direction) {
+    const photos = AppState.lightbox.photos;
+    if (photos.length === 0) return;
+    
+    AppState.lightbox.currentIndex = (AppState.lightbox.currentIndex + direction + photos.length) % photos.length;
+    updateLightboxImage();
+}
+
+function updateLightboxImage() {
+    const photo = AppState.lightbox.photos[AppState.lightbox.currentIndex];
+    if (!photo) return;
+    
+    DOM.lightboxImage.src = photo.download_url;
+    DOM.lightboxCaption.textContent = cleanFileName(photo.name);
+    DOM.lightboxCounter.textContent = `${AppState.lightbox.currentIndex + 1} / ${AppState.lightbox.photos.length}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MƏKTUBLAR
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function loadLetters() {
+    if (AppState.isLoading.letters) return;
+    
+    AppState.isLoading.letters = true;
+    showLettersLoading();
+    
+    try {
+        const files = await githubListFolder('letters');
+        AppState.letters = Array.isArray(files)
+            ? files.filter(f => /\.(txt|md)$/i.test(f.name))
+                   .sort((a, b) => extractTimestamp(b.name) - extractTimestamp(a.name))
+            : [];
+        
+        renderLetters();
+    } catch (error) {
+        showError('Məktublar yüklənə bilmədi');
+        showLettersEmpty();
+    } finally {
+        AppState.isLoading.letters = false;
+    }
+}
+
+function showLettersLoading() {
+    DOM.lettersList.innerHTML = `
+        <div class="letters-loading">
+            <div class="loading-spinner"></div>
+            <p>Məktublar yüklənir...</p>
+        </div>
+    `;
+}
+
+function showLettersEmpty() {
+    DOM.lettersList.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-envelope"></i>
+            <h4>Hələ məktub yoxdur</h4>
+            <p>Admin paneldən məktub əlavə edə bilərsiniz</p>
+        </div>
+    `;
+}
+
+function renderLetters() {
+    if (AppState.letters.length === 0) {
+        showLettersEmpty();
+        return;
+    }
+    
+    let html = '';
+    AppState.letters.forEach((letter) => {
+        const rawTitle = letter.name.replace(/\.(txt|md)$/i, '').replace(/_/g, ' ');
+        const title = rawTitle.replace(/\s*\d{10,}$/, '').trim() || rawTitle;
+        
+        html += `
+            <div class="letter-card-item" data-path="${letter.path}" data-title="${escapeHtml(title)}">
+                <div class="letter-card-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <div class="letter-card-content">
+                    <div class="letter-card-title">
+                        ${escapeHtml(title)}
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="letter-card-preview" id="preview-${letter.name}">
+                        <i class="fas fa-spinner fa-spin"></i> Yüklənir...
+                    </div>
+                    <div class="letter-card-date">
+                        <i class="far fa-calendar-alt"></i>
+                        ${formatDate(new Date())}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    DOM.lettersList.innerHTML = html;
+    
+    // Click hadisələri və preview yükləmə
+    DOM.lettersList.querySelectorAll('.letter-card-item').forEach(async (item) => {
+        const path = item.dataset.path;
+        const title = item.dataset.title;
+        const name = path.split('/').pop();
+        const previewEl = document.getElementById(`preview-${name}`);
+        
+        item.addEventListener('click', () => openLetter(path, title));
+        
+        // Preview yüklə
+        if (previewEl) {
+            try {
+                const content = await githubGetFile(path);
+                const preview = content.slice(0, 100).replace(/\n/g, ' ') + (content.length > 100 ? '...' : '');
+                previewEl.textContent = preview || '(Məktub boşdur)';
+            } catch {
+                previewEl.textContent = 'Məktub yüklənə bilmədi';
+            }
+        }
+    });
+}
+
+function initLetterModal() {
+    DOM.letterModalClose.addEventListener('click', closeLetterModal);
+    DOM.letterModal.addEventListener('click', (e) => {
+        if (e.target === DOM.letterModal) {
+            closeLetterModal();
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && DOM.letterModal.classList.contains('open')) {
+            closeLetterModal();
+        }
+    });
+}
+
+async function openLetter(path, title) {
+    DOM.letterModalTitle.textContent = title;
+    DOM.letterModalBody.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Məktub yüklənir...';
+    DOM.letterModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    
+    try {
+        const content = await githubGetFile(path);
+        DOM.letterModalBody.textContent = content || '(Məktub boşdur)';
+    } catch {
+        DOM.letterModalBody.textContent = 'Məktub yüklənə bilmədi';
+    }
+}
+
+function closeLetterModal() {
+    DOM.letterModal.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MUSİQİLƏR VƏ PLEYER
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function loadSongs() {
+    if (AppState.isLoading.songs) return;
+    
+    AppState.isLoading.songs = true;
+    showMusicLoading();
+    
+    try {
+        const files = await githubListFolder('music');
+        AppState.songs = Array.isArray(files)
+            ? files.filter(f => /\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(f.name))
+                   .sort((a, b) => a.name.localeCompare(b.name))
+            : [];
+        
+        renderMusicPlaylist();
+    } catch (error) {
+        showError('Musiqilər yüklənə bilmədi');
+        showMusicEmpty();
+    } finally {
+        AppState.isLoading.songs = false;
+    }
+}
+
+function showMusicLoading() {
+    DOM.musicPlaylist.innerHTML = `
+        <div class="music-loading">
+            <div class="loading-spinner"></div>
+            <p>Musiqilər yüklənir...</p>
+        </div>
+    `;
+}
+
+function showMusicEmpty() {
+    DOM.musicPlaylist.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-music"></i>
+            <h4>Hələ musiqi yoxdur</h4>
+            <p>Admin paneldən musiqi əlavə edə bilərsiniz</p>
+        </div>
+    `;
+}
+
+function renderMusicPlaylist() {
+    if (AppState.songs.length === 0) {
+        showMusicEmpty();
+        return;
+    }
+    
+    let html = '';
+    AppState.songs.forEach((song, index) => {
+        const name = cleanFileName(song.name);
+        html += `
+            <div class="music-track-item" data-index="${index}">
+                <div class="track-number">${index + 1}</div>
+                <div class="track-info">
+                    <div class="track-title">${escapeHtml(name)}</div>
+                    <div class="track-artist">Dünyamız • Bizim mahnımız</div>
+                </div>
+                <div class="track-duration">--:--</div>
+                <div class="track-play-icon">
+                    <i class="fas fa-play"></i>
+                </div>
+            </div>
+        `;
+    });
+    
+    DOM.musicPlaylist.innerHTML = html;
+    
+    // Click hadisələri
+    DOM.musicPlaylist.querySelectorAll('.music-track-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.dataset.index);
+            playSong(index);
+        });
+    });
+}
+
+function initMusicPlayer() {
+    // Audio hadisələri
+    audioPlayer.addEventListener('loadedmetadata', updateDuration);
+    audioPlayer.addEventListener('timeupdate', updateProgress);
+    audioPlayer.addEventListener('ended', onSongEnded);
+    audioPlayer.addEventListener('play', () => updatePlayButton(true));
+    audioPlayer.addEventListener('pause', () => updatePlayButton(false));
+    
+    // İdarəetmə düymələri
+    DOM.playPauseBtn.addEventListener('click', togglePlay);
+    DOM.prevSongBtn.addEventListener('click', playPrevious);
+    DOM.nextSongBtn.addEventListener('click', playNext);
+    DOM.closePlayerBtn.addEventListener('click', hidePlayer);
+    
+    // Progress slider
+    DOM.progressSlider.addEventListener('input', (e) => {
+        const value = parseFloat(e.target.value);
+        DOM.progressFill.style.width = value + '%';
+    });
+    
+    DOM.progressSlider.addEventListener('change', (e) => {
+        const value = parseFloat(e.target.value);
+        audioPlayer.currentTime = (value / 100) * audioPlayer.duration;
+    });
+    
+    // Səs idarəsi
+    DOM.volumeSlider.addEventListener('input', (e) => {
+        const value = parseFloat(e.target.value) / 100;
+        setVolume(value);
+    });
+    
+    DOM.volumeBtn.addEventListener('click', toggleMute);
+    
+    // Səs səviyyəsini təyin et
+    setVolume(AppState.player.volume);
+}
+
+function getAudioUrl(song) {
+    // GitHub download_url-ni raw.githubusercontent.com-a çevir
+    // Bu CORS problemini həll edir və audio elementdə işləyir
+    if (song.download_url) {
+        return song.download_url;
+    }
+    // download_url yoxdursa raw URL düzəlt
+    return `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/music/${encodeURIComponent(song.name)}`;
+}
+
+function playSong(index) {
+    if (index < 0 || index >= AppState.songs.length) return;
+    
+    const song = AppState.songs[index];
+    
+    // Əvvəlki aktivliyi sil
+    if (AppState.player.currentIndex !== -1) {
+        const prevItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+        if (prevItem) prevItem.classList.remove('playing');
+    }
+    
+    AppState.player.currentIndex = index;
+
+    // Audio mənbəyini təyin et
+    const audioUrl = getAudioUrl(song);
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    audioPlayer.src = audioUrl;
+    audioPlayer.crossOrigin = 'anonymous';
+    audioPlayer.load();
+
+    // canplaythrough hadisəsini gözlə, sonra play et
+    const onCanPlay = () => {
+        audioPlayer.play()
+            .then(() => {
+                AppState.player.isPlaying = true;
+            })
+            .catch(err => {
+                console.error('Playback error:', err);
+                // Brauzer siyasəti blok edibsə crossOrigin-siz yenidən cəhd et
+                audioPlayer.crossOrigin = null;
+                audioPlayer.src = audioUrl;
+                audioPlayer.load();
+                audioPlayer.play().catch(e => console.error('Retry failed:', e));
+            });
+        audioPlayer.removeEventListener('canplay', onCanPlay);
+    };
+    audioPlayer.addEventListener('canplay', onCanPlay);
+
+    // Aktiv sinfi əlavə et
+    const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${index}"]`);
+    if (currentItem) currentItem.classList.add('playing');
+    
+    // Pleyeri göstər
+    showPlayer(song);
+}
+
+function showPlayer(song) {
+    const name = cleanFileName(song.name);
+    DOM.currentSongTitle.textContent = name;
+    DOM.currentSongArtist.textContent = 'Bizim Dünyamız • Sevgimizin musiqisi';
+    
+    DOM.musicPlayer.classList.add('visible');
+    AppState.player.isVisible = true;
+}
+
+function hidePlayer() {
+    DOM.musicPlayer.classList.remove('visible');
+    AppState.player.isVisible = false;
+    audioPlayer.pause();
+    AppState.player.isPlaying = false;
+    
+    if (AppState.player.currentIndex !== -1) {
+        const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+        if (currentItem) currentItem.classList.remove('playing');
+    }
+    AppState.player.currentIndex = -1;
+}
+
+function togglePlay() {
+    if (AppState.player.currentIndex === -1) {
+        if (AppState.songs.length > 0) {
+            playSong(0);
+        }
+        return;
+    }
+    
+    if (!audioPlayer.paused) {
+        audioPlayer.pause();
+    } else {
+        audioPlayer.play().catch(e => console.error('Playback error:', e));
+    }
+}
+
+function playPrevious() {
+    if (AppState.songs.length === 0) return;
+    const newIndex = AppState.player.currentIndex <= 0 
+        ? AppState.songs.length - 1 
+        : AppState.player.currentIndex - 1;
+    playSong(newIndex);
+}
+
+function playNext() {
+    if (AppState.songs.length === 0) return;
+    const newIndex = (AppState.player.currentIndex + 1) % AppState.songs.length;
+    playSong(newIndex);
+}
+
+function onSongEnded() {
+    if (AppState.player.repeat) {
+        audioPlayer.currentTime = 0;
+        audioPlayer.play();
+    } else {
+        playNext();
+    }
+}
+
+function updatePlayButton(isPlaying) {
+    AppState.player.isPlaying = isPlaying;
+    const icon = DOM.playPauseBtn.querySelector('i');
+    if (icon) {
+        icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+    }
+}
+
+function updateDuration() {
+    DOM.durationTime.textContent = formatTime(audioPlayer.duration);
+    DOM.progressSlider.max = 100;
+}
+
+function updateProgress() {
+    if (!audioPlayer.duration) return;
+    
+    const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+    DOM.progressSlider.value = percent;
+    DOM.progressFill.style.width = percent + '%';
+    DOM.currentTime.textContent = formatTime(audioPlayer.currentTime);
+    
+    // Track duration-u yenilə (əgər siyahıda varsa)
+    const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+    if (currentItem) {
+        const durationEl = currentItem.querySelector('.track-duration');
+        if (durationEl && audioPlayer.duration) {
+            durationEl.textContent = formatTime(audioPlayer.duration);
+        }
+    }
+}
+
+function setVolume(value) {
+    AppState.player.volume = Math.max(0, Math.min(1, value));
+    audioPlayer.volume = AppState.player.isMuted ? 0 : AppState.player.volume;
+    DOM.volumeSlider.value = AppState.player.volume * 100;
+    
+    updateVolumeIcon();
+}
+
+function toggleMute() {
+    AppState.player.isMuted = !AppState.player.isMuted;
+    audioPlayer.volume = AppState.player.isMuted ? 0 : AppState.player.volume;
+    updateVolumeIcon();
+}
+
+function updateVolumeIcon() {
+    const icon = DOM.volumeBtn.querySelector('i');
+    if (icon) {
+        if (AppState.player.isMuted || AppState.player.volume === 0) {
+            icon.className = 'fas fa-volume-mute';
+        } else if (AppState.player.volume < 0.5) {
+            icon.className = 'fas fa-volume-down';
+        } else {
+            icon.className = 'fas fa-volume-up';
+        }
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SÜPRİZ DÜYMƏLƏRİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initSurpriseButtons() {
+    DOM.surpriseButton.addEventListener('click', () => {
+        navigateTo('surprises');
+    });
+    
+    DOM.backFromSurprises.addEventListener('click', () => {
+        navigateTo('home');
+    });
+    
+    // Xüsusi sürpriz 4
+    const specialSurprise4 = document.getElementById('specialSurprise4');
+    if (specialSurprise4) {
+        specialSurprise4.addEventListener('click', (e) => {
+            e.preventDefault();
+            showNotification('🎉 Bu sürpriz tezliklə əlavə olunacaq!', 'info');
+        });
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ADMIN PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initAdminPanel() {
+    // Admin panel açma
+    DOM.heroHeart.addEventListener('dblclick', openAdminPanel);
+    
+    // Bağlama
+    DOM.adminClose.addEventListener('click', closeAdminPanel);
+    DOM.adminPanel.addEventListener('click', (e) => {
+        if (e.target === DOM.adminPanel) {
+            closeAdminPanel();
+        }
+    });
+    
+    // Tab keçidi
+    DOM.adminTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.adminTab;
+            switchAdminTab(tabName);
+        });
+    });
+    
+    // Şəkil yükləmə
+    initPhotoUpload();
+    
+    // Məktub yükləmə
+    initLetterUpload();
+    
+    // Musiqi yükləmə
+    initMusicUpload();
+    
+    // Escape ilə bağlama
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && AppState.admin.isOpen) {
+            closeAdminPanel();
+        }
+    });
+}
+
+function openAdminPanel() {
+    DOM.adminPanel.classList.add('open');
+    AppState.admin.isOpen = true;
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAdminPanel() {
+    DOM.adminPanel.classList.remove('open');
+    AppState.admin.isOpen = false;
+    document.body.style.overflow = '';
+}
+
+function switchAdminTab(tabName) {
+    // Aktiv sinfi yenilə
+    DOM.adminTabs.forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.adminTab === tabName);
+    });
+    
+    // Panelləri göstər/gizlət
+    Object.entries(DOM.adminPanes).forEach(([name, pane]) => {
+        if (pane) {
+            pane.classList.toggle('active', name === tabName);
+        }
+    });
+    
+    AppState.admin.currentTab = tabName;
+}
+
+function initPhotoUpload() {
+    const uploadArea = document.getElementById('photoUploadArea');
+    const fileInput = document.getElementById('photoFileInput');
+    const preview = document.getElementById('photoPreview');
+    const previewImage = document.getElementById('photoPreviewImage');
+    const fileName = document.getElementById('photoFileName');
+    const fileSize = document.getElementById('photoFileSize');
+    const uploadBtn = document.getElementById('uploadPhotoBtn');
+    const status = document.getElementById('photoUploadStatus');
+    
+    let selectedFile = null;
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e91e63';
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            handlePhotoSelect(file);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handlePhotoSelect(file);
+    });
+    
+    function handlePhotoSelect(file) {
+        if (file.size > APP_CONFIG.maxFileSize.image) {
+            showError('Şəkil 10MB-dan böyük ola bilməz!');
+            return;
+        }
+        
+        selectedFile = file;
+        preview.style.display = 'flex';
+        previewImage.src = URL.createObjectURL(file);
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+    }
+    
+    uploadBtn.addEventListener('click', async () => {
+        if (!selectedFile) {
+            showError('Zəhmət olmasa şəkil seçin!');
+            return;
+        }
+        
+        status.className = 'admin-status loading';
+        status.textContent = '⏳ Şəkil yüklənir...';
+        uploadBtn.disabled = true;
+        
+        try {
+            const path = `images/${Date.now()}_${selectedFile.name}`;
+            const success = await githubUploadBinary(path, selectedFile, '📸 Yeni xatirə əlavə edildi');
+            
+            if (success) {
+                status.className = 'admin-status success';
+                status.textContent = '✅ Şəkil uğurla yükləndi!';
+                
+                // Formu sıfırla
+                selectedFile = null;
+                fileInput.value = '';
+                preview.style.display = 'none';
+                
+                // Statistikanı yenilə
+                await loadStats();
+                
+                // Qalereyanı yenilə
+                AppState.photos = [];
+                if (AppState.currentSection === 'gallery') {
+                    loadPhotos();
+                }
+                
+                showSuccess('📸 Yeni xatirə əlavə edildi!');
+            } else {
+                throw new Error('Yükləmə uğursuz oldu');
+            }
+        } catch (error) {
+            status.className = 'admin-status error';
+            status.textContent = '❌ Xəta baş verdi! Yenidən cəhd edin.';
+            showError('Şəkil yüklənə bilmədi!');
+        } finally {
+            uploadBtn.disabled = false;
+        }
+    });
+}
+
+function initLetterUpload() {
+    const titleInput = document.getElementById('letterTitleInput');
+    const contentInput = document.getElementById('letterContentInput');
+    const uploadBtn = document.getElementById('uploadLetterBtn');
+    const status = document.getElementById('letterUploadStatus');
+    
+    uploadBtn.addEventListener('click', async () => {
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+        
+        if (!title) {
+            showError('Məktub başlığı boş ola bilməz!');
+            return;
+        }
+        
+        if (!content) {
+            showError('Məktub mətni boş ola bilməz!');
+            return;
+        }
+        
+        status.className = 'admin-status loading';
+        status.textContent = '⏳ Məktub yüklənir...';
+        uploadBtn.disabled = true;
+        
+        try {
+            const path = `letters/${title.replace(/\s+/g, '_')}_${Date.now()}.txt`;
+            const fullContent = `${content}\n\n---\n💕 Sevgilə, Təhmaz\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
+            const success = await githubUploadFile(path, fullContent, '💌 Yeni məktub əlavə edildi');
+            
+            if (success) {
+                status.className = 'admin-status success';
+                status.textContent = '✅  Məktub uğurla yükləndi!';
+                
+                // Formu sıfırla
+                titleInput.value = '';
+                contentInput.value = '';
+                
+                // Statistikanı yenilə
+                await loadStats();
+                
+                // Məktubları yenilə
+                AppState.letters = [];
+                if (AppState.currentSection === 'letters') {
+                    loadLetters();
+                }
+                
+                showSuccess('💌 Məktubunuz əlavə edildi!');
+            } else {
+                throw new Error('Yükləmə uğursuz oldu');
+            }
+        } catch (error) {
+            status.className = 'admin-status error';
+            status.textContent = '❌ Xəta baş verdi! Yenidən cəhd edin.';
+            showError('Məktub yüklənə bilmədi!');
+        } finally {
+            uploadBtn.disabled = false;
+        }
+    });
+}
+
+function initMusicUpload() {
+    const uploadArea = document.getElementById('musicUploadArea');
+    const fileInput = document.getElementById('musicFileInput');
+    const preview = document.getElementById('musicPreview');
+    const fileName = document.getElementById('musicFileName');
+    const fileSize = document.getElementById('musicFileSize');
+    const uploadBtn = document.getElementById('uploadMusicBtn');
+    const status = document.getElementById('musicUploadStatus');
+    
+    let selectedFile = null;
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e91e63';
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('audio/')) {
+            handleMusicSelect(file);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleMusicSelect(file);
+    });
+    
+    function handleMusicSelect(file) {
+        if (file.size > APP_CONFIG.maxFileSize.music) {
+            showError('Musiqi 30MB-dan böyük ola bilməz!');
+            return;
+        }
+        
+        selectedFile = file;
+        preview.style.display = 'flex';
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+    }
+    
+    uploadBtn.addEventListener('click', async () => {
+        if (!selectedFile) {
+            showError('Zəhmət olmasa musiqi faylı seçin!');
+            return;
+        }
+        
+        status.className = 'admin-status loading';
+        status.textContent = '⏳ Musiqi yüklənir...';
+        uploadBtn.disabled = true;
+        
+        try {
+            const path = `music/${selectedFile.name}`;
+            const success = await githubUploadBinary(path, selectedFile, '🎵 Yeni musiqi əlavə edildi');
+            
+            if (success) {
+                status.className = 'admin-status success';
+                status.textContent = '✅ Musiqi uğurla yükləndi!';
+                
+                // Formu sıfırla
+                selectedFile = null;
+                fileInput.value = '';
+                preview.style.display = 'none';
+                
+                // Statistikanı yenilə
+                await loadStats();
+                
+                // Musiqiləri yenilə
+                AppState.songs = [];
+                if (AppState.currentSection === 'music') {
+                    loadSongs();
+                }
+                
+                showSuccess('🎵 Musiqi əlavə edildi!');
+            } else {
+                throw new Error('Yükləmə uğursuz oldu');
+            }
+        } catch (error) {
+            status.className = 'admin-status error';
+            status.textContent = '❌ Xəta baş verdi! Yenidən cəhd edin.';
+            showError('Musiqi yüklənə bilmədi!');
+        } finally {
+            uploadBtn.disabled = false;
+        }
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BİLDİRİŞ İKONU
+   ═══════════════════════════════════════════════════════════════════ */
+
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   CANVAS ULDUZ ANİMASİYASI
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initStarsCanvas() {
+    const container = document.getElementById('universe-bg');
+    if (!container) return;
+    
+    // Əgər canvas artıq mövcuddursa, təkrar yaratma
+    const existingCanvas = document.getElementById('starsCanvas');
+    if (existingCanvas) {
+        existingCanvas.remove();
+    }
+    
+    // Canvas elementi yarat
+    const canvas = document.createElement('canvas');
+    canvas.id = 'starsCanvas';
+    container.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    let animationFrame;
+    
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        generateStars();
+    }
+    
+    function generateStars() {
+        const count = Math.floor((canvas.width * canvas.height) / 3000);
+        stars = [];
+        
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2.5 + 0.5,
+                opacity: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.05 + 0.01,
+                twinkleSpeed: Math.random() * 0.02 + 0.005,
+                twinklePhase: Math.random() * Math.PI * 2,
+                color: Math.random() > 0.8 ? '#e91e63' : '#ffffff'
+            });
+        }
+    }
+    
+    function drawStars(timestamp) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        stars.forEach(star => {
+            // Parıltı effekti
+            const twinkle = Math.sin(timestamp * star.twinkleSpeed + star.twinklePhase);
+            const opacity = star.opacity * (0.6 + 0.4 * twinkle);
+            
+            // Rəng təyini
+            if (star.color === '#e91e63') {
+                ctx.fillStyle = `rgba(233, 30, 99, ${opacity})`;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(233, 30, 99, 0.6)';
+            } else {
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.shadowBlur = star.size > 1.5 ? 4 : 0;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+            }
+            
+            // Ulduzu çək
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hərəkət etdir
+            star.y -= star.speed;
+            
+            // Ekrandan çıxıbsa, yenidən yuxarıdan əlavə et
+            if (star.y < -10) {
+                star.y = canvas.height + 10;
+                star.x = Math.random() * canvas.width;
+            }
+        });
+        
+        ctx.shadowBlur = 0;
+        animationFrame = requestAnimationFrame(drawStars);
+    }
+    
+    window.addEventListener('resize', debounce(resizeCanvas, 200));
+    
+    resizeCanvas();
+    animationFrame = requestAnimationFrame(drawStars);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AUTO-SAVE VƏZİYYƏTİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initAutoSave() {
+    // Hər 30 saniyədən bir vəziyyəti yadda saxla
+    setInterval(() => {
+        if (AppState.isLoggedIn) {
+            saveAppState();
+        }
+    }, 30000);
+    
+    // Səhifə bağlanmazdan əvvəl yadda saxla
+    window.addEventListener('beforeunload', () => {
+        saveAppState();
+    });
+}
+
+function saveAppState() {
+    const state = {
+        currentSection: AppState.currentSection,
+        player: {
+            volume: AppState.player.volume,
+            isMuted: AppState.player.isMuted
+        },
+        lastVisit: new Date().toISOString()
+    };
+    
+    localStorage.setItem('dunyamiz_app_state', JSON.stringify(state));
+}
+
+function loadAppState() {
+    try {
+        const saved = localStorage.getItem('dunyamiz_app_state');
+        if (saved) {
+            const state = JSON.parse(saved);
+            
+            // Səs səviyyəsini bərpa et
+            if (state.player) {
+                setVolume(state.player.volume);
+                if (state.player.isMuted) {
+                    toggleMute();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Vəziyyət yüklənə bilmədi:', e);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SƏHİFƏ YÜKLƏNDİKDƏ BAŞLAT
+   ═══════════════════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.style.setProperty('--progress', '0%');
+    
+    initStarsCanvas();
+    initLogin();
+    loadAppState();
+    initOfflineSupport();
+    
+    initLovePower();
+});
+/* ═══════════════════════════════════════════════════════════════════
+   OFFLİNE DƏSTƏK
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initOfflineSupport() {
+    window.addEventListener('online', () => {
+        showSuccess('📡 İnternet bağlantısı bərpa edildi!', 2000);
+        // Məlumatları yenilə
+        loadSectionData(AppState.currentSection);
+    });
+    
+    window.addEventListener('offline', () => {
+        showNotification('📴 Offline rejimdəsiniz. Bəzi funksiyalar işləməyə bilər.', 'info', 4000);
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEVGİ GÜCÜ - ÜRƏYƏ BASILI TUT
+   ═══════════════════════════════════════════════════════════════════ */
+
+function initLovePower() {
+    const heartBtn = document.getElementById('hold-heart');
+    const percentText = document.getElementById('power-percent');
+    
+    if (!heartBtn || !percentText) return;
+    
+    // Fon divini yarat
+    const loveBg = document.createElement('div');
+    loveBg.className = 'love-active-bg';
+    document.body.appendChild(loveBg);
+    
+    let holdTimer = null;
+    let drainTimer = null;
+    let power = 0;
+    let isMaxed = false;
+    
+    function clearAllTimers() {
+        if (holdTimer) {
+            clearInterval(holdTimer);
+            holdTimer = null;
+        }
+        if (drainTimer) {
+            clearInterval(drainTimer);
+            drainTimer = null;
+        }
+    }
+    
+    function updatePower() {
+        // Faiz mətnini yenilə
+        if (power >= 100) {
+            if (!isMaxed) {
+                isMaxed = true;
+                percentText.innerText = '💕 Səni Çox Sevirəm 💕';
+                percentText.style.fontSize = '1.4rem';
+                heartBtn.style.filter = `drop-shadow(0 0 40px var(--primary-pink-glow))`;
+                
+                // Titrəmə effekti
+                heartBtn.style.animation = 'none';
+                heartBtn.style.transform = 'scale(1.15)';
+            }
+        } else {
+            isMaxed = false;
+            percentText.innerText = power + '%';
+            percentText.style.fontSize = '1.2rem';
+            heartBtn.style.transform = `scale(${1 + (power / 150)})`;
+            heartBtn.style.filter = `drop-shadow(0 0 ${10 + power/4}px var(--primary-pink-glow))`;
+        }
+        
+        // Arxa fon şəffaflığı
+        loveBg.style.opacity = power / 120;
+    }
+    
+    function startHolding(e) {
+        e.preventDefault();
+        clearAllTimers();
+        
+        holdTimer = setInterval(() => {
+            if (power < 100) {
+                power = Math.min(100, power + 2);
+                updatePower();
+            } else {
+                clearInterval(holdTimer);
+                holdTimer = null;
+            }
+        }, 50);
+    }
+    
+    function stopHolding(e) {
+        if (e) e.preventDefault();
+        clearAllTimers();
+        
+        drainTimer = setInterval(() => {
+            if (power > 0) {
+                power = Math.max(0, power - 3);
+                updatePower();
+            } else {
+                clearInterval(drainTimer);
+                drainTimer = null;
+                isMaxed = false;
+                percentText.style.fontSize = '1.2rem';
+                heartBtn.style.animation = 'heartbeat 2s ease-in-out infinite';
+            }
+        }, 30);
+    }
+    
+    // Hadisə dinləyiciləri
+    heartBtn.addEventListener('mousedown', startHolding);
+    heartBtn.addEventListener('mouseup', stopHolding);
+    heartBtn.addEventListener('mouseleave', stopHolding);
+    
+    heartBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startHolding(e);
+    }, { passive: false });
+    
+    heartBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        stopHolding(e);
+    });
+    
+    heartBtn.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        stopHolding(e);
+    });
+    
+    // Səhifədən çıxanda timerləri təmizlə
+    window.addEventListener('beforeunload', clearAllTimers);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   PERFORMANS OPTİMİZASİYALARI
+   ═══════════════════════════════════════════════════════════════════ */
+
+// Intersection Observer ilə lazy loading
+const imageObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+            imageObserver.unobserve(img);
+        }
+    });
+}, {
+    rootMargin: '50px'
+});
+
+// Performance mark
+if (performance && performance.mark) {
+    performance.mark('app-init-start');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   QLOBAL FUNKSİYALAR (window-a əlavə et)
+   ═══════════════════════════════════════════════════════════════════ */
+
+window.DunyamizApp = {
+    navigateTo,
+    logout,
+    showNotification,
+    getState: () => ({ ...AppState }),
+    refreshData: loadSectionData,
+    version: APP_CONFIG.version
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   XÜSUSİ MESAJ
+   ═══════════════════════════════════════════════════════════════════ */
+
+console.log(`
+%c💕 Fidan & Təhmaz • Dünyamız 💕
+%cVersion: ${APP_CONFIG.version}
+%c"Sən mənim ən gözəl xəyalımsan..."
+`,
+'font-size: 18px; color: #e91e63; font-family: "Dancing Script", cursive;',
+'font-size: 12px; color: #ff80ab;',
+'font-size: 14px; color: #ffffff; font-style: italic;'
+);
+
+/* ═══════════════════════════════════════════════════════════════════
+   JAVASCRIPT SONU - 2000+ SƏTİR
+   ═══════════════════════════════════════════════════════════════════ */
