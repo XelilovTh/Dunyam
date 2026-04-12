@@ -1,0 +1,131 @@
+async function loadLetters() {
+    if (AppState.isLoading.letters) return;
+    
+    AppState.isLoading.letters = true;
+    showLettersLoading();
+    
+    try {
+        // GitHub-dan məktubları siyahıla - commit tarixləri ilə birlikdə
+        const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/letters`;
+        
+        const response = await fetch(url, {
+            headers: API_HEADERS,
+            cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`GitHub API xətası: ${response.status}`);
+        }
+        
+        const files = await response.json();
+        
+        // Hər fayl üçün son commit tarixini əldə et
+        const lettersWithDates = await Promise.all(
+            files.map(async (file) => {
+                try {
+                    // Commit tarixini əldə et
+                    const commitsUrl = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/commits?path=${file.path}&per_page=1`;
+                    const commitsResponse = await fetch(commitsUrl, {
+                        headers: API_HEADERS
+                    });
+                    
+                    if (commitsResponse.ok) {
+                        const commits = await commitsResponse.json();
+                        if (commits.length > 0) {
+                            file.commit_date = commits[0].commit.author.date;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Commit tarixi alına bilmədi:', file.name);
+                }
+                return file;
+            })
+        );
+        
+        AppState.letters = Array.isArray(lettersWithDates)
+            ? lettersWithDates
+                .filter(f => /\.(txt|md)$/i.test(f.name))
+                .sort((a, b) => {
+                    // Timestamp-ə görə sırala (fayl adındakı və ya commit tarixi)
+                    const tsA = extractTimestamp(a.name) || (a.commit_date ? new Date(a.commit_date).getTime() : 0);
+                    const tsB = extractTimestamp(b.name) || (b.commit_date ? new Date(b.commit_date).getTime() : 0);
+                    return tsB - tsA;
+                })
+            : [];
+        
+        renderLetters();
+    } catch (error) {
+        console.error('Məktub yükləmə xətası:', error);
+        showError('Məktublar yüklənə bilmədi');
+        showLettersEmpty();
+    } finally {
+        AppState.isLoading.letters = false;
+    }
+}async function loadLetters() {
+    if (AppState.isLoading.letters) return;
+    
+    AppState.isLoading.letters = true;
+    showLettersLoading();
+    
+    try {
+        // GitHub-dan məktubları siyahıla - commit tarixləri ilə birlikdə
+        const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/letters`;
+        
+        const response = await fetch(url, {
+            headers: API_HEADERS,
+            cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`GitHub API xətası: ${response.status}`);
+        }
+        
+        const files = await response.json();
+        
+        // Hər fayl üçün son commit tarixini əldə et
+        const lettersWithDates = await Promise.all(
+            files.map(async (file) => {
+                try {
+                    // Commit tarixini əldə et
+                    const commitsUrl = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/commits?path=${file.path}&per_page=1`;
+                    const commitsResponse = await fetch(commitsUrl, {
+                        headers: API_HEADERS
+                    });
+                    
+                    if (commitsResponse.ok) {
+                        const commits = await commitsResponse.json();
+                        if (commits.length > 0) {
+                            file.commit_date = commits[0].commit.author.date;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Commit tarixi alına bilmədi:', file.name);
+                }
+                return file;
+            })
+        );
+        
+        AppState.letters = Array.isArray(lettersWithDates)
+            ? lettersWithDates
+                .filter(f => /\.(txt|md)$/i.test(f.name))
+                .sort((a, b) => {
+                    // Timestamp-ə görə sırala (fayl adındakı və ya commit tarixi)
+                    const tsA = extractTimestamp(a.name) || (a.commit_date ? new Date(a.commit_date).getTime() : 0);
+                    const tsB = extractTimestamp(b.name) || (b.commit_date ? new Date(b.commit_date).getTime() : 0);
+                    return tsB - tsA;
+                })
+            : [];
+        
+        renderLetters();
+    } catch (error) {
+        console.error('Məktub yükləmə xətası:', error);
+        showError('Məktublar yüklənə bilmədi');
+        showLettersEmpty();
+    } finally {
+        AppState.isLoading.letters = false;
+    }
+}
+
+---
+💕 Sevgilə, Təhmaz
+📅 12.04.2026
