@@ -319,8 +319,10 @@ function initLogin() {
         }
     });
     
+    // 🔧 DÜZƏLİŞ: preventDefault ilə brauzerin avtomatik submit-ini əngəllə
     DOM.passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
+            e.preventDefault(); // Brauzerin öz submit davranışını blokla
             DOM.loginForm.dispatchEvent(new Event('submit'));
         }
     });
@@ -1316,12 +1318,17 @@ function initPhotoUpload() {
     
     if (!uploadArea || !fileInput) return;
     
-    // ƏSAS DÜZƏLİŞ: Sadə click hadisəsi
+    // 🔧 PROBLEM HƏLLİ: fileInput-un öz click hadisəsində bubbling-i dayandır
+    fileInput.addEventListener('click', (e) => {
+        e.stopPropagation(); // Hadisənin uploadArea-ya qabarcıqlanmasının qarşısını al
+    });
+    
+    // uploadArea kliklənəndə fileInput-u tətiklə
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
     
-    // ƏSAS DÜZƏLİŞ: Sadə change hadisəsi
+    // Fayl seçildikdə
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -1331,11 +1338,10 @@ function initPhotoUpload() {
                 showStatus(status, '❌ Zəhmət olmasa şəkil faylı seçin!', 'error');
             }
         }
-        // Input-u sıfırla ki, eyni fayl təkrar seçilə bilsin
-        fileInput.value = '';
+        fileInput.value = ''; // Eyni faylın təkrar seçilməsi üçün
     });
     
-    // Drag & drop
+    // Drag & drop (dəyişməyib)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#e91e63';
@@ -1369,7 +1375,6 @@ function initPhotoUpload() {
         if (fileSize) fileSize.textContent = formatFileSize(file.size);
     }
     
-    // Ləğv et funksiyası
     window.cancelPhotoSelection = function() {
         selectedFile = null;
         if (preview) preview.style.display = 'none';
@@ -1395,15 +1400,12 @@ function initPhotoUpload() {
                 
                 if (success) {
                     showStatus(status, '✅ Şəkil uğurla yükləndi!', 'success');
-                    
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
                     
                     await loadStats();
                     AppState.photos = [];
-                    if (AppState.currentSection === 'gallery') {
-                        loadPhotos();
-                    }
+                    if (AppState.currentSection === 'gallery') loadPhotos();
                 } else {
                     throw new Error('Yükləmə uğursuz oldu');
                 }
@@ -1497,12 +1499,17 @@ function initMusicUpload() {
     
     if (!uploadArea || !fileInput) return;
     
-    // ƏSAS DÜZƏLİŞ: Sadə click hadisəsi
+    // 🔧 PROBLEM HƏLLİ: fileInput-un öz click hadisəsində bubbling-i dayandır
+    fileInput.addEventListener('click', (e) => {
+        e.stopPropagation(); // Hadisənin uploadArea-ya qabarcıqlanmasının qarşısını al
+    });
+    
+    // uploadArea kliklənəndə fileInput-u tətiklə
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
     
-    // ƏSAS DÜZƏLİŞ: Sadə change hadisəsi
+    // Fayl seçildikdə
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -1512,10 +1519,10 @@ function initMusicUpload() {
                 showStatus(status, '❌ Zəhmət olmasa musiqi faylı seçin!', 'error');
             }
         }
-        fileInput.value = '';
+        fileInput.value = ''; // Eyni faylın təkrar seçilməsi üçün
     });
     
-    // Drag & drop
+    // Drag & drop (dəyişməyib)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#e91e63';
@@ -1548,7 +1555,6 @@ function initMusicUpload() {
         if (fileSize) fileSize.textContent = formatFileSize(file.size);
     }
     
-    // Ləğv et funksiyası
     window.cancelMusicSelection = function() {
         selectedFile = null;
         if (preview) preview.style.display = 'none';
@@ -1573,15 +1579,12 @@ function initMusicUpload() {
                 
                 if (success) {
                     showStatus(status, '✅ Musiqi uğurla yükləndi!', 'success');
-                    
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
                     
                     await loadStats();
                     AppState.songs = [];
-                    if (AppState.currentSection === 'music') {
-                        loadSongs();
-                    }
+                    if (AppState.currentSection === 'music') loadSongs();
                 } else {
                     throw new Error('Yükləmə uğursuz oldu');
                 }
