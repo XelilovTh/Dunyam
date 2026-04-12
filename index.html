@@ -553,7 +553,7 @@
     <div class="admin-header">
       <div class="admin-title">
         <i class="fas fa-user-shield"></i>
-        <h2>İdarəetmə Paneli</h2>
+        <h2>Admin Panel</h2>
       </div>
       <button class="admin-close" id="adminClose">
         <i class="fas fa-times"></i>
@@ -593,13 +593,17 @@
           <input type="file" id="photoFileInput" accept="image/*" style="display: none;">
         </div>
         
-        <div class="upload-preview" id="photoPreview" style="display: none;">
-          <img src="" alt="Preview" id="photoPreviewImage">
-          <div class="preview-info">
-            <span id="photoFileName">fayl_adı.jpg</span>
-            <span id="photoFileSize">0 KB</span>
-          </div>
-        </div>
+     <!-- Şəkil yükləmə preview - DƏYİŞDİRİLƏCƏK HİSSƏ -->
+<div class="upload-preview" id="photoPreview" style="display: none;">
+  <img src="" alt="Preview" id="photoPreviewImage">
+  <div class="preview-info">
+    <span id="photoFileName">fayl_adı.jpg</span>
+    <span id="photoFileSize">0 KB</span>
+  </div>
+  <button class="preview-cancel" onclick="cancelPhotoSelection()" type="button">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
         
         <div class="admin-status" id="photoUploadStatus"></div>
         
@@ -650,13 +654,17 @@
           <input type="file" id="musicFileInput" accept="audio/*" style="display: none;">
         </div>
         
-        <div class="upload-preview" id="musicPreview" style="display: none;">
-          <i class="fas fa-file-audio"></i>
-          <div class="preview-info">
-            <span id="musicFileName">fayl_adı.mp3</span>
-            <span id="musicFileSize">0 MB</span>
-          </div>
-        </div>
+       <!-- Musiqi yükləmə preview - DƏYİŞDİRİLƏCƏK HİSSƏ -->
+<div class="upload-preview" id="musicPreview" style="display: none;">
+  <i class="fas fa-file-audio"></i>
+  <div class="preview-info">
+    <span id="musicFileName">fayl_adı.mp3</span>
+    <span id="musicFileSize">0 MB</span>
+  </div>
+  <button class="preview-cancel" onclick="cancelMusicSelection()" type="button">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
         
         <div class="admin-status" id="musicUploadStatus"></div>
         
