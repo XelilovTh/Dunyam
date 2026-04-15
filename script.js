@@ -2,13 +2,6 @@
    ║                    FİDAN & TƏHMAZ • DÜNYAMIZ                      ║
    ║                  Professional • JavaScript                         ║
    ╚══════════════════════════════════════════════════════════════════╝
-   Version: 2.1.0 | Author: Təhmaz
-   
-   📌 Dəyişikliklər (v2.1.0):
-   ✓ Fayl seçimi iki dəfə soruşulmur
-   ✓ Status mesajları 2 saniyə sonra avtomatik silinir
-   ✓ Preview-da ləğv et (X) düyməsi əlavə edildi
-   ✓ Bildiriş təkrarlanması aradan qaldırıldı
 */
 
 'use strict';
