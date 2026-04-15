@@ -1194,7 +1194,7 @@ body {
 
 .message-content p {
   font-family: 'Dancing Script', cursive;
-  font-size: 1.3rem;
+  font-size: 2rem;
   color: var(--text-primary);
   text-align: center;
 }
@@ -2801,7 +2801,7 @@ body {
 
 .love-container p {
   font-family: 'Dancing Script', cursive;
-  font-size: 1.1rem;
+  font-size: 1.8rem;
   margin-bottom: 15px;
   opacity: 0.8;
   color: var(--text-secondary);
