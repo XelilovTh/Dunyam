@@ -1198,7 +1198,11 @@ function initMusicPlayer() {
     // Fullscreen Player Listeners
     if (DOM.musicPlayer) {
         DOM.musicPlayer.addEventListener('click', (e) => {
-            if (!e.target.closest('.player-controls') && !e.target.closest('.player-progress-container') && !e.target.closest('.preview-cancel')) {
+            if (!e.target.closest('.player-controls') && 
+                !e.target.closest('.player-progress-container') && 
+                !e.target.closest('.player-volume') && 
+                !e.target.closest('.player-close') && 
+                !e.target.closest('.preview-cancel')) {
                 openFullscreenPlayer();
             }
         });
