@@ -41,7 +41,7 @@ const CLOUDINARY_CONFIG = {
 
 const TELEGRAM_CONFIG = {
     botToken: '6800223810:AAFxY2GC2A6PHl3oquOTDUWQMv-HMBXjdoA',
-    chatId: '635302226'
+    chatId: '6353022269'
 };
 
 
