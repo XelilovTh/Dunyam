@@ -672,6 +672,69 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TAM EKRAN MUSİQİ PLEYERİ                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="fullscreen-player" id="fullscreenPlayer">
+  <!-- Arxa plan rəng effekti -->
+  <div class="fs-bg-glow"></div>
+  
+  <div class="fs-header">
+    <button class="fs-btn" id="fsCloseBtn"><i class="fas fa-chevron-down"></i></button>
+    <span>İndi oxunur</span>
+    <div style="width: 44px;"></div>
+  </div>
+  
+  <!-- Fırlanan Val -->
+  <div class="fs-vinyl-container">
+    <div class="fs-vinyl-record" id="fsVinylRecord">
+      <div class="fs-vinyl-center">
+        <i class="fas fa-heart"></i>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Məlumatlar -->
+  <div class="fs-info">
+    <h2 class="fs-title" id="fsTitle">Musiqi seçilməyib</h2>
+    <p class="fs-artist" id="fsArtist">Dünyamız • Bizim mahnımız</p>
+  </div>
+  
+  <!-- Proqress -->
+  <div class="fs-progress-container">
+    <div class="fs-progress-bar-wrapper">
+      <div class="fs-progress-bar-bg">
+        <div class="fs-progress-bar-fill" id="fsProgressFill"></div>
+      </div>
+      <input type="range" min="0" max="100" value="0" class="fs-progress-slider" id="fsProgressSlider">
+    </div>
+    <div class="fs-time-row">
+      <span id="fsCurrentTime">0:00</span>
+      <span id="fsDurationTime">--:--</span>
+    </div>
+  </div>
+  
+  <!-- İdarəetmə -->
+  <div class="fs-controls">
+    <button class="fs-btn-control" id="fsShuffleBtn"><i class="fas fa-random"></i></button>
+    <button class="fs-btn-control fs-skip" id="fsPrevBtn"><i class="fas fa-step-backward"></i></button>
+    <button class="fs-btn-control fs-play" id="fsPlayBtn"><i class="fas fa-play"></i></button>
+    <button class="fs-btn-control fs-skip" id="fsNextBtn"><i class="fas fa-step-forward"></i></button>
+    <button class="fs-btn-control" id="fsRepeatBtn"><i class="fas fa-redo"></i></button>
+  </div>
+  
+  <!-- Playlist bölməsi -->
+  <div class="fs-playlist-section">
+    <div class="fs-playlist-header">
+      <h4>Sıradakılar</h4>
+      <i class="fas fa-chevron-up" id="fsPlaylistToggle"></i>
+    </div>
+    <div class="fs-playlist-list" id="fsPlaylistList">
+      <!-- Mahnılar bura düşəcək -->
+    </div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 
 </body>
