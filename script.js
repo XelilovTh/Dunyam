@@ -337,6 +337,7 @@ function initLogin() {
 
 function performLogin() {
     AppState.isLoggedIn = true;
+    trackAction("Sistemə daxil oldu", "Uğurlu giriş");
     
     DOM.loginScreen.style.opacity = '0';
     DOM.loginScreen.style.transition = 'opacity 0.8s ease-out';
@@ -436,6 +437,8 @@ function initNavigation() {
 
 function navigateTo(section) {
     if (AppState.currentSection === section) return;
+    
+    trackAction("Bölməyə keçid", section);
     
     AppState.currentSection = section;
     
@@ -813,6 +816,9 @@ function openLightbox(index) {
     AppState.lightbox.currentIndex = index;
     AppState.lightbox.photos = AppState.photos;
     
+    const photo = AppState.lightbox.photos[index];
+    if (photo) trackAction("Şəkilə baxır", cleanFileName(photo.name));
+    
     updateLightboxImage();
     DOM.lightboxModal.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1034,6 +1040,7 @@ function initLetterModal() {
 }
 
 async function openLetter(path, title) {
+    trackAction("Məktubu oxuyur", title);
     if (DOM.letterModalTitle) DOM.letterModalTitle.textContent = title;
     if (DOM.letterModalBody) DOM.letterModalBody.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Məktub yüklənir...';
     DOM.letterModal.classList.add('open');
@@ -1182,6 +1189,7 @@ function playSong(index) {
     if (index < 0 || index >= AppState.songs.length) return;
     
     const song = AppState.songs[index];
+    trackAction("Musiqi dinləyir", cleanFileName(song.name));
     
     if (AppState.player.currentIndex !== -1) {
         const prevItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
@@ -1341,6 +1349,14 @@ function initSurpriseButtons() {
     if (DOM.backFromSurprises) {
         DOM.backFromSurprises.addEventListener('click', () => navigateTo('home'));
     }
+    
+    const surpriseCards = document.querySelectorAll('.surprise-card');
+    surpriseCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const title = card.querySelector('h3')?.textContent || 'Naməlum Sürpriz';
+            trackAction("Sürprizə daxil oldu", title);
+        });
+    });
     
     const specialSurprise4 = document.getElementById('specialSurprise4');
     if (specialSurprise4) {
@@ -1514,6 +1530,7 @@ function initPhotoUpload() {
                 
                 if (uploadResult && uploadResult.secure_url) {
                     showStatus(status, '✅ Şəkil Cloudinary-ə uğurla yükləndi!', 'success');
+                    trackAction("Yeni şəkil yüklədi", selectedFile.name);
                     
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
@@ -1576,6 +1593,7 @@ function initLetterUpload() {
             
             if (success) {
                 showStatus(status, '✅ Məktub uğurla yükləndi!', 'success');
+                trackAction("Yeni məktub əlavə etdi", title);
                 
                 if (titleInput) titleInput.value = '';
                 if (contentInput) contentInput.value = '';
@@ -1695,6 +1713,7 @@ function initMusicUpload() {
                 
                 if (success) {
                     showStatus(status, '✅ Musiqi uğurla yükləndi!', 'success');
+                    trackAction("Yeni musiqi yüklədi", selectedFile.name);
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
                     
@@ -1993,6 +2012,16 @@ async function sendTelegramMessage(text, keepalive = false) {
     } catch (e) {
         console.error('Telegram bildiriş xətası:', e);
     }
+}
+
+function trackAction(action, details = '') {
+    const ip = AppState.visitorIp || 'Naməlum IP';
+    let message = `🔔 Fəaliyyət!\n📍 IP: ${ip}\n🎯 Əməliyyat: ${action}`;
+    if (details) {
+        message += `\n📝 Detal: ${details}`;
+    }
+    message += `\n⏰ Vaxt: ${new Date().toLocaleString('az-AZ')}`;
+    sendTelegramMessage(message, true); // keepalive = true
 }
 
 async function initAnalytics() {
