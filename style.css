@@ -972,12 +972,11 @@ body {
   top: 0;
   left: 0;
   height: 100%;
-  width: 0%;
+  width: var(--progress, 0%);
   background: linear-gradient(90deg, var(--primary-pink), var(--secondary-coral));
   border-radius: var(--radius-full);
   box-shadow: 0 0 12px var(--primary-pink-glow);
   transition: width 1s linear;
-  animation: progressFill 1s ease-out forwards;
 }
 
 /* Statistikalar */

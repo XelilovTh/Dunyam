@@ -418,9 +418,7 @@ function updateCounter() {
     if (DOM.minutesCounter) DOM.minutesCounter.textContent = String(minutes).padStart(2, '0');
     if (DOM.secondsCounter) DOM.secondsCounter.textContent = String(seconds).padStart(2, '0');
     
-    const secondsInDay = 24 * 60 * 60;
-    const currentDaySeconds = (hours * 60 * 60) + (minutes * 60) + seconds;
-    const progress = (currentDaySeconds / secondsInDay) * 100;
+    const progress = ((diff % 60000) / 60000) * 100;
     
     if (DOM.loveProgressBar) {
         DOM.loveProgressBar.style.setProperty('--progress', progress + '%');
