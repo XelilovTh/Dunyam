@@ -473,6 +473,9 @@ function navigateTo(section) {
     });
     
     loadSectionData(section);
+    
+    // Yuxarıya sürüşdür
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function loadSectionData(section) {
