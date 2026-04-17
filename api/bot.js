@@ -72,9 +72,22 @@ module.exports = async (req, res) => {
 
         // 4. ADİ MƏTN (Məktub kimi qəbul et)
         else if (text) {
-            const fullContent = `${text}\n\n---\n💕 Sevgilə, Təhmaz\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
-            const success = await githubUpload(`letters/Məktub_${Date.now()}.txt`, Buffer.from(fullContent).toString('base64'), `✉️ Bot: Yeni məktub`);
-            await bot.sendMessage(chatId, success ? `✅ Məktubunuz qəbul olundu!` : '❌ Xəta baş verdi!');
+            const words = text.trim().split(/\s+/);
+            let title, content;
+
+            if (words.length > 1) {
+                title = words[0]; // İlk söz başlıq
+                content = words.slice(1).join(' '); // Qalanı mətn
+            } else {
+                title = "Məktub"; // Tək sözdürsə
+                content = text;
+            }
+
+            const fileName = `${title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.txt`;
+            const fullContent = `${content}\n\n---\n💕 Sevgilə, Təhmaz\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
+            
+            const success = await githubUpload(`letters/${fileName}`, Buffer.from(fullContent).toString('base64'), `✉️ Bot: ${title}`);
+            await bot.sendMessage(chatId, success ? `✅ Məktub yükləndi!\n📌 Başlıq: ${title}` : '❌ Xəta baş verdi!');
         }
 
         res.status(200).send('OK');
