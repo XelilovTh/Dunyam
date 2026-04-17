@@ -32,6 +32,19 @@ const APP_CONFIG = {
     }
 };
 
+const CLOUDINARY_CONFIG = {
+    cloud_name: 'dojz9uzhe',
+    upload_preset: 'dunyamiz', // Cloudinary ayarlarında mütləq "Unsigned" preset yaradılmalıdır
+    api_key: '241982348988817',
+    api_secret: 'zmwVpP8tog--CNbggNCX-50QbGI' // Cloudinary dashboard-dan kopyalayın
+};
+
+const TELEGRAM_CONFIG = {
+    botToken: '6800223810:AAFxY2GC2A6PHl3oquOTDUWQMv-HMBXjdoA',
+    chatId: '6353022269'
+};
+
+
 const DAILY_QUOTES = [
     { text: 'Sən mənim ən gözəl xəyalımsan.', author: 'Təhmaz' },
     { text: 'Hər nəfəsimdə sənin adın var.', author: 'Təhmaz' },
@@ -163,6 +176,7 @@ const DOM = {
     lightboxCaption: document.getElementById('lightboxCaption'),
     lightboxCounter: document.getElementById('lightboxCounter'),
     lightboxClose: document.getElementById('lightboxClose'),
+    lightboxDelete: document.getElementById('lightboxDelete'),
     lightboxPrev: document.getElementById('lightboxPrev'),
     lightboxNext: document.getElementById('lightboxNext'),
     letterModal: document.getElementById('letterModal'),
@@ -560,6 +574,32 @@ async function githubUploadBinary(path, file, message) {
     });
 }
 
+
+async function cloudinaryUpload(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
+    formData.append('folder', 'dunyamiz'); // Cloudinary-də yaranacaq qovluğun adı
+    
+    // Əgər aşağıdakı Variant 2 (List API) istifadə ediləcəksə, şəkillərə mütləq tag (etiket) vurulmalıdır:
+    formData.append('tags', 'dunyamiz_gallery');
+    
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) throw new Error('Cloudinary upload xətası');
+        const data = await response.json();
+        return data; // İçində secure_url və public_id olacaq
+    } catch (error) {
+        console.error('Cloudinary yükləmə xətası:', error);
+        return null;
+    }
+}
+
+
 /* ═══════════════════════════════════════════════════════════════════
    İLK MƏLUMATLARI YÜKLƏ
    ═══════════════════════════════════════════════════════════════════ */
@@ -578,10 +618,18 @@ async function loadInitialData() {
 
 async function loadStats() {
     try {
-        const photos = await githubListFolder('images');
-        AppState.stats.photos = Array.isArray(photos) ? photos.filter(f => 
-            /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(f.name)
-        ).length : 0;
+        try {
+            const url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/list/dunyamiz_gallery.json`;
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                AppState.stats.photos = data.resources.length;
+            } else {
+                AppState.stats.photos = 0;
+            }
+        } catch {
+            AppState.stats.photos = 0;
+        }
         
         const letters = await githubListFolder('letters');
         AppState.stats.letters = Array.isArray(letters) ? letters.filter(f => 
@@ -618,14 +666,21 @@ async function loadPhotos() {
     showGalleryLoading();
     
     try {
-        const files = await githubListFolder('images');
-        AppState.photos = Array.isArray(files) 
-            ? files.filter(f => /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(f.name))
-                   .sort((a, b) => b.name.localeCompare(a.name))
-            : [];
+        const url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/list/dunyamiz_gallery.json`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('Cloudinary list xətası');
+        
+        const data = await response.json();
+        
+        AppState.photos = data.resources.map(res => ({
+            name: res.public_id,
+            download_url: `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/upload/v${res.version}/${res.public_id}.${res.format}`
+        }));
         
         renderGallery();
     } catch (error) {
+        console.error("Şəkil siyahısı alınmadı:", error);
         showError('Şəkillər yüklənə bilmədi');
         showGalleryEmpty();
     } finally {
@@ -701,6 +756,36 @@ function initLightbox() {
     if (DOM.lightboxPrev) DOM.lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
     if (DOM.lightboxNext) DOM.lightboxNext.addEventListener('click', () => navigateLightbox(1));
     
+    // Silmə düyməsi
+    if (DOM.lightboxDelete) {
+        DOM.lightboxDelete.addEventListener('click', async () => {
+            const photo = AppState.lightbox.photos[AppState.lightbox.currentIndex];
+            if (!photo) return;
+            
+            const confirmed = confirm('Bu şəkili Cloudinary-dən silmək istədiyinizə əminsiniz?');
+            if (!confirmed) return;
+            
+            DOM.lightboxDelete.disabled = true;
+            DOM.lightboxDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            const success = await cloudinaryDelete(photo.name);
+            
+            if (success) {
+                showNotification('🗑️ Şəkil uğurla silindi!', 'info');
+                closeLightbox();
+                AppState.photos = [];
+                AppState.isLoading.photos = false;
+                if (AppState.currentSection === 'gallery') loadPhotos();
+                await loadStats();
+            } else {
+                showNotification('❌ Şəkil silinə bilmədi!', 'error');
+            }
+            
+            DOM.lightboxDelete.disabled = false;
+            DOM.lightboxDelete.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        });
+    }
+    
     document.addEventListener('keydown', (e) => {
         if (!AppState.lightbox.isOpen) return;
         switch (e.key) {
@@ -752,8 +837,44 @@ function updateLightboxImage() {
     if (!photo) return;
     
     if (DOM.lightboxImage) DOM.lightboxImage.src = photo.download_url;
-    if (DOM.lightboxCaption) DOM.lightboxCaption.textContent = cleanFileName(photo.name);
+    if (DOM.lightboxCaption) DOM.lightboxCaption.style.display = 'none';
     if (DOM.lightboxCounter) DOM.lightboxCounter.textContent = `${AppState.lightbox.currentIndex + 1} / ${AppState.lightbox.photos.length}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CLOUDINARY SİLMƏ FUNKSİYASI
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function generateSHA1(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function cloudinaryDelete(publicId) {
+    try {
+        const timestamp = Math.round(Date.now() / 1000);
+        const signString = `public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_CONFIG.api_secret}`;
+        const signature = await generateSHA1(signString);
+        
+        const formData = new FormData();
+        formData.append('public_id', publicId);
+        formData.append('timestamp', timestamp);
+        formData.append('api_key', CLOUDINARY_CONFIG.api_key);
+        formData.append('signature', signature);
+        
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/destroy`,
+            { method: 'POST', body: formData }
+        );
+        
+        const data = await response.json();
+        return data.result === 'ok';
+    } catch (error) {
+        console.error('Cloudinary silmə xətası:', error);
+        return false;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1388,11 +1509,12 @@ function initPhotoUpload() {
             uploadBtn.disabled = true;
             
             try {
-                const path = `images/${Date.now()}_${selectedFile.name}`;
-                const success = await githubUploadBinary(path, selectedFile, '📸 Yeni xatirə əlavə edildi');
+                // Cloudinary yükləməsi çağırılır
+                const uploadResult = await cloudinaryUpload(selectedFile);
                 
-                if (success) {
-                    showStatus(status, '✅ Şəkil uğurla yükləndi!', 'success');
+                if (uploadResult && uploadResult.secure_url) {
+                    showStatus(status, '✅ Şəkil Cloudinary-ə uğurla yükləndi!', 'success');
+                    
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
                     
@@ -1431,6 +1553,7 @@ function initLetterUpload() {
         
         const title = titleInput?.value.trim() || '';
         const content = contentInput?.value.trim() || '';
+        const author = document.getElementById('letterAuthorInput')?.value || 'Fidan';
         
         if (!title) {
             showStatus(status, '⚠️ Məktub başlığı boş ola bilməz!', 'error');
@@ -1448,7 +1571,7 @@ function initLetterUpload() {
         
         try {
             const path = `letters/${title.replace(/\s+/g, '_')}_${Date.now()}.txt`;
-            const fullContent = `${content}\n\n---\n💕 Sevgilə, Təhmaz\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
+            const fullContent = `${content}\n\n---\n💕 Sevgilə, ${author}\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
             const success = await githubUploadFile(path, fullContent, '💌 Yeni məktub əlavə edildi');
             
             if (success) {
@@ -1846,7 +1969,72 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAppState();
     initOfflineSupport();
     initLovePower();
+    initAnalytics();
 });
+
+/* ═══════════════════════════════════════════════════════════════════
+   TELEGRAM ANALİTİKA
+   ═══════════════════════════════════════════════════════════════════ */
+
+let visitStartTime = Date.now();
+
+async function sendTelegramMessage(text, keepalive = false) {
+    try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`;
+        await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CONFIG.chatId,
+                text: text
+            }),
+            keepalive: keepalive
+        });
+    } catch (e) {
+        console.error('Telegram bildiriş xətası:', e);
+    }
+}
+
+async function initAnalytics() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        AppState.visitorIp = data.ip || 'Naməlum IP';
+        
+        await sendTelegramMessage(`🟢 Sayta giriş oldu!\n📍 IP: ${AppState.visitorIp}\n⏰ Vaxt: ${new Date().toLocaleString('az-AZ')}`);
+    } catch (e) {
+        console.error('IP alma xətası:', e);
+    }
+    
+    // Using visibilitychange and pagehide to better capture exits, specially on mobile
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            sendExitNotification();
+        }
+    });
+    
+    window.addEventListener('pagehide', sendExitNotification);
+    window.addEventListener('beforeunload', sendExitNotification);
+}
+
+let exitNotificationSent = false;
+function sendExitNotification() {
+    if (exitNotificationSent) return;
+    exitNotificationSent = true;
+    
+    const duration = Date.now() - visitStartTime;
+    const seconds = Math.floor((duration / 1000) % 60);
+    const minutes = Math.floor((duration / (1000 * 60)) % 60);
+    const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+    
+    let timeString = '';
+    if (hours > 0) timeString += `${hours} saat `;
+    if (minutes > 0) timeString += `${minutes} dəqiqə `;
+    timeString += `${seconds} saniyə`;
+    
+    const ip = AppState.visitorIp || 'Naməlum IP';
+    sendTelegramMessage(`🔴 Saytdan çıxış!\n📍 IP: ${ip}\n⏳ Keçirilən vaxt: ${timeString}`, true);
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    QLOBAL FUNKSİYALAR
