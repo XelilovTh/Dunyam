@@ -973,39 +973,21 @@ async function loadLetters() {
     showLettersLoading();
 
     try {
-        const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/letters`;
-        const response = await fetch(url, { headers: API_HEADERS, cache: 'no-store' });
+        const files = await githubListFolder('letters');
 
-        if (!response.ok) throw new Error(`GitHub API xətası: ${response.status}`);
-
-        const files = await response.json();
-
-        const lettersWithDates = await Promise.all(
-            files.map(async (file) => {
-                try {
-                    const commitsUrl = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/commits?path=${file.path}&per_page=1`;
-                    const commitsResponse = await fetch(commitsUrl, { headers: API_HEADERS });
-                    if (commitsResponse.ok) {
-                        const commits = await commitsResponse.json();
-                        if (commits.length > 0) file.commit_date = commits[0].commit.author.date;
-                    }
-                } catch (e) { }
-                return file;
-            })
-        );
-
-        AppState.letters = Array.isArray(lettersWithDates)
-            ? lettersWithDates
+        AppState.letters = Array.isArray(files)
+            ? files
                 .filter(f => /\.(txt|md)$/i.test(f.name))
                 .sort((a, b) => {
-                    const tsA = extractTimestamp(a.name) || (a.commit_date ? new Date(a.commit_date).getTime() : 0);
-                    const tsB = extractTimestamp(b.name) || (b.commit_date ? new Date(b.commit_date).getTime() : 0);
+                    const tsA = extractTimestamp(a.name) || 0;
+                    const tsB = extractTimestamp(b.name) || 0;
                     return tsB - tsA;
                 })
             : [];
 
         renderLetters();
     } catch (error) {
+        console.error('Məktublar yüklənə bilmədi:', error);
         showError('Məktublar yüklənə bilmədi');
         showLettersEmpty();
     } finally {
@@ -1087,7 +1069,7 @@ function renderLetters() {
         const path = item.dataset.path;
         const title = item.dataset.title;
         const name = path.split('/').pop();
-        const previewEl = document.getElementById(`preview-${name}`);
+        const previewEl = document.getElementById(`preview-${name.replace(/\./g, '\\.')}`) || document.getElementById(`preview-${name}`);
 
         item.addEventListener('click', () => openLetter(path, title));
 
