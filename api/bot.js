@@ -6,16 +6,16 @@ const axios = require('axios');
 const GITHUB_CONFIG = {
     owner: 'XelilovTh',
     repo: 'Dunyam',
-    token: process.env.GH_TOKEN
+    token: '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'
 };
 
 const CLOUDINARY_CONFIG = {
     cloud_name: 'dojz9uzhe',
     api_key: '241982348988817',
-    api_secret: process.env.CL_SECRET
+    api_secret: 'zmwVpP8tog--CNbggNCX-50QbGI'
 };
 
-const TELEGRAM_TOKEN = process.env.TG_TOKEN;
+const TELEGRAM_TOKEN = '6800223810:AAFxY2GC2A6PHl3oquOTDUWQMv-HMBXjdoA';
 
 // Cloudinary ayarları
 cloudinary.config({
