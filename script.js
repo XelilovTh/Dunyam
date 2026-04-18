@@ -793,7 +793,11 @@ async function loadPhotos() {
         const content = await githubGetFile('photos_list.json');
         if (content) {
             const photos = JSON.parse(content);
-            AppState.photos = Array.isArray(photos) ? photos : [];
+            AppState.photos = Array.isArray(photos) ? photos.sort((a, b) => {
+                const dateA = new Date(a.created_at || 0).getTime();
+                const dateB = new Date(b.created_at || 0).getTime();
+                return dateB - dateA;
+            }) : [];
         } else {
             AppState.photos = [];
         }
@@ -1151,7 +1155,11 @@ async function loadSongs() {
         const content = await githubGetFile('music_list.json');
         if (content) {
             const songs = JSON.parse(content);
-            AppState.songs = Array.isArray(songs) ? songs : [];
+            AppState.songs = Array.isArray(songs) ? songs.sort((a, b) => {
+                const tsA = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const tsB = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return tsB - tsA; // Ən yeni birinci
+            }) : [];
         } else {
             AppState.songs = [];
         }
