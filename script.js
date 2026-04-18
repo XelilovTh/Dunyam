@@ -17,7 +17,6 @@ const GITHUB_CONFIG = {
 };
 
 const APP_CONFIG = {
-    password: '2023',
     startDate: new Date('2023-02-01T00:00:00'),
     version: '2.1.0',
     maxFileSize: {
@@ -324,24 +323,42 @@ function clearStatus(element) {
    ═══════════════════════════════════════════════════════════════════ */
 
 function initLogin() {
-    DOM.loginForm.addEventListener('submit', (e) => {
+    DOM.loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const password = DOM.passwordInput.value;
 
-        if (password === APP_CONFIG.password) {
-            performLogin();
-        } else {
-            DOM.passwordInput.classList.add('shake');
-            setTimeout(() => DOM.passwordInput.classList.remove('shake'), 500);
-            showError('❌ Şifrə yanlışdır! Yenidən cəhd et.');
-            DOM.passwordInput.value = '';
+        if (!password) return;
+
+        try {
+            const loginBtn = DOM.loginForm.querySelector('.login-button');
+            const btnText = loginBtn ? loginBtn.querySelector('.button-text') : null;
+            const originalText = btnText ? btnText.textContent : '';
+
+            if (btnText) btnText.textContent = 'Yoxlanılır...';
+            if (loginBtn) loginBtn.disabled = true;
+
+            const res = await githubRequestProxy('check_password', { password });
+
+            if (res && res.success) {
+                performLogin();
+            } else {
+                DOM.passwordInput.classList.add('shake');
+                setTimeout(() => DOM.passwordInput.classList.remove('shake'), 500);
+                showError('❌ Şifrə yanlışdır! Yenidən cəhd et.');
+                DOM.passwordInput.value = '';
+            }
+
+            if (btnText) btnText.textContent = originalText;
+            if (loginBtn) loginBtn.disabled = false;
+        } catch (err) {
+            console.error('Login xətası:', err);
+            showError('❌ Bağlantı xətası baş verdi.');
         }
     });
 
-    // 🔧 DÜZƏLİŞ: preventDefault ilə brauzerin avtomatik submit-ini əngəllə
     DOM.passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Brauzerin öz submit davranışını blokla
+            e.preventDefault();
             DOM.loginForm.dispatchEvent(new Event('submit'));
         }
     });
