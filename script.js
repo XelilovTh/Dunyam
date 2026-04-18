@@ -13,13 +13,7 @@
 const GITHUB_CONFIG = {
     owner: 'XelilovTh',
     repo: 'Dunyam',
-    token: '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',
     baseUrl: 'https://api.github.com'
-};
-
-const API_HEADERS = {
-    'Authorization': `token ${GITHUB_CONFIG.token}`,
-    'Accept': 'application/vnd.github.v3+json'
 };
 
 const APP_CONFIG = {
@@ -34,20 +28,14 @@ const APP_CONFIG = {
 
 const CLOUDINARY_CONFIG = {
     cloud_name: 'dojz9uzhe',
-    upload_preset: 'dunyamiz', // Cloudinary ayarlarında mütləq "Unsigned" preset yaradılmalıdır
-    api_key: '241982348988817',
-    api_secret: 'zmwVpP8tog--CNbggNCX-50QbGI' // Cloudinary dashboard-dan kopyalayın
+    upload_preset: 'dunyamiz',
+    api_key: '241982348988817'
 };
 
 const CLOUDINARY_MUSIC_CONFIG = {
     cloud_name: 'drlzwhblg',
     upload_preset: 'dunyamiz_music',
     api_key: '583362931417988'
-};
-
-const TELEGRAM_CONFIG = {
-    botToken: '6800223810:AAFxY2GC2A6PHl3oquOTDUWQMv-HMBXjdoA',
-    chatId: '635302226'
 };
 
 
@@ -506,30 +494,28 @@ function loadSectionData(section) {
    GITHUB API İNTEQRASİYASI
    ═══════════════════════════════════════════════════════════════════ */
 
-async function githubRequest(endpoint, options = {}) {
-    const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${endpoint}`;
-
+async function githubRequestProxy(action, data) {
     try {
-        const response = await fetch(url, {
-            headers: API_HEADERS,
-            cache: 'no-store',
-            ...options
+        const response = await fetch('/api/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, ...data })
         });
-
-        if (!response.ok) {
-            throw new Error(`GitHub API xətası: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
         return await response.json();
     } catch (error) {
-        console.error('GitHub API xətası:', error);
+        console.error('Request Proxy Error:', error);
         throw error;
     }
 }
 
+async function githubRequest(endpoint, options = {}) {
+    return await githubRequestProxy('github_get', { path: endpoint });
+}
+
 async function githubListFolder(folder) {
     try {
-        return await githubRequest(folder);
+        return await githubRequestProxy('github_list', { path: folder });
     } catch {
         return [];
     }
@@ -537,11 +523,11 @@ async function githubListFolder(folder) {
 
 async function githubGetFile(path) {
     try {
-        const data = await githubRequest(path);
-        if (data.encoding === 'base64' && data.content) {
+        const data = await githubRequestProxy('github_get', { path });
+        if (data && data.encoding === 'base64' && data.content) {
             return decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
         }
-        return data.content || '';
+        return (data && data.content) || '';
     } catch {
         return '';
     }
@@ -549,26 +535,19 @@ async function githubGetFile(path) {
 
 async function githubUploadFile(path, content, message) {
     try {
-        const body = {
-            message,
-            content: btoa(unescape(encodeURIComponent(content)))
-        };
-
+        let sha;
         try {
-            const existing = await githubRequest(path);
-            if (existing.sha) body.sha = existing.sha;
+            const existing = await githubRequestProxy('github_get', { path });
+            if (existing && existing.sha) sha = existing.sha;
         } catch { }
 
-        const response = await fetch(
-            `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
-            {
-                method: 'PUT',
-                headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            }
-        );
-
-        return response.ok;
+        const res = await githubRequestProxy('github_upload', {
+            path,
+            content: btoa(unescape(encodeURIComponent(content))),
+            message,
+            sha
+        });
+        return !!res;
     } catch (error) {
         console.error('Fayl yükləmə xətası:', error);
         return false;
@@ -582,18 +561,12 @@ async function githubUploadBinary(path, file, message) {
             const base64 = e.target.result.split(',')[1];
 
             try {
-                const body = { message, content: base64 };
-
-                const response = await fetch(
-                    `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
-                    {
-                        method: 'PUT',
-                        headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    }
-                );
-
-                resolve(response.ok);
+                const res = await githubRequestProxy('github_upload', {
+                    path,
+                    content: base64,
+                    message
+                });
+                resolve(!!res);
             } catch {
                 resolve(false);
             }
@@ -979,31 +952,9 @@ function updateLightboxImage() {
    CLOUDINARY SİLMƏ FUNKSİYASI
    ═══════════════════════════════════════════════════════════════════ */
 
-async function generateSHA1(message) {
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 async function cloudinaryDelete(publicId) {
     try {
-        const timestamp = Math.round(Date.now() / 1000);
-        const signString = `public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_CONFIG.api_secret}`;
-        const signature = await generateSHA1(signString);
-
-        const formData = new FormData();
-        formData.append('public_id', publicId);
-        formData.append('timestamp', timestamp);
-        formData.append('api_key', CLOUDINARY_CONFIG.api_key);
-        formData.append('signature', signature);
-
-        const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/destroy`,
-            { method: 'POST', body: formData }
-        );
-
-        const data = await response.json();
+        const data = await githubRequestProxy('cloudinary_delete', { public_id: publicId });
         return data.result === 'ok';
     } catch (error) {
         console.error('Cloudinary silmə xətası:', error);
@@ -2294,16 +2245,7 @@ let visitStartTime = Date.now();
 
 async function sendTelegramMessage(text, keepalive = false) {
     try {
-        const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`;
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CONFIG.chatId,
-                text: text
-            }),
-            keepalive: keepalive
-        });
+        await githubRequestProxy('telegram_send', { text });
     } catch (e) {
         console.error('Telegram bildiriş xətası:', e);
     }
