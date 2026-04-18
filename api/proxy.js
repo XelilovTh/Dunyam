@@ -28,15 +28,24 @@ module.exports = async (req, res) => {
     }
 
     const { action, ...data } = req.body;
-    const token = process.env.GH_TOKEN;
 
-    // Token yoxlaması
+    // YOXLAMA (DEBUG) ƏMƏLİYYATI
+    if (action === 'debug_check') {
+        return res.json({
+            gh_token_exists: !!process.env.GH_TOKEN,
+            cl_secret_exists: !!process.env.CL_SECRET,
+            tg_token_exists: !!process.env.TG_TOKEN,
+            status: "Proxy is alive and ready!"
+        });
+    }
+
+    const token = process.env.GH_TOKEN;
     if (!token && action.startsWith('github')) {
-        return res.status(500).json({ error: 'Serverdə GH_TOKEN mühit dəyişəni tapılmadı!' });
+        return res.status(500).json({ error: 'Serverdə GH_TOKEN tapılmadı!' });
     }
 
     const ghHeaders = {
-        'Authorization': `Bearer ${token}`, // 'token' yerinə 'Bearer' daha müasirdir
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
         'User-Agent': 'Dunyamiz-App'
     };
@@ -51,7 +60,7 @@ module.exports = async (req, res) => {
                     return res.json(getRes.data);
                 } catch (err) {
                     if (err.response && err.response.status === 404) {
-                        return res.json({ content: '', encoding: 'base64', sha: null }); // Fayl yoxdursa boş qaytar
+                        return res.json({ content: '', encoding: 'base64', sha: null });
                     }
                     throw err;
                 }
@@ -91,12 +100,12 @@ module.exports = async (req, res) => {
                 return res.json(tgRes.data);
 
             default:
-                return res.status(400).json({ error: 'Yanlış əməliyyat (action)' });
+                return res.status(400).json({ error: 'Yanlış əməliyyat' });
         }
     } catch (error) {
         const status = error.response ? error.response.status : 500;
         const errorData = error.response ? error.response.data : { error: error.message };
-        console.error('Proxy Error Details:', errorData);
+        console.error('Proxy Error:', errorData);
         return res.status(status).json(errorData);
     }
 };
