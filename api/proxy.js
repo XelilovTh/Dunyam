@@ -99,6 +99,9 @@ module.exports = async (req, res) => {
                 });
                 return res.json(tgRes.data);
 
+            case 'check_password':
+                return res.json({ success: data.password === process.env.ADMIN_PASSWORD });
+
             default:
                 return res.status(400).json({ error: 'Yanlış əməliyyat' });
         }
