@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 module.exports = async (req, res) => {
-    // Enable CORS
+    // CORS Ayarları
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -24,21 +24,37 @@ module.exports = async (req, res) => {
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ error: 'Yalnız POST sorğuları qəbul edilir' });
     }
 
     const { action, ...data } = req.body;
+    const token = process.env.GH_TOKEN;
+
+    // Token yoxlaması
+    if (!token && action.startsWith('github')) {
+        return res.status(500).json({ error: 'Serverdə GH_TOKEN mühit dəyişəni tapılmadı!' });
+    }
+
+    const ghHeaders = {
+        'Authorization': `Bearer ${token}`, // 'token' yerinə 'Bearer' daha müasirdir
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Dunyamiz-App'
+    };
 
     try {
         switch (action) {
             case 'github_get':
-                const getRes = await axios.get(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
-                    headers: { 
-                        'Authorization': `token ${process.env.GH_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
+                try {
+                    const getRes = await axios.get(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                        headers: ghHeaders
+                    });
+                    return res.json(getRes.data);
+                } catch (err) {
+                    if (err.response && err.response.status === 404) {
+                        return res.json({ content: '', encoding: 'base64', sha: null }); // Fayl yoxdursa boş qaytar
                     }
-                });
-                return res.json(getRes.data);
+                    throw err;
+                }
 
             case 'github_upload':
                 const uploadRes = await axios.put(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
@@ -46,27 +62,28 @@ module.exports = async (req, res) => {
                     content: data.content,
                     sha: data.sha
                 }, {
-                    headers: { 
-                        'Authorization': `token ${process.env.GH_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
+                    headers: ghHeaders
                 });
                 return res.json(uploadRes.data);
 
             case 'github_list':
-                const listRes = await axios.get(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
-                    headers: { 
-                        'Authorization': `token ${process.env.GH_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                return res.json(listRes.data);
+                try {
+                    const listRes = await axios.get(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                        headers: ghHeaders
+                    });
+                    return res.json(listRes.data);
+                } catch (err) {
+                    if (err.response && err.response.status === 404) return res.json([]);
+                    throw err;
+                }
 
             case 'cloudinary_delete':
+                if (!process.env.CL_SECRET) return res.status(500).json({ error: 'CL_SECRET tapılmadı' });
                 const result = await cloudinary.uploader.destroy(data.public_id);
                 return res.json(result);
 
             case 'telegram_send':
+                if (!process.env.TG_TOKEN) return res.status(500).json({ error: 'TG_TOKEN tapılmadı' });
                 const tgRes = await axios.post(`https://api.telegram.org/bot${process.env.TG_TOKEN}/sendMessage`, {
                     chat_id: '635302226',
                     text: data.text
@@ -74,10 +91,12 @@ module.exports = async (req, res) => {
                 return res.json(tgRes.data);
 
             default:
-                return res.status(400).json({ error: 'Invalid action' });
+                return res.status(400).json({ error: 'Yanlış əməliyyat (action)' });
         }
     } catch (error) {
-        console.error('Proxy Error:', error.response ? error.response.data : error.message);
-        return res.status(error.response ? error.response.status : 500).json(error.response ? error.response.data : { error: error.message });
+        const status = error.response ? error.response.status : 500;
+        const errorData = error.response ? error.response.data : { error: error.message };
+        console.error('Proxy Error Details:', errorData);
+        return res.status(status).json(errorData);
     }
 };
