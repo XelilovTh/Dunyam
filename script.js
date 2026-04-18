@@ -39,6 +39,12 @@ const CLOUDINARY_CONFIG = {
     api_secret: 'zmwVpP8tog--CNbggNCX-50QbGI' // Cloudinary dashboard-dan kopyalayın
 };
 
+const CLOUDINARY_MUSIC_CONFIG = {
+    cloud_name: 'drlzwhblg',
+    upload_preset: 'dunyamiz_music',
+    api_key: '583362931417988'
+};
+
 const TELEGRAM_CONFIG = {
     botToken: '6800223810:AAFxY2GC2A6PHl3oquOTDUWQMv-HMBXjdoA',
     chatId: '635302226'
@@ -196,7 +202,7 @@ const DOM = {
     surpriseButton: document.getElementById('surpriseButton'),
     backFromSurprises: document.getElementById('backFromSurprises'),
     heroHeart: document.getElementById('heroHeart'),
-    
+
     // Fullscreen Player
     fullscreenPlayer: document.getElementById('fullscreenPlayer'),
     fsCloseBtn: document.getElementById('fsCloseBtn'),
@@ -281,11 +287,11 @@ function extractTimestamp(filename) {
 function showNotification(message, type = 'info', duration = 3000) {
     const bar = DOM.notificationBar;
     const msg = DOM.notificationMessage;
-    
+
     msg.textContent = message;
     bar.className = 'notification-bar';
     bar.classList.add(type, 'show');
-    
+
     setTimeout(() => {
         bar.classList.remove('show');
     }, duration);
@@ -301,17 +307,17 @@ function showError(message, duration = 3000) {
 
 function showStatus(element, message, type, duration = 2000) {
     if (!element) return;
-    
+
     element.className = `admin-status ${type}`;
     element.textContent = message;
     element.style.display = 'block';
-    
+
     // Əvvəlki timer-i təmizlə
     const timerKey = element.id;
     if (AppState.statusTimers[timerKey]) {
         clearTimeout(AppState.statusTimers[timerKey]);
     }
-    
+
     // Yeni timer qur
     AppState.statusTimers[timerKey] = setTimeout(() => {
         element.style.display = 'none';
@@ -333,7 +339,7 @@ function initLogin() {
     DOM.loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const password = DOM.passwordInput.value;
-        
+
         if (password === APP_CONFIG.password) {
             performLogin();
         } else {
@@ -343,7 +349,7 @@ function initLogin() {
             DOM.passwordInput.value = '';
         }
     });
-    
+
     // 🔧 DÜZƏLİŞ: preventDefault ilə brauzerin avtomatik submit-ini əngəllə
     DOM.passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -356,10 +362,10 @@ function initLogin() {
 function performLogin() {
     AppState.isLoggedIn = true;
     trackAction("Sistemə daxil oldu", "Uğurlu giriş");
-    
+
     DOM.loginScreen.style.opacity = '0';
     DOM.loginScreen.style.transition = 'opacity 0.8s ease-out';
-    
+
     setTimeout(() => {
         DOM.loginScreen.classList.add('hidden');
         DOM.appContainer.classList.add('visible');
@@ -382,7 +388,7 @@ function initApp() {
     initSurpriseButtons();
     initStarsCanvas();
     loadInitialData();
-    
+
     AppState.currentSection = 'home';
     if (DOM.sections.home) {
         DOM.sections.home.classList.add('active');
@@ -390,7 +396,7 @@ function initApp() {
     DOM.navItems.forEach(item => {
         item.classList.toggle('active', item.dataset.section === 'home');
     });
-    
+
     initAutoSave();
 }
 
@@ -407,19 +413,19 @@ function updateCounter() {
     const now = new Date();
     const start = APP_CONFIG.startDate;
     const diff = now - start;
-    
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
+
     if (DOM.daysCounter) DOM.daysCounter.textContent = String(days).padStart(4, '0');
     if (DOM.hoursCounter) DOM.hoursCounter.textContent = String(hours).padStart(2, '0');
     if (DOM.minutesCounter) DOM.minutesCounter.textContent = String(minutes).padStart(2, '0');
     if (DOM.secondsCounter) DOM.secondsCounter.textContent = String(seconds).padStart(2, '0');
-    
+
     const progress = ((diff % 60000) / 60000) * 100;
-    
+
     if (DOM.loveProgressBar) {
         DOM.loveProgressBar.style.setProperty('--progress', progress + '%');
     }
@@ -433,7 +439,7 @@ function setDailyQuote() {
     const now = new Date();
     const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
     const quote = DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
-    
+
     if (DOM.dailyQuote) DOM.dailyQuote.textContent = `"${quote.text}"`;
     if (DOM.quoteDate) DOM.quoteDate.textContent = formatDate(now);
 }
@@ -453,25 +459,25 @@ function initNavigation() {
 
 function navigateTo(section) {
     if (AppState.currentSection === section) return;
-    
+
     trackAction("Bölməyə keçid", section);
-    
+
     AppState.currentSection = section;
-    
+
     Object.values(DOM.sections).forEach(el => {
         if (el) el.classList.remove('active');
     });
-    
+
     if (DOM.sections[section]) {
         DOM.sections[section].classList.add('active');
     }
-    
+
     DOM.navItems.forEach(item => {
         item.classList.toggle('active', item.dataset.section === section);
     });
-    
+
     loadSectionData(section);
-    
+
     // Yuxarıya sürüşdür
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -502,18 +508,18 @@ function loadSectionData(section) {
 
 async function githubRequest(endpoint, options = {}) {
     const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${endpoint}`;
-    
+
     try {
         const response = await fetch(url, {
             headers: API_HEADERS,
             cache: 'no-store',
             ...options
         });
-        
+
         if (!response.ok) {
             throw new Error(`GitHub API xətası: ${response.status}`);
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('GitHub API xətası:', error);
@@ -547,12 +553,12 @@ async function githubUploadFile(path, content, message) {
             message,
             content: btoa(unescape(encodeURIComponent(content)))
         };
-        
+
         try {
             const existing = await githubRequest(path);
             if (existing.sha) body.sha = existing.sha;
-        } catch {}
-        
+        } catch { }
+
         const response = await fetch(
             `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
             {
@@ -561,7 +567,7 @@ async function githubUploadFile(path, content, message) {
                 body: JSON.stringify(body)
             }
         );
-        
+
         return response.ok;
     } catch (error) {
         console.error('Fayl yükləmə xətası:', error);
@@ -574,10 +580,10 @@ async function githubUploadBinary(path, file, message) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const base64 = e.target.result.split(',')[1];
-            
+
             try {
                 const body = { message, content: base64 };
-                
+
                 const response = await fetch(
                     `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
                     {
@@ -586,7 +592,7 @@ async function githubUploadBinary(path, file, message) {
                         body: JSON.stringify(body)
                     }
                 );
-                
+
                 resolve(response.ok);
             } catch {
                 resolve(false);
@@ -596,27 +602,127 @@ async function githubUploadBinary(path, file, message) {
     });
 }
 
+async function updateMusicMetadata(newSong) {
+    try {
+        let songs = [];
+        const content = await githubGetFile('music_list.json');
+        if (content) {
+            try {
+                songs = JSON.parse(content);
+                if (!Array.isArray(songs)) songs = [];
+            } catch (e) {
+                songs = [];
+            }
+        }
+
+        songs.push(newSong);
+
+        const success = await githubUploadFile(
+            'music_list.json',
+            JSON.stringify(songs, null, 2),
+            '🎵 Musiqi siyahısı yeniləndi'
+        );
+        return success;
+    } catch (error) {
+        console.error('Metadata yeniləmə xətası:', error);
+        return false;
+    }
+}
+
+async function updatePhotoMetadata(newPhoto) {
+    try {
+        let photos = [];
+        const content = await githubGetFile('photos_list.json');
+        if (content) {
+            try {
+                photos = JSON.parse(content);
+                if (!Array.isArray(photos)) photos = [];
+            } catch (e) {
+                photos = [];
+            }
+        }
+
+        photos.push(newPhoto);
+
+        const success = await githubUploadFile(
+            'photos_list.json',
+            JSON.stringify(photos, null, 2),
+            '📸 Şəkil siyahısı yeniləndi'
+        );
+        return success;
+    } catch (error) {
+        console.error('Foto metadata yeniləmə xətası:', error);
+        return false;
+    }
+}
+
+async function removePhotoFromMetadata(publicId) {
+    try {
+        const content = await githubGetFile('photos_list.json');
+        if (!content) return false;
+
+        let photos = JSON.parse(content);
+        if (!Array.isArray(photos)) return false;
+
+        const updatedPhotos = photos.filter(p => p.public_id !== publicId);
+
+        if (photos.length === updatedPhotos.length) return true;
+
+        const success = await githubUploadFile(
+            'photos_list.json',
+            JSON.stringify(updatedPhotos, null, 2),
+            '🗑️ Şəkil siyahıdan silindi'
+        );
+        return success;
+    } catch (error) {
+        console.error('Foto metadata silmə xətası:', error);
+        return false;
+    }
+}
+
 
 async function cloudinaryUpload(file) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
     formData.append('folder', 'dunyamiz'); // Cloudinary-də yaranacaq qovluğun adı
-    
+
     // Əgər aşağıdakı Variant 2 (List API) istifadə ediləcəksə, şəkillərə mütləq tag (etiket) vurulmalıdır:
     formData.append('tags', 'dunyamiz_gallery');
-    
+
     try {
         const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/upload`, {
             method: 'POST',
             body: formData
         });
-        
+
         if (!response.ok) throw new Error('Cloudinary upload xətası');
         const data = await response.json();
         return data; // İçində secure_url və public_id olacaq
     } catch (error) {
         console.error('Cloudinary yükləmə xətası:', error);
+        return null;
+    }
+}
+
+async function cloudinaryUploadAudio(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_MUSIC_CONFIG.upload_preset);
+    formData.append('folder', 'dunyamiz_music');
+    formData.append('tags', 'dunyamiz_music');
+
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_MUSIC_CONFIG.cloud_name}/video/upload`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('Cloudinary music upload xətası');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Cloudinary musiqi yükləmə xətası:', error);
         return null;
     }
 }
@@ -628,44 +734,50 @@ async function cloudinaryUpload(file) {
 
 async function loadInitialData() {
     await loadStats();
-    
+
     const cachedStats = localStorage.getItem('dunyamiz_stats');
     if (cachedStats) {
         try {
             const stats = JSON.parse(cachedStats);
             updateStatsDisplay(stats);
-        } catch {}
+        } catch { }
     }
 }
 
 async function loadStats() {
     try {
         try {
-            const url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/list/dunyamiz_gallery.json`;
-            const response = await fetch(url);
-            if (response.ok) {
-                const data = await response.json();
-                AppState.stats.photos = data.resources.length;
+            const content = await githubGetFile('photos_list.json');
+            if (content) {
+                const photos = JSON.parse(content);
+                AppState.stats.photos = Array.isArray(photos) ? photos.length : 0;
             } else {
                 AppState.stats.photos = 0;
             }
         } catch {
             AppState.stats.photos = 0;
         }
-        
+
         const letters = await githubListFolder('letters');
-        AppState.stats.letters = Array.isArray(letters) ? letters.filter(f => 
+        AppState.stats.letters = Array.isArray(letters) ? letters.filter(f =>
             /\.(txt|md)$/i.test(f.name)
         ).length : 0;
-        
-        const songs = await githubListFolder('music');
-        AppState.stats.songs = Array.isArray(songs) ? songs.filter(f => 
-            /\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(f.name)
-        ).length : 0;
-        
+
+        try {
+            const content = await githubGetFile('music_list.json');
+            if (content) {
+                const songs = JSON.parse(content);
+                AppState.stats.songs = Array.isArray(songs) ? songs.length : 0;
+            } else {
+                AppState.stats.songs = 0;
+            }
+        } catch {
+            AppState.stats.songs = 0;
+        }
+
         updateStatsDisplay(AppState.stats);
         localStorage.setItem('dunyamiz_stats', JSON.stringify(AppState.stats));
-        
+
     } catch (error) {
         console.error('Statistika yükləmə xətası:', error);
     }
@@ -683,23 +795,19 @@ function updateStatsDisplay(stats) {
 
 async function loadPhotos() {
     if (AppState.isLoading.photos) return;
-    
+
     AppState.isLoading.photos = true;
     showGalleryLoading();
-    
+
     try {
-        const url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/list/dunyamiz_gallery.json`;
-        const response = await fetch(url);
-        
-        if (!response.ok) throw new Error('Cloudinary list xətası');
-        
-        const data = await response.json();
-        
-        AppState.photos = data.resources.map(res => ({
-            name: res.public_id,
-            download_url: `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/upload/v${res.version}/${res.public_id}.${res.format}`
-        }));
-        
+        const content = await githubGetFile('photos_list.json');
+        if (content) {
+            const photos = JSON.parse(content);
+            AppState.photos = Array.isArray(photos) ? photos : [];
+        } else {
+            AppState.photos = [];
+        }
+
         renderGallery();
     } catch (error) {
         console.error("Şəkil siyahısı alınmadı:", error);
@@ -735,12 +843,12 @@ function showGalleryEmpty() {
 
 function renderGallery() {
     if (!DOM.galleryGrid) return;
-    
+
     if (AppState.photos.length === 0) {
         showGalleryEmpty();
         return;
     }
-    
+
     let html = '';
     AppState.photos.forEach((photo, index) => {
         html += `
@@ -752,9 +860,9 @@ function renderGallery() {
             </div>
         `;
     });
-    
+
     DOM.galleryGrid.innerHTML = html;
-    
+
     DOM.galleryGrid.querySelectorAll('.gallery-item').forEach(item => {
         item.addEventListener('click', () => {
             const index = parseInt(item.dataset.index);
@@ -769,30 +877,31 @@ function renderGallery() {
 
 function initLightbox() {
     if (!DOM.lightboxModal) return;
-    
+
     DOM.lightboxClose.addEventListener('click', closeLightbox);
     DOM.lightboxModal.addEventListener('click', (e) => {
         if (e.target === DOM.lightboxModal) closeLightbox();
     });
-    
+
     if (DOM.lightboxPrev) DOM.lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
     if (DOM.lightboxNext) DOM.lightboxNext.addEventListener('click', () => navigateLightbox(1));
-    
+
     // Silmə düyməsi
     if (DOM.lightboxDelete) {
         DOM.lightboxDelete.addEventListener('click', async () => {
             const photo = AppState.lightbox.photos[AppState.lightbox.currentIndex];
             if (!photo) return;
-            
+
             const confirmed = confirm('Bu şəkili Cloudinary-dən silmək istədiyinizə əminsiniz?');
             if (!confirmed) return;
-            
+
             DOM.lightboxDelete.disabled = true;
             DOM.lightboxDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
+
             const success = await cloudinaryDelete(photo.name);
-            
+
             if (success) {
+                await removePhotoFromMetadata(photo.public_id || photo.name);
                 showNotification('🗑️ Şəkil uğurla silindi!', 'info');
                 closeLightbox();
                 AppState.photos = [];
@@ -802,12 +911,12 @@ function initLightbox() {
             } else {
                 showNotification('❌ Şəkil silinə bilmədi!', 'error');
             }
-            
+
             DOM.lightboxDelete.disabled = false;
             DOM.lightboxDelete.innerHTML = '<i class="fas fa-trash-alt"></i>';
         });
     }
-    
+
     document.addEventListener('keydown', (e) => {
         if (!AppState.lightbox.isOpen) return;
         switch (e.key) {
@@ -816,12 +925,12 @@ function initLightbox() {
             case 'ArrowRight': navigateLightbox(1); break;
         }
     });
-    
+
     let touchStartX = 0;
     DOM.lightboxModal.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
     });
-    
+
     DOM.lightboxModal.addEventListener('touchend', (e) => {
         if (!AppState.lightbox.isOpen) return;
         const touchEndX = e.changedTouches[0].clientX;
@@ -834,10 +943,10 @@ function openLightbox(index) {
     AppState.lightbox.isOpen = true;
     AppState.lightbox.currentIndex = index;
     AppState.lightbox.photos = AppState.photos;
-    
+
     const photo = AppState.lightbox.photos[index];
     if (photo) trackAction("Şəkilə baxır", cleanFileName(photo.name));
-    
+
     updateLightboxImage();
     DOM.lightboxModal.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -852,7 +961,7 @@ function closeLightbox() {
 function navigateLightbox(direction) {
     const photos = AppState.lightbox.photos;
     if (photos.length === 0) return;
-    
+
     AppState.lightbox.currentIndex = (AppState.lightbox.currentIndex + direction + photos.length) % photos.length;
     updateLightboxImage();
 }
@@ -860,7 +969,7 @@ function navigateLightbox(direction) {
 function updateLightboxImage() {
     const photo = AppState.lightbox.photos[AppState.lightbox.currentIndex];
     if (!photo) return;
-    
+
     if (DOM.lightboxImage) DOM.lightboxImage.src = photo.download_url;
     if (DOM.lightboxCaption) DOM.lightboxCaption.style.display = 'none';
     if (DOM.lightboxCounter) DOM.lightboxCounter.textContent = `${AppState.lightbox.currentIndex + 1} / ${AppState.lightbox.photos.length}`;
@@ -882,18 +991,18 @@ async function cloudinaryDelete(publicId) {
         const timestamp = Math.round(Date.now() / 1000);
         const signString = `public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_CONFIG.api_secret}`;
         const signature = await generateSHA1(signString);
-        
+
         const formData = new FormData();
         formData.append('public_id', publicId);
         formData.append('timestamp', timestamp);
         formData.append('api_key', CLOUDINARY_CONFIG.api_key);
         formData.append('signature', signature);
-        
+
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/destroy`,
             { method: 'POST', body: formData }
         );
-        
+
         const data = await response.json();
         return data.result === 'ok';
     } catch (error) {
@@ -908,18 +1017,18 @@ async function cloudinaryDelete(publicId) {
 
 async function loadLetters() {
     if (AppState.isLoading.letters) return;
-    
+
     AppState.isLoading.letters = true;
     showLettersLoading();
-    
+
     try {
         const url = `${GITHUB_CONFIG.baseUrl}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/letters`;
         const response = await fetch(url, { headers: API_HEADERS, cache: 'no-store' });
-        
+
         if (!response.ok) throw new Error(`GitHub API xətası: ${response.status}`);
-        
+
         const files = await response.json();
-        
+
         const lettersWithDates = await Promise.all(
             files.map(async (file) => {
                 try {
@@ -929,11 +1038,11 @@ async function loadLetters() {
                         const commits = await commitsResponse.json();
                         if (commits.length > 0) file.commit_date = commits[0].commit.author.date;
                     }
-                } catch (e) {}
+                } catch (e) { }
                 return file;
             })
         );
-        
+
         AppState.letters = Array.isArray(lettersWithDates)
             ? lettersWithDates
                 .filter(f => /\.(txt|md)$/i.test(f.name))
@@ -943,7 +1052,7 @@ async function loadLetters() {
                     return tsB - tsA;
                 })
             : [];
-        
+
         renderLetters();
     } catch (error) {
         showError('Məktublar yüklənə bilmədi');
@@ -978,17 +1087,17 @@ function showLettersEmpty() {
 
 function renderLetters() {
     if (!DOM.lettersList) return;
-    
+
     if (AppState.letters.length === 0) {
         showLettersEmpty();
         return;
     }
-    
+
     let html = '';
     AppState.letters.forEach((letter) => {
         const rawTitle = letter.name.replace(/\.(txt|md)$/i, '').replace(/_/g, ' ');
         const title = rawTitle.replace(/\s*\d{10,}$/, '').trim() || rawTitle;
-        
+
         let letterDate;
         const timestampMatch = letter.name.match(/_(\d{10,})\./);
         if (timestampMatch) {
@@ -998,7 +1107,7 @@ function renderLetters() {
         } else {
             letterDate = new Date();
         }
-        
+
         html += `
             <div class="letter-card-item" data-path="${letter.path}" data-title="${escapeHtml(title)}">
                 <div class="letter-card-icon">
@@ -1020,17 +1129,17 @@ function renderLetters() {
             </div>
         `;
     });
-    
+
     DOM.lettersList.innerHTML = html;
-    
+
     DOM.lettersList.querySelectorAll('.letter-card-item').forEach(async (item) => {
         const path = item.dataset.path;
         const title = item.dataset.title;
         const name = path.split('/').pop();
         const previewEl = document.getElementById(`preview-${name}`);
-        
+
         item.addEventListener('click', () => openLetter(path, title));
-        
+
         if (previewEl) {
             try {
                 const content = await githubGetFile(path);
@@ -1045,12 +1154,12 @@ function renderLetters() {
 
 function initLetterModal() {
     if (!DOM.letterModal) return;
-    
+
     DOM.letterModalClose.addEventListener('click', closeLetterModal);
     DOM.letterModal.addEventListener('click', (e) => {
         if (e.target === DOM.letterModal) closeLetterModal();
     });
-    
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && DOM.letterModal.classList.contains('open')) {
             closeLetterModal();
@@ -1064,7 +1173,7 @@ async function openLetter(path, title) {
     if (DOM.letterModalBody) DOM.letterModalBody.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Məktub yüklənir...';
     DOM.letterModal.classList.add('open');
     document.body.style.overflow = 'hidden';
-    
+
     try {
         const content = await githubGetFile(path);
         if (DOM.letterModalBody) DOM.letterModalBody.textContent = content || '(Məktub boşdur)';
@@ -1084,17 +1193,19 @@ function closeLetterModal() {
 
 async function loadSongs() {
     if (AppState.isLoading.songs) return;
-    
+
     AppState.isLoading.songs = true;
     showMusicLoading();
-    
+
     try {
-        const files = await githubListFolder('music');
-        AppState.songs = Array.isArray(files)
-            ? files.filter(f => /\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(f.name))
-                   .sort((a, b) => a.name.localeCompare(b.name))
-            : [];
-        
+        const content = await githubGetFile('music_list.json');
+        if (content) {
+            const songs = JSON.parse(content);
+            AppState.songs = Array.isArray(songs) ? songs : [];
+        } else {
+            AppState.songs = [];
+        }
+
         renderMusicPlaylist();
     } catch (error) {
         showError('Musiqilər yüklənə bilmədi');
@@ -1129,12 +1240,12 @@ function showMusicEmpty() {
 
 function renderMusicPlaylist() {
     if (!DOM.musicPlaylist) return;
-    
+
     if (AppState.songs.length === 0) {
         showMusicEmpty();
         return;
     }
-    
+
     let html = '';
     AppState.songs.forEach((song, index) => {
         const name = cleanFileName(song.name);
@@ -1152,9 +1263,9 @@ function renderMusicPlaylist() {
             </div>
         `;
     });
-    
+
     DOM.musicPlaylist.innerHTML = html;
-    
+
     DOM.musicPlaylist.querySelectorAll('.music-track-item').forEach(item => {
         item.addEventListener('click', () => {
             const index = parseInt(item.dataset.index);
@@ -1169,40 +1280,40 @@ function initMusicPlayer() {
     audioPlayer.addEventListener('ended', onSongEnded);
     audioPlayer.addEventListener('play', () => updatePlayButton(true));
     audioPlayer.addEventListener('pause', () => updatePlayButton(false));
-    
+
     if (DOM.playPauseBtn) DOM.playPauseBtn.addEventListener('click', togglePlay);
     if (DOM.prevSongBtn) DOM.prevSongBtn.addEventListener('click', playPrevious);
     if (DOM.nextSongBtn) DOM.nextSongBtn.addEventListener('click', playNext);
     if (DOM.closePlayerBtn) DOM.closePlayerBtn.addEventListener('click', hidePlayer);
-    
+
     if (DOM.progressSlider) {
         DOM.progressSlider.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
             if (DOM.progressFill) DOM.progressFill.style.width = value + '%';
         });
-        
+
         DOM.progressSlider.addEventListener('change', (e) => {
             const value = parseFloat(e.target.value);
             audioPlayer.currentTime = (value / 100) * audioPlayer.duration;
         });
     }
-    
+
     if (DOM.volumeSlider) {
         DOM.volumeSlider.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value) / 100;
             setVolume(value);
         });
     }
-    
+
     if (DOM.volumeBtn) DOM.volumeBtn.addEventListener('click', toggleMute);
-    
+
     // Fullscreen Player Listeners
     if (DOM.musicPlayer) {
         DOM.musicPlayer.addEventListener('click', (e) => {
-            if (!e.target.closest('.player-controls') && 
-                !e.target.closest('.player-progress-container') && 
-                !e.target.closest('.player-volume') && 
-                !e.target.closest('.player-close') && 
+            if (!e.target.closest('.player-controls') &&
+                !e.target.closest('.player-progress-container') &&
+                !e.target.closest('.player-volume') &&
+                !e.target.closest('.player-close') &&
                 !e.target.closest('.preview-cancel')) {
                 openFullscreenPlayer();
             }
@@ -1221,7 +1332,7 @@ function initMusicPlayer() {
             DOM.fsPlaylistToggle.className = isHidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
         });
     }
-    
+
     if (DOM.fsProgressSlider) {
         DOM.fsProgressSlider.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
@@ -1232,7 +1343,7 @@ function initMusicPlayer() {
             audioPlayer.currentTime = (value / 100) * audioPlayer.duration;
         });
     }
-    
+
     setVolume(AppState.player.volume);
 }
 
@@ -1243,24 +1354,24 @@ function getAudioUrl(song) {
 
 function playSong(index) {
     if (index < 0 || index >= AppState.songs.length) return;
-    
+
     const song = AppState.songs[index];
     trackAction("Musiqi dinləyir", cleanFileName(song.name));
-    
+
     if (AppState.player.currentIndex !== -1) {
         const prevItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
         if (prevItem) prevItem.classList.remove('playing');
     }
-    
+
     AppState.player.currentIndex = index;
-    
+
     const audioUrl = getAudioUrl(song);
     audioPlayer.pause();
     audioPlayer.currentTime = 0;
     audioPlayer.src = audioUrl;
     audioPlayer.crossOrigin = 'anonymous';
     audioPlayer.load();
-    
+
     const onCanPlay = () => {
         audioPlayer.play()
             .then(() => { AppState.player.isPlaying = true; })
@@ -1274,10 +1385,10 @@ function playSong(index) {
         audioPlayer.removeEventListener('canplay', onCanPlay);
     };
     audioPlayer.addEventListener('canplay', onCanPlay);
-    
+
     const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${index}"]`);
     if (currentItem) currentItem.classList.add('playing');
-    
+
     showPlayer(song);
 }
 
@@ -1285,12 +1396,12 @@ function showPlayer(song) {
     const name = cleanFileName(song.name);
     if (DOM.currentSongTitle) DOM.currentSongTitle.textContent = name;
     if (DOM.currentSongArtist) DOM.currentSongArtist.textContent = 'Bizim Dünyamız • Sevgimizin musiqisi';
-    
+
     if (DOM.fsTitle) DOM.fsTitle.textContent = name;
-    
+
     if (DOM.musicPlayer) DOM.musicPlayer.classList.add('visible');
     AppState.player.isVisible = true;
-    
+
     updateFsPlaylist();
 }
 
@@ -1299,7 +1410,7 @@ function hidePlayer() {
     AppState.player.isVisible = false;
     audioPlayer.pause();
     AppState.player.isPlaying = false;
-    
+
     if (AppState.player.currentIndex !== -1) {
         const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
         if (currentItem) currentItem.classList.remove('playing');
@@ -1312,7 +1423,7 @@ function togglePlay() {
         if (AppState.songs.length > 0) playSong(0);
         return;
     }
-    
+
     if (!audioPlayer.paused) {
         audioPlayer.pause();
     } else {
@@ -1322,15 +1433,15 @@ function togglePlay() {
 
 function playPrevious() {
     if (AppState.songs.length === 0) return;
-    const newIndex = AppState.player.currentIndex <= 0 
-        ? AppState.songs.length - 1 
+    const newIndex = AppState.player.currentIndex <= 0
+        ? AppState.songs.length - 1
         : AppState.player.currentIndex - 1;
     playSong(newIndex);
 }
 
 function playNext() {
     if (AppState.songs.length === 0) return;
-    
+
     let newIndex;
     if (AppState.player.shuffle) {
         newIndex = Math.floor(Math.random() * AppState.songs.length);
@@ -1362,10 +1473,10 @@ function updatePlayButton(isPlaying) {
     AppState.player.isPlaying = isPlaying;
     const icon = DOM.playPauseBtn?.querySelector('i');
     if (icon) icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
-    
+
     const fsIcon = DOM.fsPlayBtn?.querySelector('i');
     if (fsIcon) fsIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
-    
+
     if (DOM.fsVinylRecord) {
         if (isPlaying) {
             DOM.fsVinylRecord.classList.add('playing');
@@ -1378,23 +1489,23 @@ function updatePlayButton(isPlaying) {
 function updateDuration() {
     if (DOM.durationTime) DOM.durationTime.textContent = formatTime(audioPlayer.duration);
     if (DOM.progressSlider) DOM.progressSlider.max = 100;
-    
+
     if (DOM.fsDurationTime) DOM.fsDurationTime.textContent = formatTime(audioPlayer.duration);
     if (DOM.fsProgressSlider) DOM.fsProgressSlider.max = 100;
 }
 
 function updateProgress() {
     if (!audioPlayer.duration) return;
-    
+
     const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
     if (DOM.progressSlider) DOM.progressSlider.value = percent;
     if (DOM.progressFill) DOM.progressFill.style.width = percent + '%';
     if (DOM.currentTime) DOM.currentTime.textContent = formatTime(audioPlayer.currentTime);
-    
+
     if (DOM.fsProgressSlider) DOM.fsProgressSlider.value = percent;
     if (DOM.fsProgressFill) DOM.fsProgressFill.style.width = percent + '%';
     if (DOM.fsCurrentTime) DOM.fsCurrentTime.textContent = formatTime(audioPlayer.currentTime);
-    
+
     const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
     if (currentItem) {
         const durationEl = currentItem.querySelector('.track-duration');
@@ -1458,7 +1569,7 @@ function toggleShuffle() {
 function toggleRepeat() {
     // repeatMode: 0 = off, 1 = one, 2 = all
     AppState.player.repeatMode = (AppState.player.repeatMode + 1) % 3;
-    
+
     if (DOM.fsRepeatBtn) {
         if (AppState.player.repeatMode === 0) {
             DOM.fsRepeatBtn.classList.remove('active');
@@ -1468,14 +1579,14 @@ function toggleRepeat() {
             DOM.fsRepeatBtn.innerHTML = '<i class="fas fa-redo" style="position:relative;"><span style="position:absolute; font-size:10px; font-weight:bold; top:50%; left:50%; transform:translate(-50%, -50%); font-family:sans-serif;">1</span></i>';
         } else { // repeat all
             DOM.fsRepeatBtn.classList.add('active');
-            DOM.fsRepeatBtn.innerHTML = '<i class="fas fa-redo"></i>'; 
+            DOM.fsRepeatBtn.innerHTML = '<i class="fas fa-redo"></i>';
         }
     }
 }
 
 function updateFsPlaylist() {
     if (!DOM.fsPlaylistList) return;
-    
+
     let html = '';
     AppState.songs.forEach((song, index) => {
         const name = cleanFileName(song.name);
@@ -1491,9 +1602,9 @@ function updateFsPlaylist() {
             </div>
         `;
     });
-    
+
     DOM.fsPlaylistList.innerHTML = html;
-    
+
     DOM.fsPlaylistList.querySelectorAll('.fs-playlist-item').forEach(item => {
         item.addEventListener('click', () => {
             const index = parseInt(item.dataset.index);
@@ -1512,11 +1623,11 @@ function initSurpriseButtons() {
     if (DOM.surpriseButton) {
         DOM.surpriseButton.addEventListener('click', () => navigateTo('surprises'));
     }
-    
+
     if (DOM.backFromSurprises) {
         DOM.backFromSurprises.addEventListener('click', () => navigateTo('home'));
     }
-    
+
     const surpriseCards = document.querySelectorAll('.surprise-card');
     surpriseCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -1524,7 +1635,7 @@ function initSurpriseButtons() {
             trackAction("Sürprizə daxil oldu", title);
         });
     });
-    
+
     const specialSurprise4 = document.getElementById('specialSurprise4');
     if (specialSurprise4) {
         specialSurprise4.addEventListener('click', (e) => {
@@ -1542,25 +1653,25 @@ function initAdminPanel() {
     if (DOM.heroHeart) {
         DOM.heroHeart.addEventListener('dblclick', openAdminPanel);
     }
-    
+
     if (DOM.adminClose) DOM.adminClose.addEventListener('click', closeAdminPanel);
     if (DOM.adminPanel) {
         DOM.adminPanel.addEventListener('click', (e) => {
             if (e.target === DOM.adminPanel) closeAdminPanel();
         });
     }
-    
+
     DOM.adminTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.dataset.adminTab;
             switchAdminTab(tabName);
         });
     });
-    
+
     initPhotoUpload();
     initLetterUpload();
     initMusicUpload();
-    
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && AppState.admin.isOpen) {
             closeAdminPanel();
@@ -1588,11 +1699,11 @@ function switchAdminTab(tabName) {
     DOM.adminTabs.forEach(tab => {
         tab.classList.toggle('active', tab.dataset.adminTab === tabName);
     });
-    
+
     Object.entries(DOM.adminPanes).forEach(([name, pane]) => {
         if (pane) pane.classList.toggle('active', name === tabName);
     });
-    
+
     AppState.admin.currentTab = tabName;
 }
 
@@ -1609,22 +1720,22 @@ function initPhotoUpload() {
     const fileSize = document.getElementById('photoFileSize');
     const uploadBtn = document.getElementById('uploadPhotoBtn');
     const status = document.getElementById('photoUploadStatus');
-    
+
     let selectedFile = null;
     let isUploading = false;
-    
+
     if (!uploadArea || !fileInput) return;
-    
+
     // 🔧 PROBLEM HƏLLİ: fileInput-un öz click hadisəsində bubbling-i dayandır
     fileInput.addEventListener('click', (e) => {
         e.stopPropagation(); // Hadisənin uploadArea-ya qabarcıqlanmasının qarşısını al
     });
-    
+
     // uploadArea kliklənəndə fileInput-u tətiklə
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
-    
+
     // Fayl seçildikdə
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -1637,17 +1748,17 @@ function initPhotoUpload() {
         }
         fileInput.value = ''; // Eyni faylın təkrar seçilməsi üçün
     });
-    
+
     // Drag & drop (dəyişməyib)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#e91e63';
     });
-    
+
     uploadArea.addEventListener('dragleave', () => {
         uploadArea.style.borderColor = '';
     });
-    
+
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '';
@@ -1658,50 +1769,59 @@ function initPhotoUpload() {
             showStatus(status, '❌ Zəhmət olmasa şəkil faylı seçin!', 'error');
         }
     });
-    
+
     function handlePhotoSelect(file) {
         if (file.size > APP_CONFIG.maxFileSize.image) {
             showStatus(status, '❌ Şəkil 10MB-dan böyük ola bilməz!', 'error');
             return;
         }
-        
+
         selectedFile = file;
         if (preview) preview.style.display = 'flex';
         if (previewImage) previewImage.src = URL.createObjectURL(file);
         if (fileName) fileName.textContent = file.name;
         if (fileSize) fileSize.textContent = formatFileSize(file.size);
     }
-    
-    window.cancelPhotoSelection = function() {
+
+    window.cancelPhotoSelection = function () {
         selectedFile = null;
         if (preview) preview.style.display = 'none';
         if (previewImage) previewImage.src = '';
     };
-    
+
     if (uploadBtn) {
         uploadBtn.addEventListener('click', async () => {
             if (isUploading) return;
-            
+
             if (!selectedFile) {
                 showStatus(status, '⚠️ Zəhmət olmasa şəkil seçin!', 'error');
                 return;
             }
-            
+
             isUploading = true;
             showStatus(status, '⏳ Şəkil yüklənir...', 'loading', 0);
             uploadBtn.disabled = true;
-            
+
             try {
                 // Cloudinary yükləməsi çağırılır
                 const uploadResult = await cloudinaryUpload(selectedFile);
-                
+
                 if (uploadResult && uploadResult.secure_url) {
+                    const photoData = {
+                        name: selectedFile.name,
+                        public_id: uploadResult.public_id,
+                        download_url: uploadResult.secure_url,
+                        created_at: new Date().toISOString()
+                    };
+
+                    await updatePhotoMetadata(photoData);
+
                     showStatus(status, '✅ Şəkil Cloudinary-ə uğurla yükləndi!', 'success');
                     trackAction("Yeni şəkil yüklədi", selectedFile.name);
-                    
+
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
-                    
+
                     await loadStats();
                     AppState.photos = [];
                     if (AppState.currentSection === 'gallery') loadPhotos();
@@ -1727,44 +1847,44 @@ function initLetterUpload() {
     const contentInput = document.getElementById('letterContentInput');
     const uploadBtn = document.getElementById('uploadLetterBtn');
     const status = document.getElementById('letterUploadStatus');
-    
+
     if (!uploadBtn) return;
-    
+
     let isUploading = false;
-    
+
     uploadBtn.addEventListener('click', async () => {
         if (isUploading) return;
-        
+
         const title = titleInput?.value.trim() || '';
         const content = contentInput?.value.trim() || '';
         const author = document.getElementById('letterAuthorInput')?.value || 'Fidan';
-        
+
         if (!title) {
             showStatus(status, '⚠️ Məktub başlığı boş ola bilməz!', 'error');
             return;
         }
-        
+
         if (!content) {
             showStatus(status, '⚠️ Məktub mətni boş ola bilməz!', 'error');
             return;
         }
-        
+
         isUploading = true;
         showStatus(status, '⏳ Məktub yüklənir...', 'loading', 0);
         uploadBtn.disabled = true;
-        
+
         try {
             const path = `letters/${title.replace(/\s+/g, '_')}_${Date.now()}.txt`;
             const fullContent = `${content}\n\n---\n💕 Sevgilə, ${author}\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
             const success = await githubUploadFile(path, fullContent, '💌 Yeni məktub əlavə edildi');
-            
+
             if (success) {
                 showStatus(status, '✅ Məktub uğurla yükləndi!', 'success');
                 trackAction("Yeni məktub əlavə etdi", title);
-                
+
                 if (titleInput) titleInput.value = '';
                 if (contentInput) contentInput.value = '';
-                
+
                 await loadStats();
                 AppState.letters = [];
                 if (AppState.currentSection === 'letters') {
@@ -1794,22 +1914,22 @@ function initMusicUpload() {
     const fileSize = document.getElementById('musicFileSize');
     const uploadBtn = document.getElementById('uploadMusicBtn');
     const status = document.getElementById('musicUploadStatus');
-    
+
     let selectedFile = null;
     let isUploading = false;
-    
+
     if (!uploadArea || !fileInput) return;
-    
+
     // 🔧 PROBLEM HƏLLİ: fileInput-un öz click hadisəsində bubbling-i dayandır
     fileInput.addEventListener('click', (e) => {
         e.stopPropagation(); // Hadisənin uploadArea-ya qabarcıqlanmasının qarşısını al
     });
-    
+
     // uploadArea kliklənəndə fileInput-u tətiklə
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
-    
+
     // Fayl seçildikdə
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -1822,17 +1942,17 @@ function initMusicUpload() {
         }
         fileInput.value = ''; // Eyni faylın təkrar seçilməsi üçün
     });
-    
+
     // Drag & drop (dəyişməyib)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#e91e63';
     });
-    
+
     uploadArea.addEventListener('dragleave', () => {
         uploadArea.style.borderColor = '';
     });
-    
+
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '';
@@ -1843,47 +1963,55 @@ function initMusicUpload() {
             showStatus(status, '❌ Zəhmət olmasa musiqi faylı seçin!', 'error');
         }
     });
-    
+
     function handleMusicSelect(file) {
         if (file.size > APP_CONFIG.maxFileSize.music) {
             showStatus(status, '❌ Musiqi 30MB-dan böyük ola bilməz!', 'error');
             return;
         }
-        
+
         selectedFile = file;
         if (preview) preview.style.display = 'flex';
         if (fileName) fileName.textContent = file.name;
         if (fileSize) fileSize.textContent = formatFileSize(file.size);
     }
-    
-    window.cancelMusicSelection = function() {
+
+    window.cancelMusicSelection = function () {
         selectedFile = null;
         if (preview) preview.style.display = 'none';
     };
-    
+
     if (uploadBtn) {
         uploadBtn.addEventListener('click', async () => {
             if (isUploading) return;
-            
+
             if (!selectedFile) {
                 showStatus(status, '⚠️ Zəhmət olmasa musiqi faylı seçin!', 'error');
                 return;
             }
-            
+
             isUploading = true;
             showStatus(status, '⏳ Musiqi yüklənir...', 'loading', 0);
             uploadBtn.disabled = true;
-            
+
             try {
-                const path = `music/${selectedFile.name}`;
-                const success = await githubUploadBinary(path, selectedFile, '🎵 Yeni musiqi əlavə edildi');
-                
-                if (success) {
+                const uploadResult = await cloudinaryUploadAudio(selectedFile);
+
+                if (uploadResult && uploadResult.secure_url) {
+                    const songData = {
+                        name: selectedFile.name,
+                        public_id: uploadResult.public_id,
+                        download_url: uploadResult.secure_url,
+                        created_at: new Date().toISOString()
+                    };
+
+                    await updateMusicMetadata(songData);
+
                     showStatus(status, '✅ Musiqi uğurla yükləndi!', 'success');
                     trackAction("Yeni musiqi yüklədi", selectedFile.name);
                     selectedFile = null;
                     if (preview) preview.style.display = 'none';
-                    
+
                     await loadStats();
                     AppState.songs = [];
                     if (AppState.currentSection === 'music') loadSongs();
@@ -1907,28 +2035,28 @@ function initMusicUpload() {
 function initStarsCanvas() {
     const container = document.getElementById('universe-bg');
     if (!container) return;
-    
+
     const existingCanvas = document.getElementById('starsCanvas');
     if (existingCanvas) existingCanvas.remove();
-    
+
     const canvas = document.createElement('canvas');
     canvas.id = 'starsCanvas';
     container.appendChild(canvas);
-    
+
     const ctx = canvas.getContext('2d');
     let stars = [];
     let animationFrame;
-    
+
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         generateStars();
     }
-    
+
     function generateStars() {
         const count = Math.floor((canvas.width * canvas.height) / 3000);
         stars = [];
-        
+
         for (let i = 0; i < count; i++) {
             stars.push({
                 x: Math.random() * canvas.width,
@@ -1942,14 +2070,14 @@ function initStarsCanvas() {
             });
         }
     }
-    
+
     function drawStars(timestamp) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         stars.forEach(star => {
             const twinkle = Math.sin(timestamp * star.twinkleSpeed + star.twinklePhase);
             const opacity = star.opacity * (0.6 + 0.4 * twinkle);
-            
+
             if (star.color === '#e91e63') {
                 ctx.fillStyle = `rgba(233, 30, 99, ${opacity})`;
                 ctx.shadowBlur = 8;
@@ -1959,25 +2087,25 @@ function initStarsCanvas() {
                 ctx.shadowBlur = star.size > 1.5 ? 4 : 0;
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
             }
-            
+
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
             ctx.fill();
-            
+
             star.y -= star.speed;
-            
+
             if (star.y < -10) {
                 star.y = canvas.height + 10;
                 star.x = Math.random() * canvas.width;
             }
         });
-        
+
         ctx.shadowBlur = 0;
         animationFrame = requestAnimationFrame(drawStars);
     }
-    
+
     window.addEventListener('resize', debounce(resizeCanvas, 200));
-    
+
     resizeCanvas();
     animationFrame = requestAnimationFrame(drawStars);
 }
@@ -1990,7 +2118,7 @@ function initAutoSave() {
     setInterval(() => {
         if (AppState.isLoggedIn) saveAppState();
     }, 30000);
-    
+
     window.addEventListener('beforeunload', () => saveAppState());
 }
 
@@ -2003,7 +2131,7 @@ function saveAppState() {
         },
         lastVisit: new Date().toISOString()
     };
-    
+
     localStorage.setItem('dunyamiz_app_state', JSON.stringify(state));
 }
 
@@ -2031,7 +2159,7 @@ function initOfflineSupport() {
         showNotification('📡 İnternet bağlantısı bərpa edildi!', 'success', 2000);
         loadSectionData(AppState.currentSection);
     });
-    
+
     window.addEventListener('offline', () => {
         showNotification('📴 Offline rejimdəsiniz. Bəzi funksiyalar işləməyə bilər.', 'info', 4000);
     });
@@ -2044,18 +2172,18 @@ function initOfflineSupport() {
 function initLovePower() {
     const heartBtn = document.getElementById('hold-heart');
     const percentText = document.getElementById('power-percent');
-    
+
     if (!heartBtn || !percentText) return;
-    
+
     const loveBg = document.createElement('div');
     loveBg.className = 'love-active-bg';
     document.body.appendChild(loveBg);
-    
+
     let holdTimer = null;
     let drainTimer = null;
     let power = 0;
     let isMaxed = false;
-    
+
     function clearAllTimers() {
         if (holdTimer) {
             clearInterval(holdTimer);
@@ -2066,7 +2194,7 @@ function initLovePower() {
             drainTimer = null;
         }
     }
-    
+
     function updatePower() {
         if (power >= 100) {
             if (!isMaxed) {
@@ -2082,16 +2210,16 @@ function initLovePower() {
             percentText.innerText = power + '%';
             percentText.style.fontSize = '1.2rem';
             heartBtn.style.transform = `scale(${1 + (power / 150)})`;
-            heartBtn.style.filter = `drop-shadow(0 0 ${10 + power/4}px var(--primary-pink-glow))`;
+            heartBtn.style.filter = `drop-shadow(0 0 ${10 + power / 4}px var(--primary-pink-glow))`;
         }
-        
+
         loveBg.style.opacity = power / 120;
     }
-    
+
     function startHolding(e) {
         e.preventDefault();
         clearAllTimers();
-        
+
         holdTimer = setInterval(() => {
             if (power < 100) {
                 power = Math.min(100, power + 2);
@@ -2102,11 +2230,11 @@ function initLovePower() {
             }
         }, 50);
     }
-    
+
     function stopHolding(e) {
         if (e) e.preventDefault();
         clearAllTimers();
-        
+
         drainTimer = setInterval(() => {
             if (power > 0) {
                 power = Math.max(0, power - 3);
@@ -2120,26 +2248,26 @@ function initLovePower() {
             }
         }, 30);
     }
-    
+
     heartBtn.addEventListener('mousedown', startHolding);
     heartBtn.addEventListener('mouseup', stopHolding);
     heartBtn.addEventListener('mouseleave', stopHolding);
-    
+
     heartBtn.addEventListener('touchstart', (e) => {
         e.preventDefault();
         startHolding(e);
     }, { passive: false });
-    
+
     heartBtn.addEventListener('touchend', (e) => {
         e.preventDefault();
         stopHolding(e);
     });
-    
+
     heartBtn.addEventListener('touchcancel', (e) => {
         e.preventDefault();
         stopHolding(e);
     });
-    
+
     window.addEventListener('beforeunload', clearAllTimers);
 }
 
@@ -2149,7 +2277,7 @@ function initLovePower() {
 
 document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.style.setProperty('--progress', '0%');
-    
+
     initStarsCanvas();
     initLogin();
     loadAppState();
@@ -2196,19 +2324,19 @@ async function initAnalytics() {
         const response = await fetch('https://api.ipify.org?format=json');
         const data = await response.json();
         AppState.visitorIp = data.ip || 'Naməlum IP';
-        
+
         await sendTelegramMessage(`🟢 Sayta giriş oldu!\n📍 IP: ${AppState.visitorIp}\n⏰ Vaxt: ${new Date().toLocaleString('az-AZ')}`);
     } catch (e) {
         console.error('IP alma xətası:', e);
     }
-    
+
     // Using visibilitychange and pagehide to better capture exits, specially on mobile
     window.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             sendExitNotification();
         }
     });
-    
+
     window.addEventListener('pagehide', sendExitNotification);
     window.addEventListener('beforeunload', sendExitNotification);
 }
@@ -2217,17 +2345,17 @@ let exitNotificationSent = false;
 function sendExitNotification() {
     if (exitNotificationSent) return;
     exitNotificationSent = true;
-    
+
     const duration = Date.now() - visitStartTime;
     const seconds = Math.floor((duration / 1000) % 60);
     const minutes = Math.floor((duration / (1000 * 60)) % 60);
     const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-    
+
     let timeString = '';
     if (hours > 0) timeString += `${hours} saat `;
     if (minutes > 0) timeString += `${minutes} dəqiqə `;
     timeString += `${seconds} saniyə`;
-    
+
     const ip = AppState.visitorIp || 'Naməlum IP';
     sendTelegramMessage(`🔴 Saytdan çıxış!\n📍 IP: ${ip}\n⏳ Keçirilən vaxt: ${timeString}`, true);
 }
@@ -2258,9 +2386,9 @@ console.log(`
 %cVersion: ${APP_CONFIG.version}
 %c"Sən mənim ən gözəl xəyalımsan..."
 `,
-'font-size: 18px; color: #e91e63; font-family: "Dancing Script", cursive;',
-'font-size: 12px; color: #ff80ab;',
-'font-size: 14px; color: #ffffff; font-style: italic;'
+    'font-size: 18px; color: #e91e63; font-family: "Dancing Script", cursive;',
+    'font-size: 12px; color: #ff80ab;',
+    'font-size: 14px; color: #ffffff; font-style: italic;'
 );
 
 /* ═══════════════════════════════════════════════════════════════════
