@@ -909,7 +909,9 @@ function renderGallery() {
     let html = '';
     AppState.photos.forEach((photo, index) => {
         html += `
-            <div class="gallery-item" data-index="${index}">
+            <div class="gallery-item stagger-item" 
+                 data-index="${index}"
+                 style="animation-delay: ${index * 0.05}s">
                 <img src="${photo.download_url}" alt="Xatirə" loading="lazy">
                 <div class="gallery-item-overlay">
                     <span><i class="fas fa-heart"></i></span>
@@ -1111,7 +1113,7 @@ function renderLetters() {
     }
 
     let html = '';
-    AppState.letters.forEach((letter) => {
+    AppState.letters.forEach((letter, index) => {
         const rawTitle = letter.name.replace(/\.(txt|md)$/i, '').replace(/_/g, ' ');
         const title = rawTitle.replace(/\s*\d{10,}$/, '').trim() || rawTitle;
 
@@ -1126,7 +1128,10 @@ function renderLetters() {
         }
 
         html += `
-            <div class="letter-card-item" data-path="${letter.path}" data-title="${escapeHtml(title)}">
+            <div class="letter-card-item stagger-item" 
+                 data-path="${letter.path}" 
+                 data-title="${escapeHtml(title)}"
+                 style="animation-delay: ${index * 0.1}s">
                 <div class="letter-card-icon">
                     <i class="fas fa-envelope-open-text"></i>
                 </div>
