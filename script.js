@@ -120,11 +120,7 @@ const AppState = {
     currentMusicTab: 'all',
     currentPlaylist: null,
     // Status timer-ları
-    statusTimers: {
-        photo: null,
-        letter: null,
-        music: null
-    }
+    statusTimers: {}
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -293,33 +289,53 @@ function extractTimestamp(filename) {
    MODERN TOAST BİLDİRİŞ SİSTEMİ
    ═══════════════════════════════════════════════════════════════════ */
 
-function showNotification(message, type = 'info') {
+function showNotification(message, type = 'info', duration = 4000) {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
+    // İkon seçimi
     let icon = 'fa-info-circle';
-    if (type === 'success') icon = 'fa-heart';
+    if (type === 'success') icon = 'fa-check-circle';
     if (type === 'error') icon = 'fa-exclamation-circle';
+    if (type === 'warning') icon = 'fa-exclamation-triangle';
+    if (message.includes('💖') || message.includes('❤️')) icon = 'fa-heart';
 
     toast.innerHTML = `
-        <i class="fas ${icon}"></i>
+        <div class="toast-icon">
+            <i class="fas ${icon}"></i>
+        </div>
         <div class="toast-content">
             <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="toast-progress">
+            <div class="toast-progress-fill" style="animation-duration: ${duration}ms"></div>
         </div>
     `;
 
     container.appendChild(toast);
 
-    // 4 saniyə sonra sil
-    setTimeout(() => {
+    // Bağlama düyməsi
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.onclick = () => {
         toast.classList.add('removing');
-        toast.addEventListener('transitionend', () => {
-            toast.remove();
-        });
-    }, 4000);
+        setTimeout(() => toast.remove(), 600);
+    };
+
+    // Avtomatik silinmə
+    if (duration > 0) {
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 600);
+            }
+        }, duration);
+    }
 }
 
 function showError(message) {
@@ -335,25 +351,34 @@ function showStatus(element, message, type, duration = 2000) {
 
     element.className = `admin-status ${type}`;
     element.textContent = message;
-    element.style.display = 'block';
+    element.style.display = ''; // CSS-dəki display-i istifadə et (flex/block)
+    element.style.opacity = '1';
 
     // Əvvəlki timer-i təmizlə
-    const timerKey = element.id;
+    const timerKey = element.id || 'temp-status';
     if (AppState.statusTimers[timerKey]) {
         clearTimeout(AppState.statusTimers[timerKey]);
     }
 
-    // Yeni timer qur
-    AppState.statusTimers[timerKey] = setTimeout(() => {
-        element.style.display = 'none';
-        element.textContent = '';
-    }, duration);
+    // Əgər duration 0-dırsa, avtomatik silmə (loading üçün)
+    if (duration > 0) {
+        AppState.statusTimers[timerKey] = setTimeout(() => {
+            element.style.opacity = '0';
+            setTimeout(() => {
+                element.style.display = 'none';
+                element.textContent = '';
+            }, 400);
+        }, duration);
+    }
 }
 
 function clearStatus(element) {
     if (!element) return;
-    element.style.display = 'none';
-    element.textContent = '';
+    element.style.opacity = '0';
+    setTimeout(() => {
+        element.style.display = 'none';
+        element.textContent = '';
+    }, 400);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
