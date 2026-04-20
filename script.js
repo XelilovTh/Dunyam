@@ -899,7 +899,7 @@ function initLightbox() {
             DOM.lightboxDelete.disabled = true;
             DOM.lightboxDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            const success = await cloudinaryDelete(photo.name);
+            const success = await cloudinaryDelete(photo.public_id || photo.name);
 
             if (success) {
                 await removePhotoFromMetadata(photo.public_id || photo.name);
@@ -1136,13 +1136,13 @@ function initLetterModal() {
                 // Get SHA first
                 const fileData = await githubRequestProxy('github_get', { path });
                 if (fileData && fileData.sha) {
-                    const success = await githubRequestProxy('github_delete', {
+                    const res = await githubRequestProxy('github_delete', {
                         path,
                         message: '🗑️ Məktub silindi',
                         sha: fileData.sha
                     });
 
-                    if (success) {
+                    if (res) {
                         showNotification('🗑️ Məktub uğurla silindi!', 'info');
                         closeLetterModal();
                         AppState.letters = [];
