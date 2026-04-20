@@ -2101,6 +2101,32 @@ body {
   opacity: 1;
 }
 
+.letter-modal-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.letter-modal-delete {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #ef4444;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.letter-modal-delete:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.1);
+}
+
 .letter-modal-container {
   width: 100%;
   max-width: 650px;
@@ -3239,4 +3265,59 @@ body {
 .fs-playlist-item.active .fs-playlist-item-title {
   color: var(--primary-pink);
   font-weight: bold;
+}
+
+/* More Menu Styles */
+.fs-more-container {
+  position: relative;
+}
+
+.fs-more-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(20, 20, 30, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 150px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 100;
+  margin-top: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.fs-more-dropdown.show {
+  display: flex;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.fs-more-dropdown button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.fs-more-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fs-more-dropdown button.delete-option {
+  color: #ff4d4d;
+}
+
+.fs-more-dropdown button.delete-option:hover {
+  background: rgba(255, 77, 77, 0.1);
 }

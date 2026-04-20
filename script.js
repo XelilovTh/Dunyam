@@ -206,7 +206,14 @@ const DOM = {
     fsNextBtn: document.getElementById('fsNextBtn'),
     fsRepeatBtn: document.getElementById('fsRepeatBtn'),
     fsPlaylistList: document.getElementById('fsPlaylistList'),
-    fsPlaylistToggle: document.getElementById('fsPlaylistToggle')
+    fsPlaylistToggle: document.getElementById('fsPlaylistToggle'),
+
+    // New actions
+    letterModalDelete: document.getElementById('letterModalDelete'),
+    fsMoreBtn: document.getElementById('fsMoreBtn'),
+    fsMoreDropdown: document.getElementById('fsMoreDropdown'),
+    fsRenameBtn: document.getElementById('fsRenameBtn'),
+    fsDeleteBtn: document.getElementById('fsDeleteBtn')
 };
 
 const audioPlayer = new Audio();
@@ -1114,6 +1121,47 @@ function initLetterModal() {
         if (e.target === DOM.letterModal) closeLetterModal();
     });
 
+    if (DOM.letterModalDelete) {
+        DOM.letterModalDelete.addEventListener('click', async () => {
+            const path = AppState.currentLetterPath;
+            if (!path) return;
+
+            const confirmed = confirm('Bu məktubu silmək istədiyinizə əminsiniz?');
+            if (!confirmed) return;
+
+            DOM.letterModalDelete.disabled = true;
+            DOM.letterModalDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                // Get SHA first
+                const fileData = await githubRequestProxy('github_get', { path });
+                if (fileData && fileData.sha) {
+                    const success = await githubRequestProxy('github_delete', {
+                        path,
+                        message: '🗑️ Məktub silindi',
+                        sha: fileData.sha
+                    });
+
+                    if (success) {
+                        showNotification('🗑️ Məktub uğurla silindi!', 'info');
+                        closeLetterModal();
+                        AppState.letters = [];
+                        if (AppState.currentSection === 'letters') loadLetters();
+                        await loadStats();
+                    } else {
+                        showNotification('❌ Məktub silinə bilmədi!', 'error');
+                    }
+                }
+            } catch (err) {
+                console.error('Məktub silmə xətası:', err);
+                showNotification('❌ Xəta baş verdi!', 'error');
+            } finally {
+                DOM.letterModalDelete.disabled = false;
+                DOM.letterModalDelete.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            }
+        });
+    }
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && DOM.letterModal.classList.contains('open')) {
             closeLetterModal();
@@ -1122,6 +1170,7 @@ function initLetterModal() {
 }
 
 async function openLetter(path, title) {
+    AppState.currentLetterPath = path;
     trackAction("Məktubu oxuyur", title);
     if (DOM.letterModalTitle) DOM.letterModalTitle.textContent = title;
     if (DOM.letterModalBody) DOM.letterModalBody.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Məktub yüklənir...';
@@ -1303,6 +1352,102 @@ function initMusicPlayer() {
     }
 
     setVolume(AppState.player.volume);
+
+    initMusicMoreMenu();
+}
+
+function initMusicMoreMenu() {
+    if (DOM.fsMoreBtn) {
+        DOM.fsMoreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            DOM.fsMoreDropdown.classList.toggle('show');
+        });
+    }
+
+    document.addEventListener('click', () => {
+        if (DOM.fsMoreDropdown) DOM.fsMoreDropdown.classList.remove('show');
+    });
+
+    if (DOM.fsRenameBtn) {
+        DOM.fsRenameBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const song = AppState.songs[AppState.player.currentIndex];
+            if (!song) return;
+
+            const oldName = cleanFileName(song.name);
+            const newName = prompt('Yeni adı daxil edin:', oldName);
+            
+            if (newName && newName !== oldName) {
+                try {
+                    const content = await githubGetFile('music_list.json');
+                    let songs = JSON.parse(content);
+                    
+                    const index = songs.findIndex(s => s.public_id === song.public_id);
+                    if (index !== -1) {
+                        songs[index].name = newName + (song.name.includes('.') ? song.name.substring(song.name.lastIndexOf('.')) : '');
+                        
+                        const success = await githubUploadFile(
+                            'music_list.json',
+                            JSON.stringify(songs, null, 2),
+                            `✏️ Musiqi adı dəyişdirildi: ${newName}`
+                        );
+
+                        if (success) {
+                            showNotification('✅ Ad uğurla dəyişdirildi!', 'success');
+                            song.name = songs[index].name;
+                            renderMusicPlaylist();
+                            showPlayer(song);
+                            updateFsPlaylist();
+                        }
+                    }
+                } catch (err) {
+                    console.error('Ad dəyişmə xətası:', err);
+                    showNotification('❌ Xəta baş verdi!', 'error');
+                }
+            }
+            DOM.fsMoreDropdown.classList.remove('show');
+        });
+    }
+
+    if (DOM.fsDeleteBtn) {
+        DOM.fsDeleteBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const song = AppState.songs[AppState.player.currentIndex];
+            if (!song) return;
+
+            const confirmed = confirm(`"${cleanFileName(song.name)}" musiqisini silmək istədiyinizə əminsiniz?`);
+            if (!confirmed) return;
+
+            try {
+                // 1. Cloudinary-dən sil
+                const cloudSuccess = await cloudinaryDelete(song.public_id);
+                
+                // 2. Metadata-dan sil
+                const content = await githubGetFile('music_list.json');
+                let songs = JSON.parse(content);
+                const updatedSongs = songs.filter(s => s.public_id !== song.public_id);
+                
+                const metaSuccess = await githubUploadFile(
+                    'music_list.json',
+                    JSON.stringify(updatedSongs, null, 2),
+                    `🗑️ Musiqi silindi: ${song.name}`
+                );
+
+                if (metaSuccess) {
+                    showNotification('🗑️ Musiqi uğurla silindi!', 'info');
+                    AppState.songs = updatedSongs;
+                    renderMusicPlaylist();
+                    updateFsPlaylist();
+                    playNext();
+                    await loadStats();
+                }
+            } catch (err) {
+                console.error('Musiqi silmə xətası:', err);
+                showNotification('❌ Xəta baş verdi!', 'error');
+            }
+            DOM.fsMoreDropdown.classList.remove('show');
+        });
+    }
 }
 
 function getAudioUrl(song) {
