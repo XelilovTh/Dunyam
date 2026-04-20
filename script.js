@@ -184,8 +184,6 @@ const DOM = {
         letters: document.getElementById('adminLettersPane'),
         music: document.getElementById('adminMusicPane')
     },
-    notificationBar: document.getElementById('notificationBar'),
-    notificationMessage: document.getElementById('notificationMessage'),
     surpriseButton: document.getElementById('surpriseButton'),
     backFromSurprises: document.getElementById('backFromSurprises'),
     heroHeart: document.getElementById('heroHeart'),
@@ -213,7 +211,8 @@ const DOM = {
     fsMoreBtn: document.getElementById('fsMoreBtn'),
     fsMoreDropdown: document.getElementById('fsMoreDropdown'),
     fsRenameBtn: document.getElementById('fsRenameBtn'),
-    fsDeleteBtn: document.getElementById('fsDeleteBtn')
+    fsDeleteBtn: document.getElementById('fsDeleteBtn'),
+    toastContainer: document.getElementById('toast-container')
 };
 
 const audioPlayer = new Audio();
@@ -275,24 +274,40 @@ function extractTimestamp(filename) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   BİLDİRİŞ SİSTEMİ
+   MODERN TOAST BİLDİRİŞ SİSTEMİ
    ═══════════════════════════════════════════════════════════════════ */
 
-function showNotification(message, type = 'info', duration = 3000) {
-    const bar = DOM.notificationBar;
-    const msg = DOM.notificationMessage;
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
 
-    msg.textContent = message;
-    bar.className = 'notification-bar';
-    bar.classList.add(type, 'show');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = 'fa-info-circle';
+    if (type === 'success') icon = 'fa-heart';
+    if (type === 'error') icon = 'fa-exclamation-circle';
 
+    toast.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    // 4 saniyə sonra sil
     setTimeout(() => {
-        bar.classList.remove('show');
-    }, duration);
+        toast.classList.add('removing');
+        toast.addEventListener('transitionend', () => {
+            toast.remove();
+        });
+    }, 4000);
 }
 
-function showError(message, duration = 3000) {
-    showNotification(message, 'error', duration);
+function showError(message) {
+    showNotification(message, 'error');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
