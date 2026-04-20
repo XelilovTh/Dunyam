@@ -297,6 +297,13 @@
           <h2>Musiqilərimiz</h2>
           <span class="header-line"></span>
         </div>
+
+        <!-- Musiqi Kateqoriyaları -->
+        <div class="music-tabs">
+          <button class="music-tab active" data-tab="all">Hamısı</button>
+          <button class="music-tab" data-tab="favorites">Favorilər</button>
+          <button class="music-tab" data-tab="custom">Xüsusi</button>
+        </div>
         
         <!-- Musiqi pleylisti -->
         <div class="music-playlist" id="musicPlaylist">
@@ -683,12 +690,15 @@
   
   <div class="fs-header">
     <button class="fs-btn" id="fsCloseBtn"><i class="fas fa-chevron-down"></i></button>
-    <span style="font-size: 40px;">🤍</span>
-    <div class="fs-more-container">
-      <button class="fs-btn" id="fsMoreBtn"><i class="fas fa-ellipsis-v"></i></button>
-      <div class="fs-more-dropdown" id="fsMoreDropdown">
-        <button id="fsRenameBtn"><i class="fas fa-edit"></i> Adı dəyiş</button>
-        <button id="fsDeleteBtn" class="delete-option"><i class="fas fa-trash-alt"></i> Sil</button>
+    <div class="fs-header-actions">
+      <button class="fs-btn fs-heart-btn" id="fsHeartBtn"><i class="far fa-heart"></i></button>
+      <div class="fs-more-container">
+        <button class="fs-btn" id="fsMoreBtn"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="fs-more-dropdown" id="fsMoreDropdown">
+          <button id="fsRenameBtn"><i class="fas fa-edit"></i> Adı dəyiş</button>
+          <button id="fsPlaylistAddBtn"><i class="fas fa-list-ul"></i> Playlistə əlavə et</button>
+          <button id="fsDeleteBtn" class="delete-option"><i class="fas fa-trash-alt"></i> Sil</button>
+        </div>
       </div>
     </div>
   </div>
@@ -739,6 +749,33 @@
     </div>
     <div class="fs-playlist-list" id="fsPlaylistList">
       <!-- Mahnılar bura düşəcək -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PLAYLIST MODAL                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="playlist-modal" id="playlistModal">
+  <div class="playlist-modal-container">
+    <div class="playlist-modal-header">
+      <h3>Playlistə əlavə et</h3>
+      <button class="playlist-modal-close" id="playlistModalClose"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="playlist-modal-body">
+      <button class="create-playlist-btn" id="createPlaylistBtn">
+        <i class="fas fa-plus"></i> Playlist yarat
+      </button>
+      
+      <div class="new-playlist-form" id="newPlaylistForm" style="display: none;">
+        <input type="text" id="playlistNameInput" placeholder="Playlist adı...">
+        <button id="savePlaylistBtn">Yarat</button>
+      </div>
+      
+      <div class="existing-playlists" id="existingPlaylistsList">
+        <!-- Playlistlər bura düşəcək -->
+      </div>
     </div>
   </div>
 </div>
