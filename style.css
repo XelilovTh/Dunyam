@@ -84,7 +84,7 @@
   --z-modal: 100;
   --z-lightbox: 200;
   --z-admin: 300;
-  --z-notification: 1000;
+  --z-notification: 2000;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -322,19 +322,20 @@ body {
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-notification);
-  background: linear-gradient(135deg, var(--primary-pink-dark), var(--primary-pink));
+  background: rgba(25, 10, 25, 0.4);
   color: white;
   padding: 14px 28px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: var(--shadow-pink-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   font-weight: 500;
   font-size: 0.95rem;
   letter-spacing: 0.3px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
+  border: 1px solid rgba(233, 30, 99, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition: top var(--transition-slow);
   white-space: nowrap;
 }
@@ -349,13 +350,15 @@ body {
 }
 
 .notification-bar.error {
-  background: linear-gradient(135deg, #c62828, #e53935);
-  box-shadow: 0 0 32px rgba(229, 57, 53, 0.5);
+  background: rgba(220, 38, 38, 0.4);
+  border-color: rgba(220, 38, 38, 0.4);
+  box-shadow: 0 0 32px rgba(220, 38, 38, 0.2);
 }
 
 .notification-bar.success {
-  background: linear-gradient(135deg, #2e7d32, #43a047);
-  box-shadow: 0 0 32px rgba(67, 160, 71, 0.5);
+  background: rgba(46, 125, 50, 0.4);
+  border-color: rgba(46, 125, 50, 0.4);
+  box-shadow: 0 0 32px rgba(46, 125, 50, 0.2);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
