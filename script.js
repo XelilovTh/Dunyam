@@ -1384,7 +1384,7 @@ function renderMusicPlaylist() {
         html += `
             <div class="music-track-item stagger-item ${isPlaying ? 'playing' : ''}" 
                  data-id="${song.public_id}"
-                 style="animation-delay: ${index * 0.05}s">
+                 style="animation-delay: ${index * 0.1}s">
                 <div class="track-number">${index + 1}</div>
                 <div class="track-info">
                     <div class="track-title">${escapeHtml(name)}</div>
@@ -1438,7 +1438,7 @@ function renderPlaylistsGrid() {
         html += `
             <div class="playlist-card stagger-item" 
                  data-name="${name}"
-                 style="animation-delay: ${index * 0.05}s">
+                 style="animation-delay: ${index * 0.1}s">
                 <div class="playlist-card-icon">
                     <i class="fas fa-music"></i>
                 </div>
