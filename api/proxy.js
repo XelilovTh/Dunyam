@@ -102,6 +102,16 @@ module.exports = async (req, res) => {
             case 'check_password':
                 return res.json({ success: data.password === process.env.ADMIN_PASSWORD });
 
+            case 'github_delete':
+                const deleteRes = await axios.delete(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                    headers: ghHeaders,
+                    data: {
+                        message: data.message,
+                        sha: data.sha
+                    }
+                });
+                return res.json(deleteRes.data);
+
             default:
                 return res.status(400).json({ error: 'Yanlış əməliyyat' });
         }
