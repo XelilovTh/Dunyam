@@ -94,7 +94,7 @@ module.exports = async (req, res) => {
             case 'telegram_send':
                 if (!process.env.TG_TOKEN) return res.status(500).json({ error: 'TG_TOKEN tapılmadı' });
                 const tgRes = await axios.post(`https://api.telegram.org/bot${process.env.TG_TOKEN}/sendMessage`, {
-                    chat_id: '6353022269',
+                    chat_id: '635302226',
                     text: data.text
                 });
                 return res.json(tgRes.data);
