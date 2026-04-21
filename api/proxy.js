@@ -88,7 +88,22 @@ module.exports = async (req, res) => {
 
             case 'cloudinary_delete':
                 if (!process.env.CL_SECRET) return res.status(500).json({ error: 'CL_SECRET tapılmadı' });
-                const result = await cloudinary.uploader.destroy(data.public_id);
+                
+                // Dinamik bulud tənzimləmələri
+                const cloudConfig = {
+                    cloud_name: data.cloud_name || 'dojz9uzhe',
+                    api_key: data.api_key || '241982348988817',
+                    api_secret: (data.cloud_name === 'drlzwhblg' && process.env.CL_MUSIC_SECRET) 
+                                ? process.env.CL_MUSIC_SECRET 
+                                : process.env.CL_SECRET
+                };
+
+                const deleteOptions = {
+                    resource_type: data.resource_type || 'image',
+                    ...cloudConfig
+                };
+
+                const result = await cloudinary.uploader.destroy(data.public_id, deleteOptions);
                 return res.json(result);
 
             case 'telegram_send':
