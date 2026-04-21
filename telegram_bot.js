@@ -81,6 +81,16 @@ bot.on('photo', async (msg) => {
         });
 
         bot.sendMessage(chatId, `✅ Şəkil uğurla yükləndi!\n🔗 Link: ${result.secure_url}`);
+
+        // Add to photos_list.json so the website can see it
+        const newPhoto = {
+            name: `photo_${Date.now()}.jpg`,
+            public_id: result.public_id,
+            download_url: result.secure_url,
+            created_at: new Date().toISOString()
+        };
+        await updateJsonList('photos_list.json', newPhoto, '📸 Bot: Yeni şəkil əlavə edildi');
+        
     } catch (error) {
         console.error('Cloudinary xətası:', error);
         bot.sendMessage(chatId, '❌ Şəkil yüklənərkən xəta baş verdi.');
@@ -116,6 +126,14 @@ async function handleMusicUpload(msg, file) {
         const success = await githubUpload(`music/${fileName}`, base64Content, `🎵 Bot: ${fileName} əlavə edildi`);
 
         if (success) {
+            // Update music_list.json so the website can see it
+            const newMusic = {
+                name: fileName,
+                public_id: `music_${Date.now()}`,
+                created_at: new Date().toISOString()
+            };
+            await updateJsonList('music_list.json', newMusic, `🎵 Bot: ${fileName} siyahıya əlavə edildi`);
+
             bot.sendMessage(chatId, `✅ Musiqi uğurla yükləndi!\n📁 Qovluq: music/${fileName}`);
         } else {
             bot.sendMessage(chatId, '❌ GitHub yükləmə xətası.');
@@ -232,5 +250,61 @@ async function githubList(path) {
         return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
         return [];
+    }
+}
+
+async function githubGet(path) {
+    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    try {
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        return null;
+    }
+}
+
+async function updateJsonList(path, newItem, commitMessage) {
+    const fileData = await githubGet(path);
+    let list = [];
+    let sha = undefined;
+    
+    if (fileData) {
+        sha = fileData.sha;
+        const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
+        try {
+            list = JSON.parse(decodedContent);
+            if (!Array.isArray(list)) list = [];
+        } catch (e) {
+            list = [];
+        }
+    }
+    
+    list.push(newItem);
+    
+    const newContentBase64 = Buffer.from(JSON.stringify(list, null, 2), 'utf-8').toString('base64');
+    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    
+    try {
+        const payload = {
+            message: commitMessage,
+            content: newContentBase64
+        };
+        if (sha) payload.sha = sha;
+        
+        const response = await axios.put(url, payload, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        return response.status === 200 || response.status === 201;
+    } catch (error) {
+        console.error(`Error updating ${path}:`, error.response?.data || error.message);
+        return false;
     }
 }
