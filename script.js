@@ -1688,7 +1688,20 @@ function initMusicMoreMenu() {
                 }
             } catch (err) {
                 console.error('Musiqi silmə xətası:', err);
-                function getFilteredSongs() {
+                
+                showNotification('❌ Xəta baş verdi!', 'error');
+            }
+            DOM.fsMoreDropdown.classList.remove('show');
+        });
+    }
+
+    // New Music Features Listeners
+    initMusicTabListeners();
+    initFavoriteToggle();
+    initPlaylistManagement();
+}
+
+function getFilteredSongs() {
     const tab = AppState.currentMusicTab;
     if (tab === 'all') return AppState.songs;
     if (tab === 'favorites') {
@@ -1749,17 +1762,6 @@ function playSong(indexOrId) {
     if (currentItem) currentItem.classList.add('playing');
 
     showPlayer(song);
-}
-                showNotification('❌ Xəta baş verdi!', 'error');
-            }
-            DOM.fsMoreDropdown.classList.remove('show');
-        });
-    }
-
-    // New Music Features Listeners
-    initMusicTabListeners();
-    initFavoriteToggle();
-    initPlaylistManagement();
 }
 
 function initMusicTabListeners() {
