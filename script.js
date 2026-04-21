@@ -316,7 +316,6 @@ function showNotification(message, type = 'info', duration = 3000) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    // İkon seçimi
     let icon = 'fa-info-circle';
     if (type === 'success') icon = 'fa-check-circle';
     if (type === 'error') icon = 'fa-exclamation-circle';
@@ -327,35 +326,26 @@ function showNotification(message, type = 'info', duration = 3000) {
         <div class="toast-icon">
             <i class="fas ${icon}"></i>
         </div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="toast-progress">
-            <div class="toast-progress-fill" style="animation-duration: ${duration}ms"></div>
-        </div>
+        <div class="toast-message">${message}</div>
     `;
 
     container.appendChild(toast);
 
-    // Bağlama düyməsi
-    const closeBtn = toast.querySelector('.toast-close');
-    closeBtn.onclick = () => {
-        toast.classList.add('removing');
-        setTimeout(() => toast.remove(), 600);
-    };
-
-    // Avtomatik silinmə
+    // Auto-remove
     if (duration > 0) {
         setTimeout(() => {
             if (toast.parentElement) {
                 toast.classList.add('removing');
-                setTimeout(() => toast.remove(), 600);
+                setTimeout(() => toast.remove(), 500);
             }
         }, duration);
     }
+
+    // Click to remove
+    toast.onclick = () => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 500);
+    };
 }
 
 function showError(message) {
@@ -1901,7 +1891,11 @@ function playSong(index) {
     if (AppState.player.currentIndex !== -1) {
         const prevSong = AppState.songs[AppState.player.currentIndex];
         const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
-        if (prevItem) prevItem.classList.remove('playing');
+        if (prevItem) {
+            prevItem.classList.remove('playing');
+            const icon = prevItem.querySelector('.track-play-icon i');
+            if (icon) icon.className = 'fas fa-play';
+        }
     }
 
     AppState.player.currentIndex = index;
@@ -1927,8 +1921,13 @@ function playSong(index) {
     };
     audioPlayer.addEventListener('canplay', onCanPlay);
 
-    const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${index}"]`);
-    if (currentItem) currentItem.classList.add('playing');
+
+    const currentItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${song.public_id}"]`);
+    if (currentItem) {
+        currentItem.classList.add('playing');
+        const icon = currentItem.querySelector('.track-play-icon i');
+        if (icon) icon.className = 'fas fa-pause';
+    }
 
     showPlayer(song);
 }
