@@ -2041,39 +2041,60 @@ function togglePlay() {
 }
 
 function playPrevious() {
-    if (AppState.songs.length === 0) return;
-    const newIndex = AppState.player.currentIndex <= 0
-        ? AppState.songs.length - 1
-        : AppState.player.currentIndex - 1;
-    playSong(newIndex);
+    const filteredSongs = getFilteredSongs();
+    if (filteredSongs.length === 0) return;
+
+    const currentSong = AppState.songs[AppState.player.currentIndex];
+    const filteredIndex = filteredSongs.findIndex(s => s.public_id === currentSong?.public_id);
+    
+    const newFilteredIndex = filteredIndex <= 0
+        ? filteredSongs.length - 1
+        : filteredIndex - 1;
+        
+    const nextSong = filteredSongs[newFilteredIndex];
+    const globalIndex = AppState.songs.findIndex(s => s.public_id === nextSong.public_id);
+    if (globalIndex !== -1) playSong(globalIndex);
 }
 
 function playNext() {
-    if (AppState.songs.length === 0) return;
+    const filteredSongs = getFilteredSongs();
+    if (filteredSongs.length === 0) return;
 
-    let newIndex;
+    const currentSong = AppState.songs[AppState.player.currentIndex];
+    const filteredIndex = filteredSongs.findIndex(s => s.public_id === currentSong?.public_id);
+
+    let newFilteredIndex;
     if (AppState.player.shuffle) {
-        newIndex = Math.floor(Math.random() * AppState.songs.length);
+        newFilteredIndex = Math.floor(Math.random() * filteredSongs.length);
     } else {
-        newIndex = (AppState.player.currentIndex + 1) % AppState.songs.length;
+        newFilteredIndex = (filteredIndex + 1) % filteredSongs.length;
     }
-    playSong(newIndex);
+    
+    const nextSong = filteredSongs[newFilteredIndex];
+    const globalIndex = AppState.songs.findIndex(s => s.public_id === nextSong.public_id);
+    if (globalIndex !== -1) playSong(globalIndex);
 }
 
 function onSongEnded() {
     if (AppState.player.repeatMode === 1) { // repeat one
         audioPlayer.currentTime = 0;
         audioPlayer.play();
-    } else if (AppState.player.repeatMode === 2) { // repeat all
-        playNext();
-    } else { // no repeat
-        if (AppState.player.shuffle) {
+    } else {
+        const filteredSongs = getFilteredSongs();
+        const currentSong = AppState.songs[AppState.player.currentIndex];
+        const filteredIndex = filteredSongs.findIndex(s => s.public_id === currentSong?.public_id);
+
+        if (AppState.player.repeatMode === 2) { // repeat all
             playNext();
-        } else if (AppState.player.currentIndex < AppState.songs.length - 1) {
-            playNext();
-        } else {
-            AppState.player.isPlaying = false;
-            updatePlayButton(false);
+        } else { // no repeat
+            if (AppState.player.shuffle) {
+                playNext();
+            } else if (filteredIndex !== -1 && filteredIndex < filteredSongs.length - 1) {
+                playNext();
+            } else {
+                AppState.player.isPlaying = false;
+                updatePlayButton(false);
+            }
         }
     }
 }

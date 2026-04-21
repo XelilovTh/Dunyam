@@ -432,7 +432,7 @@ body {
   position: fixed;
   top: 30px;
   right: 30px;
-  z-index: 9999;
+  z-index: var(--z-notification);
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -443,18 +443,18 @@ body {
   pointer-events: auto;
   min-width: 320px;
   max-width: 450px;
-  background: rgba(20, 10, 25, 0.2);
-  backdrop-filter: blur(8px) saturate(180%);
-  -webkit-backdrop-filter: blur(8px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 18px 24px;
+  background: rgba(20, 10, 25, 0.4);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(233, 30, 99, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 16px 22px;
   color: white;
   display: flex;
   align-items: center;
   gap: 18px;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.4),
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
     inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   transform: translateX(120%);
   transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
