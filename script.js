@@ -2221,35 +2221,34 @@ function initPhotoUpload() {
     const uploadBtn = document.getElementById('uploadPhotoBtn');
     const status = document.getElementById('photoUploadStatus');
 
-    let selectedFile = null;
+    let selectedFiles = []; // İndi massivdir
     let isUploading = false;
 
     if (!uploadArea || !fileInput) return;
 
-    // 🔧 PROBLEM HƏLLİ: fileInput-un öz click hadisəsində bubbling-i dayandır
     fileInput.addEventListener('click', (e) => {
-        e.stopPropagation(); // Hadisənin uploadArea-ya qabarcıqlanmasının qarşısını al
+        e.stopPropagation();
     });
 
-    // uploadArea kliklənəndə fileInput-u tətiklə
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
 
-    // Fayl seçildikdə
     fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.type.startsWith('image/')) {
-                handlePhotoSelect(file);
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            // Hamısının şəkil olduğunu yoxla
+            const allImages = files.every(file => file.type.startsWith('image/'));
+            if (allImages) {
+                handlePhotoSelect(files);
             } else {
-                showStatus(status, '❌ Zəhmət olmasa şəkil faylı seçin!', 'error');
+                showStatus(status, '❌ Zəhmət olmasa yalnız şəkil faylları seçin!', 'error');
             }
         }
-        fileInput.value = ''; // Eyni faylın təkrar seçilməsi üçün
+        fileInput.value = ''; // Təkrar seçim üçün
     });
 
-    // Drag & drop (dəyişməyib)
+    // Drag & drop (çoxlu fayl üçün dəstək)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#e91e63';
@@ -2262,29 +2261,44 @@ function initPhotoUpload() {
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '';
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            handlePhotoSelect(file);
-        } else {
-            showStatus(status, '❌ Zəhmət olmasa şəkil faylı seçin!', 'error');
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            const allImages = files.every(file => file.type.startsWith('image/'));
+            if (allImages) {
+                handlePhotoSelect(files);
+            } else {
+                showStatus(status, '❌ Zəhmət olmasa yalnız şəkil faylları seçin!', 'error');
+            }
         }
     });
 
-    function handlePhotoSelect(file) {
-        if (file.size > APP_CONFIG.maxFileSize.image) {
-            showStatus(status, '❌ Şəkil 10MB-dan böyük ola bilməz!', 'error');
+    function handlePhotoSelect(files) {
+        // Ölçü limiti yoxlaması
+        const oversizedFiles = files.filter(file => file.size > APP_CONFIG.maxFileSize.image);
+        if (oversizedFiles.length > 0) {
+            const names = oversizedFiles.map(f => f.name).join(', ');
+            showStatus(status, `❌ Bu şəkillər 10MB-dan böyükdür: ${names}`, 'error');
             return;
         }
 
-        selectedFile = file;
+        selectedFiles = files;
         if (preview) preview.style.display = 'flex';
-        if (previewImage) previewImage.src = URL.createObjectURL(file);
-        if (fileName) fileName.textContent = file.name;
-        if (fileSize) fileSize.textContent = formatFileSize(file.size);
+        
+        if (files.length === 1) {
+            if (previewImage) previewImage.src = URL.createObjectURL(files[0]);
+            if (fileName) fileName.textContent = files[0].name;
+            if (fileSize) fileSize.textContent = formatFileSize(files[0].size);
+        } else {
+            // Çoxlu fayl seçildikdə preview
+            if (previewImage) previewImage.src = ''; // Və ya ikon qoy
+            if (fileName) fileName.textContent = `${files.length} şəkil seçildi`;
+            let totalSize = files.reduce((acc, file) => acc + file.size, 0);
+            if (fileSize) fileSize.textContent = formatFileSize(totalSize);
+        }
     }
 
     window.cancelPhotoSelection = function () {
-        selectedFile = null;
+        selectedFiles = [];
         if (preview) preview.style.display = 'none';
         if (previewImage) previewImage.src = '';
     };
@@ -2293,47 +2307,56 @@ function initPhotoUpload() {
         uploadBtn.addEventListener('click', async () => {
             if (isUploading) return;
 
-            if (!selectedFile) {
+            if (!selectedFiles || selectedFiles.length === 0) {
                 showStatus(status, '⚠️ Zəhmət olmasa şəkil seçin!', 'error');
                 return;
             }
 
             isUploading = true;
-            showStatus(status, '⏳ Şəkil yüklənir...', 'loading', 0);
             uploadBtn.disabled = true;
 
-            try {
-                // Cloudinary yükləməsi çağırılır
-                const uploadResult = await cloudinaryUpload(selectedFile);
+            let successCount = 0;
+            let failCount = 0;
+            const total = selectedFiles.length;
 
-                if (uploadResult && uploadResult.secure_url) {
-                    const photoData = {
-                        name: selectedFile.name,
-                        public_id: uploadResult.public_id,
-                        download_url: uploadResult.secure_url,
-                        created_at: new Date().toISOString()
-                    };
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                showStatus(status, `⏳ ${i+1}/${total} şəkil yüklənir...`, 'loading', 0);
 
-                    await updatePhotoMetadata(photoData);
-
-                    showStatus(status, '✅ Şəkil Cloudinary-ə uğurla yükləndi!', 'success');
-                    trackAction("Yeni şəkil yüklədi", selectedFile.name);
-
-                    selectedFile = null;
-                    if (preview) preview.style.display = 'none';
-
-                    await loadStats();
-                    AppState.photos = [];
-                    if (AppState.currentSection === 'gallery') loadPhotos();
-                } else {
-                    throw new Error('Yükləmə uğursuz oldu');
+                try {
+                    const uploadResult = await cloudinaryUpload(file);
+                    if (uploadResult && uploadResult.secure_url) {
+                        const photoData = {
+                            name: file.name,
+                            public_id: uploadResult.public_id,
+                            download_url: uploadResult.secure_url,
+                            created_at: new Date().toISOString()
+                        };
+                        await updatePhotoMetadata(photoData);
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error(`"${file.name}" yüklənə bilmədi:`, error);
+                    failCount++;
                 }
-            } catch (error) {
-                showStatus(status, '❌ Xəta baş verdi! Yenidən cəhd edin.', 'error');
-            } finally {
-                isUploading = false;
-                uploadBtn.disabled = false;
             }
+
+            if (successCount > 0) {
+                showStatus(status, `✅ ${successCount} şəkil uğurla yükləndi! (${failCount} uğursuz)`, 'success');
+                trackAction("Çoxlu şəkil yüklədi", `${successCount} ədəd`);
+                await loadStats();
+                AppState.photos = [];
+                if (AppState.currentSection === 'gallery') loadPhotos();
+            } else {
+                showStatus(status, `❌ Heç bir şəkil yüklənə bilmədi!`, 'error');
+            }
+
+            selectedFiles = [];
+            if (preview) preview.style.display = 'none';
+            isUploading = false;
+            uploadBtn.disabled = false;
         });
     }
 }
@@ -2415,35 +2438,32 @@ function initMusicUpload() {
     const uploadBtn = document.getElementById('uploadMusicBtn');
     const status = document.getElementById('musicUploadStatus');
 
-    let selectedFile = null;
+    let selectedFiles = []; // Massiv
     let isUploading = false;
 
     if (!uploadArea || !fileInput) return;
 
-    // 🔧 PROBLEM HƏLLİ: fileInput-un öz click hadisəsində bubbling-i dayandır
     fileInput.addEventListener('click', (e) => {
-        e.stopPropagation(); // Hadisənin uploadArea-ya qabarcıqlanmasının qarşısını al
+        e.stopPropagation();
     });
 
-    // uploadArea kliklənəndə fileInput-u tətiklə
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
 
-    // Fayl seçildikdə
     fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.type.startsWith('audio/')) {
-                handleMusicSelect(file);
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            const allAudio = files.every(file => file.type.startsWith('audio/'));
+            if (allAudio) {
+                handleMusicSelect(files);
             } else {
-                showStatus(status, '❌ Zəhmət olmasa musiqi faylı seçin!', 'error');
+                showStatus(status, '❌ Zəhmət olmasa yalnız musiqi faylları seçin!', 'error');
             }
         }
-        fileInput.value = ''; // Eyni faylın təkrar seçilməsi üçün
+        fileInput.value = '';
     });
 
-    // Drag & drop (dəyişməyib)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#e91e63';
@@ -2456,28 +2476,40 @@ function initMusicUpload() {
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '';
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('audio/')) {
-            handleMusicSelect(file);
-        } else {
-            showStatus(status, '❌ Zəhmət olmasa musiqi faylı seçin!', 'error');
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            const allAudio = files.every(file => file.type.startsWith('audio/'));
+            if (allAudio) {
+                handleMusicSelect(files);
+            } else {
+                showStatus(status, '❌ Zəhmət olmasa yalnız musiqi faylları seçin!', 'error');
+            }
         }
     });
 
-    function handleMusicSelect(file) {
-        if (file.size > APP_CONFIG.maxFileSize.music) {
-            showStatus(status, '❌ Musiqi 30MB-dan böyük ola bilməz!', 'error');
+    function handleMusicSelect(files) {
+        const oversizedFiles = files.filter(file => file.size > APP_CONFIG.maxFileSize.music);
+        if (oversizedFiles.length > 0) {
+            const names = oversizedFiles.map(f => f.name).join(', ');
+            showStatus(status, `❌ Bu musiqilər 30MB-dan böyükdür: ${names}`, 'error');
             return;
         }
 
-        selectedFile = file;
+        selectedFiles = files;
         if (preview) preview.style.display = 'flex';
-        if (fileName) fileName.textContent = file.name;
-        if (fileSize) fileSize.textContent = formatFileSize(file.size);
+        
+        if (files.length === 1) {
+            if (fileName) fileName.textContent = files[0].name;
+            if (fileSize) fileSize.textContent = formatFileSize(files[0].size);
+        } else {
+            if (fileName) fileName.textContent = `${files.length} musiqi seçildi`;
+            let totalSize = files.reduce((acc, file) => acc + file.size, 0);
+            if (fileSize) fileSize.textContent = formatFileSize(totalSize);
+        }
     }
 
     window.cancelMusicSelection = function () {
-        selectedFile = null;
+        selectedFiles = [];
         if (preview) preview.style.display = 'none';
     };
 
@@ -2485,45 +2517,56 @@ function initMusicUpload() {
         uploadBtn.addEventListener('click', async () => {
             if (isUploading) return;
 
-            if (!selectedFile) {
-                showStatus(status, '⚠️ Zəhmət olmasa musiqi faylı seçin!', 'error');
+            if (!selectedFiles || selectedFiles.length === 0) {
+                showStatus(status, '⚠️ Zəhmət olmasa musiqi seçin!', 'error');
                 return;
             }
 
             isUploading = true;
-            showStatus(status, '⏳ Musiqi yüklənir...', 'loading', 0);
             uploadBtn.disabled = true;
 
-            try {
-                const uploadResult = await cloudinaryUploadAudio(selectedFile);
+            let successCount = 0;
+            let failCount = 0;
+            const total = selectedFiles.length;
 
-                if (uploadResult && uploadResult.secure_url) {
-                    const songData = {
-                        name: selectedFile.name,
-                        public_id: uploadResult.public_id,
-                        download_url: uploadResult.secure_url,
-                        created_at: new Date().toISOString()
-                    };
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                showStatus(status, `⏳ ${i+1}/${total} musiqi yüklənir...`, 'loading', 0);
 
-                    await updateMusicMetadata(songData);
-
-                    showStatus(status, '✅ Musiqi uğurla yükləndi!', 'success');
-                    trackAction("Yeni musiqi yüklədi", selectedFile.name);
-                    selectedFile = null;
-                    if (preview) preview.style.display = 'none';
-
-                    await loadStats();
-                    AppState.songs = [];
-                    if (AppState.currentSection === 'music') loadSongs();
-                } else {
-                    throw new Error('Yükləmə uğursuz oldu');
+                try {
+                    const uploadResult = await cloudinaryUploadAudio(file);
+                    if (uploadResult && uploadResult.secure_url) {
+                        const songData = {
+                            name: file.name,
+                            public_id: uploadResult.public_id,
+                            download_url: uploadResult.secure_url,
+                            created_at: new Date().toISOString()
+                        };
+                        await updateMusicMetadata(songData);
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error(`"${file.name}" yüklənə bilmədi:`, error);
+                    failCount++;
                 }
-            } catch (error) {
-                showStatus(status, '❌ Xəta baş verdi! Yenidən cəhd edin.', 'error');
-            } finally {
-                isUploading = false;
-                uploadBtn.disabled = false;
             }
+
+            if (successCount > 0) {
+                showStatus(status, `✅ ${successCount} musiqi uğurla yükləndi! (${failCount} uğursuz)`, 'success');
+                trackAction("Çoxlu musiqi yüklədi", `${successCount} ədəd`);
+                await loadStats();
+                AppState.songs = [];
+                if (AppState.currentSection === 'music') loadSongs();
+            } else {
+                showStatus(status, `❌ Heç bir musiqi yüklənə bilmədi!`, 'error');
+            }
+
+            selectedFiles = [];
+            if (preview) preview.style.display = 'none';
+            isUploading = false;
+            uploadBtn.disabled = false;
         });
     }
 }
