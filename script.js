@@ -1759,10 +1759,53 @@ function playSong(indexOrId) {
     };
     audioPlayer.addEventListener('canplay', onCanPlay);
 
+    // Metadata (Kaver şəkli) oxu
+    loadMusicMetadata(audioUrl);
+
+
     const currentItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${song.public_id}"]`);
     if (currentItem) currentItem.classList.add('playing');
 
     showPlayer(song);
+}
+
+// Musiqi metadata (kaver şəkli) oxuma funksiyası
+function loadMusicMetadata(url) {
+    if (typeof jsmediatags === 'undefined') return;
+
+    // Default icon/image
+    const setDefaultArt = () => {
+        const vinylRecord = document.getElementById('fsVinylRecord');
+        if (vinylRecord) {
+            vinylRecord.style.backgroundImage = 'none';
+        }
+    };
+
+    jsmediatags.read(url, {
+        onSuccess: function(tag) {
+            const image = tag.tags.picture;
+            if (image) {
+                let base64String = "";
+                for (let i = 0; i < image.data.length; i++) {
+                    base64String += String.fromCharCode(image.data[i]);
+                }
+                const base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
+                
+                const vinylRecord = document.getElementById('fsVinylRecord');
+                if (vinylRecord) {
+                    vinylRecord.style.backgroundImage = `url(${base64})`;
+                    vinylRecord.style.backgroundSize = 'cover';
+                    vinylRecord.style.backgroundPosition = 'center';
+                }
+            } else {
+                setDefaultArt();
+            }
+        },
+        onError: function(error) {
+            console.warn('Metadata oxunmadı:', error.type, error.info);
+            setDefaultArt();
+        }
+    });
 }
 
 function initMusicTabListeners() {
@@ -3315,9 +3358,9 @@ const Visualizer = (() => {
             if (!bar) return;
 
             const avg = getFrequencyAverage(dataArray, start, end);
-            // 0-255 arasından 4px-60px aralığına map et
-            const heightPx = 4 + (avg / 255) * 56;
-            bar.style.height = `${heightPx}px`;
+            // 0-255 arasından 0.07-1.0 aralığına map et (scaleY)
+            const scale = 0.07 + (avg / 255) * 0.93;
+            bar.style.transform = `scaleY(${scale})`;
         });
     }
 
@@ -3353,7 +3396,7 @@ const Visualizer = (() => {
 
         // Barları minimal hündürlüyə endirməklə birlikdə idle animasiya başlat
         bars.forEach(bar => {
-            if (bar) bar.style.height = '4px';
+            if (bar) bar.style.transform = 'scaleY(0.07)';
         });
 
         if (visualizer) {
