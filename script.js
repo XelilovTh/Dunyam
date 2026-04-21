@@ -91,7 +91,11 @@ const AppState = {
         isMuted: false,
         isVisible: false,
         shuffle: false,
-        repeatMode: 0 // 0=off, 1=all, 2=one
+        repeatMode: 0, // 0=off, 1=all, 2=one
+        queueContext: {
+            tab: 'all',
+            playlist: null
+        }
     },
     lightbox: {
         isOpen: false,
@@ -1464,7 +1468,10 @@ function renderMusicPlaylist() {
                 toggleMusicSelection(id);
             } else {
                 const songIndex = AppState.songs.findIndex(s => s.public_id === id);
-                if (songIndex !== -1) playSong(songIndex);
+                if (songIndex !== -1) {
+                    updateQueueContext();
+                    playSong(songIndex);
+                }
             }
         });
     });
@@ -1721,97 +1728,24 @@ function getFilteredSongs() {
     return AppState.songs;
 }
 
-function playSong(indexOrId) {
-    let song;
-    let songIndex;
-
-    if (typeof indexOrId === 'string') {
-        songIndex = AppState.songs.findIndex(s => s.public_id === indexOrId);
-        song = AppState.songs[songIndex];
-    } else {
-        songIndex = indexOrId;
-        song = AppState.songs[songIndex];
-    }
-
-    if (!song) return;
-    trackAction("Musiqi dinləyir", cleanFileName(song.name));
-
-    if (AppState.player.currentIndex !== -1) {
-        const prevSong = AppState.songs[AppState.player.currentIndex];
-        const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
-        if (prevItem) prevItem.classList.remove('playing');
-    }
-
-    AppState.player.currentIndex = songIndex;
-
-    const audioUrl = getAudioUrl(song);
-    audioPlayer.pause();
-    audioPlayer.currentTime = 0;
-    audioPlayer.src = audioUrl;
-    audioPlayer.crossOrigin = 'anonymous';
-    audioPlayer.load();
-
-    const onCanPlay = () => {
-        audioPlayer.play()
-            .then(() => { AppState.player.isPlaying = true; })
-            .catch(err => {
-                console.error('Playback error:', err);
-                audioPlayer.crossOrigin = null;
-                audioPlayer.src = audioUrl;
-                audioPlayer.load();
-                audioPlayer.play().catch(e => console.error('Retry failed:', e));
-            });
-        audioPlayer.removeEventListener('canplay', onCanPlay);
+function updateQueueContext() {
+    AppState.player.queueContext = {
+        tab: AppState.currentMusicTab,
+        playlist: AppState.currentPlaylist
     };
-    audioPlayer.addEventListener('canplay', onCanPlay);
-
-    // Metadata (Kaver şəkli) oxu
-    loadMusicMetadata(audioUrl);
-
-
-    const currentItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${song.public_id}"]`);
-    if (currentItem) currentItem.classList.add('playing');
-
-    showPlayer(song);
 }
 
-// Musiqi metadata (kaver şəkli) oxuma funksiyası
-function loadMusicMetadata(url) {
-    if (typeof jsmediatags === 'undefined') return;
-
-    // Default icon/image
-    const setDefaultArt = () => {
-        const vinylRecord = document.getElementById('fsVinylRecord');
-        if (vinylRecord) {
-            vinylRecord.style.backgroundImage = 'none';
-        }
-    };
-
-    jsmediatags.read(url, {
-        onSuccess: function(tag) {
-            const image = tag.tags.picture;
-            if (image) {
-                let base64String = "";
-                for (let i = 0; i < image.data.length; i++) {
-                    base64String += String.fromCharCode(image.data[i]);
-                }
-                const base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
-                
-                const vinylRecord = document.getElementById('fsVinylRecord');
-                if (vinylRecord) {
-                    vinylRecord.style.backgroundImage = `url(${base64})`;
-                    vinylRecord.style.backgroundSize = 'cover';
-                    vinylRecord.style.backgroundPosition = 'center';
-                }
-            } else {
-                setDefaultArt();
-            }
-        },
-        onError: function(error) {
-            console.warn('Metadata oxunmadı:', error.type, error.info);
-            setDefaultArt();
-        }
-    });
+function getQueueSongs() {
+    const ctx = AppState.player.queueContext;
+    if (ctx.tab === 'all') return AppState.songs;
+    if (ctx.tab === 'favorites') {
+        return AppState.songs.filter(s => AppState.musicData.favorites.includes(s.public_id));
+    }
+    if (ctx.tab === 'custom' && ctx.playlist) {
+        const playlistIds = AppState.musicData.playlists[ctx.playlist] || [];
+        return AppState.songs.filter(s => playlistIds.includes(s.public_id));
+    }
+    return AppState.songs;
 }
 
 function initMusicTabListeners() {
@@ -2041,7 +1975,7 @@ function togglePlay() {
 }
 
 function playPrevious() {
-    const filteredSongs = getFilteredSongs();
+    const filteredSongs = getQueueSongs();
     if (filteredSongs.length === 0) return;
 
     const currentSong = AppState.songs[AppState.player.currentIndex];
@@ -2057,7 +1991,7 @@ function playPrevious() {
 }
 
 function playNext() {
-    const filteredSongs = getFilteredSongs();
+    const filteredSongs = getQueueSongs();
     if (filteredSongs.length === 0) return;
 
     const currentSong = AppState.songs[AppState.player.currentIndex];
@@ -2080,7 +2014,7 @@ function onSongEnded() {
         audioPlayer.currentTime = 0;
         audioPlayer.play();
     } else {
-        const filteredSongs = getFilteredSongs();
+        const filteredSongs = getQueueSongs();
         const currentSong = AppState.songs[AppState.player.currentIndex];
         const filteredIndex = filteredSongs.findIndex(s => s.public_id === currentSong?.public_id);
 
@@ -2228,11 +2162,15 @@ function updateFsPlaylist() {
     if (!DOM.fsPlaylistList) return;
 
     let html = '';
-    AppState.songs.forEach((song, index) => {
+    const queueSongs = getQueueSongs();
+    
+    queueSongs.forEach((song) => {
         const name = cleanFileName(song.name);
-        const isActive = index === AppState.player.currentIndex;
+        const globalIndex = AppState.songs.findIndex(s => s.public_id === song.public_id);
+        const isActive = globalIndex === AppState.player.currentIndex;
+        
         html += `
-            <div class="fs-playlist-item ${isActive ? 'active' : ''}" data-index="${index}">
+            <div class="fs-playlist-item ${isActive ? 'active' : ''}" data-id="${song.public_id}">
                 <div class="fs-playlist-item-icon">
                     <i class="fas ${isActive ? 'fa-volume-up' : 'fa-music'}"></i>
                 </div>
@@ -2247,9 +2185,11 @@ function updateFsPlaylist() {
 
     DOM.fsPlaylistList.querySelectorAll('.fs-playlist-item').forEach(item => {
         item.addEventListener('click', () => {
-            const index = parseInt(item.dataset.index);
-            if (index !== AppState.player.currentIndex) {
-                playSong(index);
+            const id = item.dataset.id;
+            const globalIndex = AppState.songs.findIndex(s => s.public_id === id);
+            if (globalIndex !== -1 && globalIndex !== AppState.player.currentIndex) {
+                // Burada updateQueueContext() çağırmırıq, çünki onsuz da mövcud queue daxilində keçid edirik
+                playSong(globalIndex);
             }
         });
     });
