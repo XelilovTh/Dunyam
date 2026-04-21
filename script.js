@@ -305,7 +305,7 @@ function extractTimestamp(filename) {
    MODERN TOAST BİLDİRİŞ SİSTEMİ
    ═══════════════════════════════════════════════════════════════════ */
 
-function showNotification(message, type = 'info', duration = 1000) {
+function showNotification(message, type = 'info', duration = 3000) {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
@@ -933,6 +933,7 @@ function renderGallery() {
         html += `
             <div class="gallery-item stagger-item ${isSelected ? 'item-selected' : ''}" 
                  data-index="${index}"
+                 data-id="${photo.public_id}"
                  style="animation-delay: ${index * 0.05}s">
                 <img src="${photo.download_url}" alt="Xatirə" loading="lazy">
                 <div class="item-checkbox">
@@ -951,7 +952,7 @@ function renderGallery() {
     DOM.galleryGrid.classList.toggle('selection-mode', isSelectionMode);
 
     DOM.galleryGrid.querySelectorAll('.gallery-item').forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
             const index = parseInt(item.dataset.index);
             if (AppState.selection.galleryMode) {
                 togglePhotoSelection(index);
@@ -960,6 +961,11 @@ function renderGallery() {
             }
         });
     });
+
+    // Animasiya bitdikdən sonra stagger-item klasını silirik ki, seçim zamanı təkrarlanmasın
+    setTimeout(() => {
+        DOM.galleryGrid.querySelectorAll('.stagger-item').forEach(el => el.classList.remove('stagger-item'));
+    }, 1000);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1445,7 +1451,7 @@ function renderMusicPlaylist() {
 
     // Listeners for track items
     DOM.musicPlaylist.querySelectorAll('.music-track-item').forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
             const id = item.dataset.id;
             if (AppState.selection.musicMode) {
                 toggleMusicSelection(id);
@@ -1455,6 +1461,11 @@ function renderMusicPlaylist() {
             }
         });
     });
+
+    // Animasiya təmizləmə
+    setTimeout(() => {
+        DOM.musicPlaylist.querySelectorAll('.stagger-item').forEach(el => el.classList.remove('stagger-item'));
+    }, 1000);
 
     // Back button in playlist
     const backBtn = document.getElementById('playlistBackBtn');
@@ -1706,7 +1717,8 @@ function playSong(indexOrId) {
     trackAction("Musiqi dinləyir", cleanFileName(song.name));
 
     if (AppState.player.currentIndex !== -1) {
-        const prevItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+        const prevSong = AppState.songs[AppState.player.currentIndex];
+        const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
         if (prevItem) prevItem.classList.remove('playing');
     }
 
@@ -1733,7 +1745,7 @@ function playSong(indexOrId) {
     };
     audioPlayer.addEventListener('canplay', onCanPlay);
 
-    const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${songIndex}"]`);
+    const currentItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${song.public_id}"]`);
     if (currentItem) currentItem.classList.add('playing');
 
     showPlayer(song);
@@ -1901,7 +1913,8 @@ function playSong(index) {
     trackAction("Musiqi dinləyir", cleanFileName(song.name));
 
     if (AppState.player.currentIndex !== -1) {
-        const prevItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+        const prevSong = AppState.songs[AppState.player.currentIndex];
+        const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
         if (prevItem) prevItem.classList.remove('playing');
     }
 
@@ -1955,7 +1968,8 @@ function hidePlayer() {
     AppState.player.isPlaying = false;
 
     if (AppState.player.currentIndex !== -1) {
-        const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+        const prevSong = AppState.songs[AppState.player.currentIndex];
+        const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
         if (currentItem) currentItem.classList.remove('playing');
     }
     AppState.player.currentIndex = -1;
@@ -2049,7 +2063,8 @@ function updateProgress() {
     if (DOM.fsProgressFill) DOM.fsProgressFill.style.width = percent + '%';
     if (DOM.fsCurrentTime) DOM.fsCurrentTime.textContent = formatTime(audioPlayer.currentTime);
 
-    const currentItem = DOM.musicPlaylist.querySelector(`[data-index="${AppState.player.currentIndex}"]`);
+    const prevSong = AppState.songs[AppState.player.currentIndex];
+    const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
     if (currentItem) {
         const durationEl = currentItem.querySelector('.track-duration');
         if (durationEl && audioPlayer.duration) {
@@ -3013,18 +3028,33 @@ function toggleGallerySelectionMode() {
         updateGalleryDeleteCount();
     }
 
-    renderGallery();
+    // Full render yerinə yalnız class toggling
+    if (DOM.galleryGrid) {
+        DOM.galleryGrid.classList.toggle('selection-mode', AppState.selection.galleryMode);
+        // Bütün seçimləri təmizləyirik (rejimi dəyişəndə)
+        DOM.galleryGrid.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('item-selected'));
+    }
 }
 
 function togglePhotoSelection(index) {
     const idx = AppState.selection.selectedPhotos.indexOf(index);
+    let isSelected = false;
+    
     if (idx === -1) {
         AppState.selection.selectedPhotos.push(index);
+        isSelected = true;
     } else {
         AppState.selection.selectedPhotos.splice(idx, 1);
+        isSelected = false;
     }
+    
+    // DOM-u birbaşa yeniləyirik (animasiya təkrarlanmasın deyə)
+    const item = DOM.galleryGrid.querySelector(`.gallery-item[data-index="${index}"]`);
+    if (item) {
+        item.classList.toggle('item-selected', isSelected);
+    }
+    
     updateGalleryDeleteCount();
-    renderGallery();
 }
 
 function updateGalleryDeleteCount() {
@@ -3095,18 +3125,30 @@ function toggleMusicSelectionMode() {
         updateMusicDeleteCount();
     }
 
-    renderMusicPlaylist();
+    if (DOM.musicPlaylist) {
+        DOM.musicPlaylist.classList.toggle('selection-mode', AppState.selection.musicMode);
+        DOM.musicPlaylist.querySelectorAll('.music-track-item').forEach(el => el.classList.remove('item-selected'));
+    }
 }
 
 function toggleMusicSelection(id) {
     const idx = AppState.selection.selectedMusic.indexOf(id);
+    let isSelected = false;
+
     if (idx === -1) {
         AppState.selection.selectedMusic.push(id);
+        isSelected = true;
     } else {
         AppState.selection.selectedMusic.splice(idx, 1);
+        isSelected = false;
     }
+    
+    const item = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${id}"]`);
+    if (item) {
+        item.classList.toggle('item-selected', isSelected);
+    }
+    
     updateMusicDeleteCount();
-    renderMusicPlaylist();
 }
 
 function updateMusicDeleteCount() {

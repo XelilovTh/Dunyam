@@ -1,0 +1,314 @@
+import os
+
+file_path = r'c:\Users\Victus\OneDrive\Desktop\Tehmaz\DUNYAM\Dunyam\style.css'
+with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+    content = f.read()
+
+# Find the start of the sections I added
+search_term = '/* ═══════════════════════════════════════════════════════════════════'
+if search_term not in content:
+    # If the emojis were mangled, look for TOAST BİLDİRİŞ
+    search_term = '/* ==================================================================='
+
+start_idx = content.find(search_term)
+
+if start_idx != -1:
+    new_styles = """
+/* ═══════════════════════════════════════════════════════════════════
+   TOAST BİLDİRİŞ SİSTEMİ (REFINED)
+   ═══════════════════════════════════════════════════════════════════ */
+#toast-container {
+  position: fixed;
+  bottom: 100px; /* Naviqasiyanın üstündə */
+  right: 20px;
+  z-index: 9999999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  #toast-container {
+    bottom: 90px;
+    right: 10px;
+    left: 10px;
+  }
+  .toast {
+    min-width: auto !important;
+    width: 100%;
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 300px;
+  max-width: 450px;
+  background: rgba(20, 10, 30, 0.85);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  color: white;
+  animation: toastIn 0.5s cubic-bezier(0.17, 0.8, 0.32, 1.2);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast.removing {
+  animation: toastOut 0.5s forwards;
+}
+
+@keyframes toastOut {
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.toast-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(233, 30, 99, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--primary-pink);
+  flex-shrink: 0;
+}
+
+.toast.success .toast-icon { color: #10b981; background: rgba(16, 185, 129, 0.15); }
+.toast.error .toast-icon { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+
+.toast-content { flex: 1; }
+.toast-message { font-size: 0.95rem; font-weight: 500; }
+
+.toast-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s;
+}
+
+.toast-close:hover { color: white; }
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.toast-progress-fill {
+  height: 100%;
+  background: var(--primary-pink);
+  width: 100%;
+  animation: toastProgress linear forwards;
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOPLU SEÇİM VƏ İDARƏETMƏ STİLLƏRİ (PREMIUM)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.section-actions {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0;
+  padding: 5px;
+  animation: fadeIn 0.4s ease;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn i {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.action-btn.active {
+  background: linear-gradient(135deg, var(--primary-pink), #ff4081);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 20px rgba(233, 30, 99, 0.4);
+}
+
+.action-btn.active i {
+  transform: rotate(360deg);
+}
+
+.action-btn.delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #ff8a80;
+}
+
+.action-btn.delete-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Checkbox Style (Refined) */
+.item-checkbox {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 28px;
+  height: 28px;
+  background: rgba(15, 10, 20, 0.6);
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5) rotate(-45deg);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.selection-mode .item-checkbox {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) rotate(0);
+}
+
+.item-checkbox i {
+  color: white;
+  font-size: 14px;
+  transform: scale(0);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.item-selected .item-checkbox {
+  background: var(--primary-pink);
+  border-color: var(--primary-pink);
+  box-shadow: 0 0 15px rgba(233, 30, 99, 0.5);
+}
+
+.item-selected .item-checkbox i {
+  transform: scale(1);
+}
+
+/* Gallery Item Selection */
+.gallery-item.item-selected {
+  transform: scale(0.92);
+}
+
+.gallery-item.item-selected img {
+  filter: brightness(0.7) saturate(1.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARI MAHNININ VİSUAL OLARAQ SEÇİLMƏSİ (IMPROVED)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.music-track-item.playing {
+  background: linear-gradient(90deg, rgba(233, 30, 99, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  border: 1px solid rgba(233, 30, 99, 0.4) !important;
+  box-shadow: inset 0 0 20px rgba(233, 30, 99, 0.1), 0 10px 30px rgba(0, 0, 0, 0.2);
+  transform: translateX(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.music-track-item.playing::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary-pink), var(--secondary-coral));
+  box-shadow: 0 0 10px var(--primary-pink);
+}
+
+.music-track-item.playing .track-title {
+  color: var(--primary-pink);
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
+}
+
+.music-track-item.playing .track-play-icon {
+  background: var(--primary-pink);
+  color: white;
+  box-shadow: 0 0 15px var(--primary-pink-glow);
+  transform: scale(1.1);
+}
+
+/* Mahnı oxunarkən kiçik animasiya */
+.music-track-item.playing .track-number {
+  position: relative;
+  color: transparent;
+}
+
+.music-track-item.playing .track-number::after {
+  content: '\\f001'; /* FontAwesome music icon */
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary-pink);
+  font-size: 1rem;
+  animation: musicPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes musicPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+}
+"""
+    final_content = content[:start_idx] + new_styles
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(final_content)
+else:
+    print("Search term not found!")
