@@ -473,6 +473,7 @@ function initApp() {
     initStarsCanvas();
     initSelectionSystem(); // Yeni toplu seçim sistemi
     loadInitialData();
+    setTimeout(() => Visualizer.init(), 300); // Vizuallaşdırıcı barlarını init et
 
     AppState.currentSection = 'home';
     if (DOM.sections.home) {
@@ -2043,6 +2044,15 @@ function updatePlayButton(isPlaying) {
             DOM.fsVinylRecord.classList.remove('playing');
         }
     }
+
+    // Vizuallaşdırıcını musiqinin vəziyyətinə uyğun idarə et
+    if (typeof Visualizer !== 'undefined') {
+        if (isPlaying) {
+            Visualizer.start();
+        } else {
+            Visualizer.pause();
+        }
+    }
 }
 
 function updateDuration() {
@@ -3222,6 +3232,138 @@ async function bulkDeleteMusic() {
     }
 }
 
+
 /* ═══════════════════════════════════════════════════════════════════
    JAVASCRIPT SONU - v2.1.0
    ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   WEB AUDIO API VİZUALLAŞDIRICI SİSTEMİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+const Visualizer = (() => {
+    let audioCtx = null;
+    let analyser = null;
+    let source = null;
+    let animFrameId = null;
+    let bars = [];
+    let isConnected = false;
+
+    // Tezlik diapazonları (bass → treble) üçün bin indeksləri
+    // 9 bar üçün əsas tezlik diapazonları
+    const FREQ_BANDS = [
+        [0,  2],   // Sub-bass
+        [2,  4],   // Bass
+        [4,  7],   // Low-mid
+        [7,  12],  // Mid
+        [12, 18],  // Upper-mid
+        [18, 26],  // Presence
+        [26, 36],  // Brilliance
+        [36, 50],  // High
+        [50, 70],  // Air
+    ];
+
+    function init() {
+        bars = Array.from({ length: 9 }, (_, i) => document.getElementById(`visBar${i}`));
+        // idle animasiya üçün CSS custom property
+        bars.forEach((bar, i) => {
+            if (bar) bar.style.setProperty('--i', i);
+        });
+    }
+
+    function setupAudio() {
+        if (isConnected) return; // artıq qoşulub
+
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            analyser.smoothingTimeConstant = 0.8;
+
+            // audioPlayer elementini AudioContext-ə qoş
+            source = audioCtx.createMediaElementSource(audioPlayer);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+
+            isConnected = true;
+        } catch (e) {
+            console.warn('Web Audio API qoşulmadı:', e);
+        }
+    }
+
+    function getFrequencyAverage(dataArray, startBin, endBin) {
+        let sum = 0;
+        const count = endBin - startBin;
+        for (let i = startBin; i < endBin && i < dataArray.length; i++) {
+            sum += dataArray[i];
+        }
+        return count > 0 ? sum / count : 0;
+    }
+
+    function drawBars(dataArray) {
+        const visualizer = document.getElementById('fsVisualizer');
+        if (!visualizer) return;
+
+        FREQ_BANDS.forEach(([start, end], i) => {
+            const bar = bars[i];
+            if (!bar) return;
+
+            const avg = getFrequencyAverage(dataArray, start, end);
+            // 0-255 arasından 4px-60px aralığına map et
+            const heightPx = 4 + (avg / 255) * 56;
+            bar.style.height = `${heightPx}px`;
+        });
+    }
+
+    function animate() {
+        if (!analyser) return;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        drawBars(dataArray);
+
+        animFrameId = requestAnimationFrame(animate);
+    }
+
+    function start() {
+        const visualizer = document.getElementById('fsVisualizer');
+        if (!visualizer) return;
+
+        setupAudio();
+        visualizer.classList.remove('idle');
+
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        animate();
+    }
+
+    function pause() {
+        const visualizer = document.getElementById('fsVisualizer');
+
+        // AnimFrame dayandır, barları yavaş-yavaş sıfırla
+        if (animFrameId) {
+            cancelAnimationFrame(animFrameId);
+            animFrameId = null;
+        }
+
+        // Barları minimal hündürlüyə endirməklə birlikdə idle animasiya başlat
+        bars.forEach(bar => {
+            if (bar) bar.style.height = '4px';
+        });
+
+        if (visualizer) {
+            visualizer.classList.add('idle');
+        }
+    }
+
+    function resume() {
+        start();
+    }
+
+    return { init, start, pause, resume };
+})();
