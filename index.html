@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dünyamız</title>
+  <meta name="description" content="Fidan və Təhmazın sevgi dolu dünyası">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- CSS (sonra yazılacaq) -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ARXA FON ANİMASİYASI (Canvas və ya CSS)                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="universe-background" id="universe-bg"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- BİLDİRİŞ PANELİ                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+  <div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- GİRİŞ EKRANI                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-container">
+    
+    <!-- Dekorativ elementlər -->
+    <div class="login-decoration">
+      <div class="orbit-ring"></div>
+      <div class="orbit-ring"></div>
+      <div class="orbit-ring"></div>
+    </div>
+    
+    <!-- Əsas giriş kartı -->
+    <div class="login-card">
+      
+      <!-- Animasiyalı ürək -->
+      <div class="login-heart">
+        <i class="fas fa-heart"></i>
+      </div>
+      
+      <!-- Başlıq -->
+      <h1 class="login-title">
+        <span class="title-main">Bizim Dünyamız</span>
+      </h1>
+      
+      <!-- Alt başlıq -->
+      <div class="login-names">
+        <span class="name-fidan">Fidan</span>
+        <span class="name-ampersand">&</span>
+        <span class="name-tehmaz">Təhmaz</span>
+      </div>
+      
+      <!-- Şifrə formu -->
+      <form class="login-form" id="loginForm">
+        <div class="input-wrapper">
+          <i class="fas fa-key input-icon"></i>
+          <input 
+            type="password" 
+            id="passwordInput" 
+            class="login-input" 
+            placeholder="Xəyalımızın adı..."
+            autocomplete="off"
+          >
+          <span class="input-focus-border"></span>
+        </div>
+        
+        <button type="submit" class="login-button">
+          <span class="button-text">Daxil ol</span>
+          <i class="fas fa-arrow-right"></i>
+          <span class="button-glow"></span>
+        </button>
+      </form>
+      
+      
+      <!-- Footer mətni -->
+      <p class="login-footer">
+        <i class="fas fa-infinity"></i>
+        -----
+        <i class="fas fa-infinity"></i>
+      </p>
+      
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ƏSAS TƏTBİQ (Girişdən sonra görünəcək)                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="app-container" id="appContainer">
+  
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <!-- HEADER                                                        -->
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-content">
+      
+      <!-- Mərkəz - Başlıq -->
+      <div class="header-center">
+        <h1 class="header-title">
+          <span class="title-main">💗Bizim Dünyamız💗</span>
+        </h1>
+      </div>
+      
+    </div>
+  </header>
+  
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <!-- ƏSAS KONTENT SAHƏSİ                                           -->
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <main class="app-main" id="appMain">
+    
+    <!-- ===== ANA SƏHİFƏ ===== -->
+    <section class="page-section home-section" id="homeSection">
+      <div class="page-content">
+        
+        <!-- Hero bölməsi -->
+        <div class="hero-section stagger-item" style="animation-delay: 0.1s">
+          <div class="hero-heart" id="heroHeart">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h2 class="hero-title">Fidan & Təhmaz</h2>
+        </div>
+        
+        <!-- Vaxt sayğacı -->
+        <div class="counter-card stagger-item" id="counterCard" style="animation-delay: 0.2s">
+          <div class="counter-header">
+            <i class="fas fa-calendar-heart"></i>
+            <h3>Birlikdə keçən zaman</h3>
+          </div>
+          
+          <div class="counter-date">
+            <i class="far fa-calendar-alt"></i>
+            <span>1 Fevral 2023</span>
+          </div>
+          
+          <div class="counter-grid">
+            <!-- Günlər -->
+            <div class="counter-item counter-days">
+              <div class="counter-value" id="daysCounter">0000</div>
+              <div class="counter-label">Gün</div>
+            </div>
+            
+            <!-- Saatlar -->
+            <div class="counter-item">
+              <div class="counter-value" id="hoursCounter">00</div>
+              <div class="counter-label">Saat</div>
+            </div>
+            
+            <!-- Dəqiqələr -->
+            <div class="counter-item">
+              <div class="counter-value" id="minutesCounter">00</div>
+              <div class="counter-label">Dəqiqə</div>
+            </div>
+            
+            <!-- Saniyələr -->
+            <div class="counter-item">
+              <div class="counter-value" id="secondsCounter">00</div>
+              <div class="counter-label">Saniyə</div>
+            </div>
+          </div>
+          
+          <!-- İrəliləyiş barı -->
+          <div class="counter-progress">
+            <div class="progress-bar" id="loveProgressBar"></div>
+          </div>
+        </div>
+        
+        <!-- Statistikalar -->
+        <div class="stats-container">
+          <div class="stat-card stagger-item" style="animation-delay: 0.3s">
+            <div class="stat-icon">
+              <i class="fas fa-camera-retro"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="photoCount">0</span>
+              <span class="stat-label">Şəkil</span>
+            </div>
+          </div>
+          
+          <div class="stat-card stagger-item" style="animation-delay: 0.4s">
+            <div class="stat-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="letterCount">0</span>
+              <span class="stat-label">Məktub</span>
+            </div>
+          </div>
+          
+          <div class="stat-card stagger-item" style="animation-delay: 0.5s">
+            <div class="stat-icon">
+              <i class="fas fa-music"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="songCount">0</span>
+              <span class="stat-label">Musiqi</span>
+            </div>
+          </div>
+        </div>
+        
+        
+        
+        <!-- Sürpriz düyməsi -->
+        <div class="surprise-button-wrapper stagger-item" style="animation-delay: 0.6s">
+          <button class="surprise-button" id="surpriseButton">
+            <i class="fas fa-gift"></i>
+            <span>Sürprizə keç</span>
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        
+                <!-- ❤️ SEVGİ GÜCÜ - ÜRƏYƏ BASILI TUT ❤️ -->
+        <section class="love-power-section stagger-item" style="animation-delay: 0.7s">
+          <div class="love-container">
+            <p>Ürəyə basılı tut...</p>
+            <div id="hold-heart" class="heart-trigger">
+              <i class="fas fa-heart"></i>
+            </div>
+            <span id="power-percent">0%</span>
+          </div>
+        </section>
+        
+        <!-- Sevgi mesajı -->
+        <div class="love-message stagger-item" style="animation-delay: 0.8s">
+          <div class="message-content">
+            <i class="fas fa-heart message-heart"></i>
+            <p>Sən mənim hərşeyimsən Fidanım</p>
+            <i class="fas fa-heart message-heart"></i>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <!-- ===== QALEREYA ===== -->
+    <section class="page-section gallery-section" id="gallerySection">
+      <div class="page-content">
+        
+        <div class="section-header">
+          <i class="fas fa-images"></i>
+          <h2>Şəkillərimiz</h2>
+          <span class="header-line"></span>
+        </div>
+        
+       
+        
+        <!-- Şəkil qalereyası -->
+        <div class="gallery-grid" id="galleryGrid">
+          <!-- Şəkillər JavaScript ilə doldurulacaq -->
+          <div class="gallery-loading">
+            <div class="loading-spinner"></div>
+            <p>Xatirələr yüklənir...</p>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <!-- ===== MƏKTUBLAR ===== -->
+    <section class="page-section letters-section" id="lettersSection">
+      <div class="page-content">
+        
+        <div class="section-header">
+          <i class="fas fa-envelope-open-text"></i>
+          <h2>Məktublarımız</h2>
+          <span class="header-line"></span>
+        </div>
+        
+        <!-- Məktub siyahısı -->
+        <div class="letters-list" id="lettersList">
+          <!-- Məktublar JavaScript ilə doldurulacaq -->
+          <div class="letters-loading">
+            <div class="loading-spinner"></div>
+            <p>Məktublar yüklənir...</p>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <!-- ===== MUSİQİLƏR ===== -->
+    <section class="page-section music-section" id="musicSection">
+      <div class="page-content">
+        
+        <div class="section-header">
+          <i class="fas fa-headphones"></i>
+          <h2>Musiqilərimiz</h2>
+          <span class="header-line"></span>
+        </div>
+
+        <!-- Musiqi Kateqoriyaları -->
+        <div class="music-tabs">
+          <button class="music-tab active" data-tab="all">Hamısı</button>
+          <button class="music-tab" data-tab="favorites">Favorilər</button>
+          <button class="music-tab" data-tab="custom">Xüsusi</button>
+        </div>
+        
+        <!-- Musiqi pleylisti -->
+        <div class="music-playlist" id="musicPlaylist">
+          <!-- Musiqilər JavaScript ilə doldurulacaq -->
+          <div class="music-loading">
+            <div class="loading-spinner"></div>
+            <p>Musiqilər yüklənir...</p>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+    
+    <!-- ===== SÜPRİZLƏR ===== -->
+    <section class="page-section surprises-section" id="surprisesSection">
+      <div class="page-content">
+        
+        <div class="section-header">
+          <i class="fas fa-gift"></i>
+          <h2>Sürprizlər</h2>
+          <span class="header-line"></span>
+        </div>
+        
+        <!-- Geri düyməsi -->
+        <button class="back-button" id="backFromSurprises">
+          <i class="fas fa-arrow-left"></i>
+          <span>Ana səhifə</span>
+        </button>
+        
+        <!-- Sürpriz kartları -->
+        <div class="surprises-grid">
+          
+          <a href="https://surpriz-no1.vercel.app/" class="surprise-card">
+            <div class="card-glow"></div>
+            <div class="card-icon">
+              <i class="fas fa-star"></i>
+            </div>
+            <h3>Sürpriz #1</h3>
+            <p>İlk sürprizimiz</p>
+            <i class="fas fa-arrow-right card-arrow"></i>
+          </a>
+          
+          <a href="https://surpriz2.vercel.app/" class="surprise-card">
+            <div class="card-glow"></div>
+            <div class="card-icon">
+              <i class="fas fa-heart"></i>
+            </div>
+            <h3>Sürpriz #2</h3>
+            <p>İkinci sürprizimiz</p>
+            <i class="fas fa-arrow-right card-arrow"></i>
+          </a>
+          
+          <a href="surpriz_3.html" class="surprise-card">
+            <div class="card-glow"></div>
+            <div class="card-icon">
+              <i class="fas fa-crown"></i>
+            </div>
+            <h3>Sürpriz #3</h3>
+            <p>Üçüncü sürprizimiz</p>
+            <i class="fas fa-arrow-right card-arrow"></i>
+          </a>
+          
+          <a href="#" class="surprise-card" id="specialSurprise4">
+            <div class="card-glow"></div>
+            <div class="card-icon">
+              <i class="fas fa-magic"></i>
+            </div>
+            <h3>Sürpriz #4</h3>
+            <p>Xüsusi sürpriz</p>
+            <i class="fas fa-arrow-right card-arrow"></i>
+          </a>
+          
+        </div>
+        
+      </div>
+    </section>
+    
+  </main>
+  
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <!-- ALT NAVİQASİYA PANELİ                                         -->
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <nav class="bottom-navigation" id="bottomNav">
+    <div class="nav-container">
+      
+      <button class="nav-item active" data-section="home">
+        <i class="fas fa-home"></i>
+        <span>Ana səhifə</span>
+      </button>
+      
+      <button class="nav-item" data-section="gallery">
+        <i class="fas fa-images"></i>
+        <span>Şəkillər</span>
+      </button>
+      
+      <button class="nav-item" data-section="letters">
+        <i class="fas fa-envelope"></i>
+        <span>Məktublar</span>
+      </button>
+      
+      <button class="nav-item" data-section="music">
+        <i class="fas fa-music"></i>
+        <span>Musiqilər</span>
+      </button>
+      
+    </div>
+  </nav>
+  
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MUSİQİ PLEYERİ (Aşağıda, naviqasiyanın üstündə)                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="music-player" id="musicPlayer">
+  <div class="player-container">
+    
+    <!-- Mahnı məlumatı -->
+    <div class="player-info">
+      <div class="player-thumbnail">
+        <i class="fas fa-music"></i>
+      </div>
+      <div class="player-details">
+        <span class="player-title" id="currentSongTitle">Musiqi seçilməyib</span>
+        <span class="player-artist" id="currentSongArtist">Mahnı seçin</span>
+      </div>
+    </div>
+    
+    <!-- İdarəetmə düymələri -->
+    <div class="player-controls">
+      <button class="player-btn" id="prevSongBtn" title="Əvvəlki">
+        <i class="fas fa-backward"></i>
+      </button>
+      
+      <button class="player-btn player-play-btn" id="playPauseBtn" title="Oxut">
+        <i class="fas fa-play"></i>
+      </button>
+      
+      <button class="player-btn" id="nextSongBtn" title="Növbəti">
+        <i class="fas fa-forward"></i>
+      </button>
+    </div>
+    
+    <!-- Səs və proqress bar -->
+    <div class="player-progress-container">
+      <span class="progress-time" id="currentTime">0:00</span>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0">
+      </div>
+      <span class="progress-time" id="durationTime">0:00</span>
+    </div>
+    
+    <!-- Səs idarəsi -->
+    <div class="player-volume">
+      <button class="volume-btn" id="volumeBtn">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      <div class="volume-slider-wrapper">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+      </div>
+    </div>
+    
+    <!-- Bağlama düyməsi -->
+    <button class="player-close" id="closePlayerBtn" title="Bağla">
+      <i class="fas fa-times"></i>
+    </button>
+    
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ŞƏKİL MODAL PENCƏRƏSİ                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="lightbox-modal" id="lightboxModal">
+  <button class="lightbox-close" id="lightboxClose">
+    <i class="fas fa-times"></i>
+  </button>
+  <button class="lightbox-delete" id="lightboxDelete" title="Şəkili sil">
+    <i class="fas fa-trash-alt"></i>
+  </button>
+  
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  
+  <div class="lightbox-content">
+    <img src="" alt="" id="lightboxImage">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+  
+  <button class="lightbox-nav lightbox-next" id="lightboxNext">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+  
+  <div class="lightbox-counter" id="lightboxCounter">1 / 10</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MƏKTUB MODAL PENCƏRƏSİ                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="letter-modal" id="letterModal">
+  <div class="letter-modal-container">
+    
+    <div class="letter-modal-header">
+      <i class="fas fa-envelope"></i>
+      <h3 id="letterModalTitle">Məktub başlığı</h3>
+      <div class="letter-modal-actions">
+        <button class="letter-modal-delete" id="letterModalDelete" title="Məktubu sil">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+        <button class="letter-modal-close" id="letterModalClose">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="letter-modal-body" id="letterModalBody">
+      <p>Məktub mətni burada görünəcək...</p>
+    </div>
+    
+    <div class="letter-modal-footer">
+      <i class="fas fa-heart"></i>
+      <span>Sevgi ilə yazıldı</span>
+      <i class="fas fa-heart"></i>
+    </div>
+    
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ADMIN PANEL                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-container">
+    
+    <!-- Admin header -->
+    <div class="admin-header">
+      <div class="admin-title">
+        <i class="fas fa-user-shield"></i>
+        <h2>Admin Panel</h2>
+      </div>
+      <button class="admin-close" id="adminClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- Admin tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-admin-tab="photos">
+        <i class="fas fa-camera"></i>
+        <span>Şəkillər</span>
+      </button>
+      <button class="admin-tab" data-admin-tab="letters">
+        <i class="fas fa-envelope"></i>
+        <span>Məktublar</span>
+      </button>
+      <button class="admin-tab" data-admin-tab="music">
+        <i class="fas fa-music"></i>
+        <span>Musiqilər</span>
+      </button>
+    </div>
+    
+    <!-- Admin kontent -->
+    <div class="admin-content">
+      
+      <!-- Şəkillər paneli -->
+      <div class="admin-pane active" id="adminPhotosPane">
+        <div class="admin-pane-header">
+          <h3>Şəkil yüklə</h3>
+        </div>
+        
+        <div class="upload-area" id="photoUploadArea">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Şəkil seçmək üçün toxun</p>
+          <span>və ya sürüşdürüb burax</span>
+          <input type="file" id="photoFileInput" accept="image/*" style="display: none;">
+        </div>
+        
+     <!-- Şəkil yükləmə preview - DƏYİŞDİRİLƏCƏK HİSSƏ -->
+<div class="upload-preview" id="photoPreview" style="display: none;">
+  <img src="" alt="Preview" id="photoPreviewImage">
+  <div class="preview-info">
+    <span id="photoFileName">fayl_adı.jpg</span>
+    <span id="photoFileSize">0 KB</span>
+  </div>
+  <button class="preview-cancel" onclick="cancelPhotoSelection()" type="button">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+        
+        <div class="admin-status" id="photoUploadStatus"></div>
+        
+        <button class="admin-button" id="uploadPhotoBtn">
+          <i class="fas fa-upload"></i>
+          <span>Şəkli yüklə</span>
+        </button>
+      </div>
+      
+      <!-- Məktublar paneli -->
+      <div class="admin-pane" id="adminLettersPane">
+        <div class="admin-pane-header">
+          <h3>Məktub yaz</h3>
+        </div>
+        
+        <div class="admin-form">
+          <div class="form-group">
+            <label for="letterAuthorInput">Müəllif</label>
+            <select id="letterAuthorInput" class="admin-select">
+              <option value="Fidan">Fidan</option>
+              <option value="Təhmaz">Təhmaz</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="letterTitleInput">Məktub başlığı</label>
+            <input type="text" id="letterTitleInput" placeholder="Məs: İlk məktubum...">
+          </div>
+          
+          <div class="form-group">
+            <label for="letterContentInput">Məktub mətni</label>
+            <textarea id="letterContentInput" placeholder="Sevgilim, ..." rows="6"></textarea>
+          </div>
+        </div>
+        
+        <div class="admin-status" id="letterUploadStatus"></div>
+        
+        <button class="admin-button" id="uploadLetterBtn">
+          <i class="fas fa-paper-plane"></i>
+          <span>Məktubu yüklə</span>
+        </button>
+      </div>
+      
+      <!-- Musiqilər paneli -->
+      <div class="admin-pane" id="adminMusicPane">
+        <div class="admin-pane-header">
+          <h3>Musiqi yüklə</h3>
+        </div>
+        
+        <div class="upload-area" id="musicUploadArea">
+          <i class="fas fa-headphones"></i>
+          <p>Musiqi faylı seç</p>
+          <span>MP3, WAV, OGG formatları</span>
+          <input type="file" id="musicFileInput" accept="audio/*" style="display: none;">
+        </div>
+        
+       <!-- Musiqi yükləmə preview - DƏYİŞDİRİLƏCƏK HİSSƏ -->
+<div class="upload-preview" id="musicPreview" style="display: none;">
+  <i class="fas fa-file-audio"></i>
+  <div class="preview-info">
+    <span id="musicFileName">fayl_adı.mp3</span>
+    <span id="musicFileSize">0 MB</span>
+  </div>
+  <button class="preview-cancel" onclick="cancelMusicSelection()" type="button">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+        
+        <div class="admin-status" id="musicUploadStatus"></div>
+        
+        <button class="admin-button" id="uploadMusicBtn">
+          <i class="fas fa-upload"></i>
+          <span>Musiqini yüklə</span>
+        </button>
+      </div>
+      
+    </div>
+    
+    <!-- Admin footer -->
+    <div class="admin-footer">
+      <p><i class="fas fa-shield-alt"></i>İdarəetmə paneli</p>
+    </div>
+    
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TAM EKRAN MUSİQİ PLEYERİ                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="fullscreen-player" id="fullscreenPlayer">
+  <!-- Arxa plan rəng effekti -->
+  <div class="fs-bg-glow"></div>
+  
+  <div class="fs-header">
+    <button class="fs-btn" id="fsCloseBtn"><i class="fas fa-chevron-down"></i></button>
+    <div class="fs-header-actions">
+      <button class="fs-btn fs-heart-btn" id="fsHeartBtn"><i class="far fa-heart"></i></button>
+      <div class="fs-more-container">
+        <button class="fs-btn" id="fsMoreBtn"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="fs-more-dropdown" id="fsMoreDropdown">
+          <button id="fsRenameBtn"><i class="fas fa-edit"></i> Adı dəyiş</button>
+          <button id="fsPlaylistAddBtn"><i class="fas fa-list-ul"></i> Playlistə əlavə et</button>
+          <button id="fsDeleteBtn" class="delete-option"><i class="fas fa-trash-alt"></i> Sil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Fırlanan Val -->
+  <div class="fs-vinyl-container">
+    <div class="fs-vinyl-record" id="fsVinylRecord">
+      <div class="fs-vinyl-center">
+        <i class="fas fa-heart"></i>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Məlumatlar -->
+  <div class="fs-info">
+    <h2 class="fs-title" id="fsTitle">Musiqi seçilməyib</h2>
+    <p class="fs-artist" id="fsArtist">▶︎•၊၊||၊|။|||||။၊|။•</p>
+  </div>
+  
+  <!-- Proqress -->
+  <div class="fs-progress-container">
+    <div class="fs-progress-bar-wrapper">
+      <div class="fs-progress-bar-bg">
+        <div class="fs-progress-bar-fill" id="fsProgressFill"></div>
+      </div>
+      <input type="range" min="0" max="100" value="0" class="fs-progress-slider" id="fsProgressSlider">
+    </div>
+    <div class="fs-time-row">
+      <span id="fsCurrentTime">0:00</span>
+      <span id="fsDurationTime">--:--</span>
+    </div>
+  </div>
+  
+  <!-- İdarəetmə -->
+  <div class="fs-controls">
+    <button class="fs-btn-control" id="fsShuffleBtn"><i class="fas fa-random"></i></button>
+    <button class="fs-btn-control fs-skip" id="fsPrevBtn"><i class="fas fa-step-backward"></i></button>
+    <button class="fs-btn-control fs-play" id="fsPlayBtn"><i class="fas fa-play"></i></button>
+    <button class="fs-btn-control fs-skip" id="fsNextBtn"><i class="fas fa-step-forward"></i></button>
+    <button class="fs-btn-control" id="fsRepeatBtn"><i class="fas fa-redo"></i></button>
+  </div>
+  
+  <!-- Playlist bölməsi -->
+  <div class="fs-playlist-section">
+    <div class="fs-playlist-header">
+      <h4>Sıradakılar</h4>
+      <i class="fas fa-chevron-up" id="fsPlaylistToggle"></i>
+    </div>
+    <div class="fs-playlist-list" id="fsPlaylistList">
+      <!-- Mahnılar bura düşəcək -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PLAYLIST MODAL                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="playlist-modal" id="playlistModal">
+  <div class="playlist-modal-container">
+    <div class="playlist-modal-header">
+      <h3>Playlistə əlavə et</h3>
+      <button class="playlist-modal-close" id="playlistModalClose"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="playlist-modal-body">
+      <button class="create-playlist-btn" id="createPlaylistBtn">
+        <i class="fas fa-plus"></i> Playlist yarat
+      </button>
+      
+      <div class="new-playlist-form" id="newPlaylistForm" style="display: none;">
+        <input type="text" id="playlistNameInput" placeholder="Playlist adı...">
+        <button id="savePlaylistBtn">Yarat</button>
+      </div>
+      
+      <div class="existing-playlists" id="existingPlaylistsList">
+        <!-- Playlistlər bura düşəcək -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
