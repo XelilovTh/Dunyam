@@ -996,7 +996,7 @@ function initLightbox() {
             DOM.lightboxDelete.disabled = true;
             DOM.lightboxDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            const success = await cloudinaryDelete(photo.public_id || photo.name);
+            const success = await cloudinaryDelete(photo.public_id || photo.name, 'image');
 
             if (success) {
                 await removePhotoFromMetadata(photo.public_id || photo.name);
@@ -1077,9 +1077,15 @@ function updateLightboxImage() {
    CLOUDINARY SİLMƏ FUNKSİYASI
    ═══════════════════════════════════════════════════════════════════ */
 
-async function cloudinaryDelete(publicId) {
+async function cloudinaryDelete(publicId, resourceType = 'image') {
+    const config = resourceType === 'video' ? CLOUDINARY_MUSIC_CONFIG : CLOUDINARY_CONFIG;
     try {
-        const data = await githubRequestProxy('cloudinary_delete', { public_id: publicId });
+        const data = await githubRequestProxy('cloudinary_delete', { 
+            public_id: publicId,
+            resource_type: resourceType,
+            cloud_name: config.cloud_name,
+            api_key: config.api_key
+        });
         return data.result === 'ok';
     } catch (error) {
         console.error('Cloudinary silmə xətası:', error);
@@ -1658,7 +1664,7 @@ function initMusicMoreMenu() {
 
             try {
                 // 1. Cloudinary-dən sil
-                const cloudSuccess = await cloudinaryDelete(song.public_id);
+                const cloudSuccess = await cloudinaryDelete(song.public_id, 'video');
                 
                 // 2. Metadata-dan sil
                 const content = await githubGetFile('music_list.json');
@@ -3135,7 +3141,7 @@ async function bulkDeletePhotos() {
         let successCount = 0;
 
         for (const photo of photosToDelete) {
-            const success = await cloudinaryDelete(photo.public_id);
+            const success = await cloudinaryDelete(photo.public_id, 'image');
             if (success) {
                 await removePhotoFromMetadata(photo.public_id);
                 successCount++;
@@ -3232,7 +3238,7 @@ async function bulkDeleteMusic() {
         for (const id of selectedIds) {
             const song = AppState.songs.find(s => s.public_id === id);
             if (song) {
-                const cloudSuccess = await cloudinaryDelete(id);
+                const cloudSuccess = await cloudinaryDelete(id, 'video');
                 if (cloudSuccess) {
                     songs = songs.filter(s => s.public_id !== id);
                     
