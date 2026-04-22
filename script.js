@@ -437,18 +437,30 @@ function initLogin() {
     });
 }
 
-function performLogin() {
+function performLogin(isAutoLogin = false) {
     AppState.isLoggedIn = true;
-    trackAction("Sistemə daxil oldu", "Uğurlu giriş");
+    
+    // Session yaddaşında qeyd et (Tab bağlanana qədər)
+    sessionStorage.setItem('dunyamiz_logged_in', 'true');
 
-    DOM.loginScreen.style.opacity = '0';
-    DOM.loginScreen.style.transition = 'opacity 0.8s ease-out';
+    if (!isAutoLogin) {
+        trackAction("Sistemə daxil oldu", "Uğurlu giriş");
+        
+        DOM.loginScreen.style.opacity = '0';
+        DOM.loginScreen.style.transition = 'opacity 0.8s ease-out';
 
-    setTimeout(() => {
+        setTimeout(() => {
+            DOM.loginScreen.classList.add('hidden');
+            DOM.appContainer.classList.add('visible');
+            initApp();
+        }, 800);
+    } else {
+        // Avtomatik giriş (Geri qayıdanda və ya F5-də)
         DOM.loginScreen.classList.add('hidden');
+        DOM.loginScreen.style.display = 'none';
         DOM.appContainer.classList.add('visible');
         initApp();
-    }, 800);
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2943,6 +2955,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     initLogin();
+    
+    // SessionStorage yoxla (Əgər artıq daxil olubsa)
+    const wasLoggedIn = sessionStorage.getItem('dunyamiz_logged_in');
+    if (wasLoggedIn === 'true') {
+        performLogin(true);
+    }
+
     loadAppState();
     initOfflineSupport();
     initLovePower();
