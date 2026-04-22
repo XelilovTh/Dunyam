@@ -437,12 +437,9 @@ function initLogin() {
     });
 }
 
-function performLogin(isAutoLogin = false) {
+function performLogin(isAutoLogin = false, startSection = 'home') {
     AppState.isLoggedIn = true;
     
-    // Session yaddaşında qeyd et (Tab bağlanana qədər)
-    sessionStorage.setItem('dunyamiz_logged_in', 'true');
-
     if (!isAutoLogin) {
         trackAction("Sistemə daxil oldu", "Uğurlu giriş");
         
@@ -453,13 +450,15 @@ function performLogin(isAutoLogin = false) {
             DOM.loginScreen.classList.add('hidden');
             DOM.appContainer.classList.add('visible');
             initApp();
+            navigateTo(startSection);
         }, 800);
     } else {
-        // Avtomatik giriş (Geri qayıdanda və ya F5-də)
+        // Avtomatik giriş (Yalnız Sürprizdən qayıdanda)
         DOM.loginScreen.classList.add('hidden');
         DOM.loginScreen.style.display = 'none';
         DOM.appContainer.classList.add('visible');
         initApp();
+        navigateTo(startSection);
     }
 }
 
@@ -2956,10 +2955,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initLogin();
     
-    // SessionStorage yoxla (Əgər artıq daxil olubsa)
-    const wasLoggedIn = sessionStorage.getItem('dunyamiz_logged_in');
-    if (wasLoggedIn === 'true') {
-        performLogin(true);
+    // Sürprizdən qayıdıb-qayıtmadığını yoxla
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('from') === 'surprise') {
+        // Parametri URL-dən təmizləyirik (F5 edəndə şifrə istəsin deyə)
+        window.history.replaceState({}, document.title, window.location.pathname);
+        performLogin(true, 'surprises');
     }
 
     loadAppState();
