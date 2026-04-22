@@ -3,8 +3,8 @@ const cloudinary = require('cloudinary').v2;
 
 // Cloudinary config
 cloudinary.config({
-    cloud_name: 'dojz9uzhe',
-    api_key: '241982348988817',
+    cloud_name: process.env.CL_NAME || 'dojz9uzhe',
+    api_key: process.env.CL_KEY || '241982348988817',
     api_secret: process.env.CL_SECRET
 });
 
@@ -29,12 +29,18 @@ module.exports = async (req, res) => {
 
     const { action, ...data } = req.body;
 
+    const GITHUB_OWNER = process.env.GH_OWNER || 'XelilovTh';
+    const GITHUB_REPO = process.env.GH_REPO || 'Dunyam';
+
     // YOXLAMA (DEBUG) ƏMƏLİYYATI
     if (action === 'debug_check') {
         return res.json({
             gh_token_exists: !!process.env.GH_TOKEN,
             cl_secret_exists: !!process.env.CL_SECRET,
+            cl_music_secret_exists: !!process.env.CL_MUSIC_SECRET,
             tg_token_exists: !!process.env.TG_TOKEN,
+            gh_owner: GITHUB_OWNER,
+            gh_repo: GITHUB_REPO,
             status: "Proxy is alive and ready!"
         });
     }
@@ -54,7 +60,7 @@ module.exports = async (req, res) => {
         switch (action) {
             case 'github_get':
                 try {
-                    const getRes = await axios.get(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                    const getRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, {
                         headers: ghHeaders
                     });
                     return res.json(getRes.data);
@@ -66,7 +72,7 @@ module.exports = async (req, res) => {
                 }
 
             case 'github_upload':
-                const uploadRes = await axios.put(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                const uploadRes = await axios.put(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, {
                     message: data.message,
                     content: data.content,
                     sha: data.sha
@@ -77,7 +83,7 @@ module.exports = async (req, res) => {
 
             case 'github_list':
                 try {
-                    const listRes = await axios.get(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                    const listRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, {
                         headers: ghHeaders
                     });
                     return res.json(listRes.data);
@@ -91,9 +97,9 @@ module.exports = async (req, res) => {
                 
                 // Dinamik bulud tənzimləmələri
                 const cloudConfig = {
-                    cloud_name: data.cloud_name || 'dojz9uzhe',
-                    api_key: data.api_key || '241982348988817',
-                    api_secret: (data.cloud_name === 'drlzwhblg' && process.env.CL_MUSIC_SECRET) 
+                    cloud_name: data.cloud_name || process.env.CL_NAME || 'dojz9uzhe',
+                    api_key: data.api_key || process.env.CL_KEY || '241982348988817',
+                    api_secret: (data.cloud_name === (process.env.CL_MUSIC_NAME || 'drlzwhblg') && process.env.CL_MUSIC_SECRET) 
                                 ? process.env.CL_MUSIC_SECRET 
                                 : process.env.CL_SECRET
                 };
@@ -118,7 +124,7 @@ module.exports = async (req, res) => {
                 return res.json({ success: data.password === process.env.ADMIN_PASSWORD });
 
             case 'github_delete':
-                const deleteRes = await axios.delete(`https://api.github.com/repos/XelilovTh/Dunyam/contents/${data.path}`, {
+                const deleteRes = await axios.delete(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, {
                     headers: ghHeaders,
                     data: {
                         message: data.message,

@@ -15,22 +15,28 @@ const TelegramBot = require('node-telegram-bot-api');
 const cloudinary = require('cloudinary').v2;
 const axios = require('axios');
 
-// KONFİQURASİYA (script.js-dən götürülüb)
+// KONFİQURASİYA
 const GITHUB_CONFIG = {
-    owner: 'XelilovTh',
-    repo: 'Dunyam',
+    owner: process.env.GH_OWNER || 'XelilovTh',
+    repo: process.env.GH_REPO || 'Dunyam',
     token: process.env.GH_TOKEN
 };
 
 const CLOUDINARY_CONFIG = {
-    cloud_name: 'dojz9uzhe',
-    api_key: '241982348988817',
+    cloud_name: process.env.CL_NAME || 'dojz9uzhe',
+    api_key: process.env.CL_KEY || '241982348988817',
     api_secret: process.env.CL_SECRET
+};
+
+const CLOUDINARY_MUSIC_CONFIG = {
+    cloud_name: process.env.CL_MUSIC_NAME || 'drlzwhblg',
+    api_key: process.env.CL_MUSIC_KEY || '583362931417988',
+    api_secret: process.env.CL_MUSIC_SECRET
 };
 
 const TELEGRAM_TOKEN = process.env.TG_TOKEN;
 
-// Cloudinary ayarları
+// Cloudinary ayarları (Şəkil üçün)
 cloudinary.config({
     cloud_name: CLOUDINARY_CONFIG.cloud_name,
     api_key: CLOUDINARY_CONFIG.api_key,
@@ -98,7 +104,7 @@ bot.on('photo', async (msg) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// MUSİQİ YÜKLƏMƏ (GitHub)
+// MUSİQİ YÜKLƏMƏ (Cloudinary Music)
 // ─────────────────────────────────────────────────────────────
 bot.on('audio', async (msg) => {
     handleMusicUpload(msg, msg.audio);
@@ -116,30 +122,41 @@ async function handleMusicUpload(msg, file) {
     const chatId = msg.chat.id;
     const fileName = file.file_name || `music_${Date.now()}.mp3`;
     
-    bot.sendMessage(chatId, `⏳ "${fileName}" GitHub-a yüklənir...`);
+    bot.sendMessage(chatId, `⏳ "${fileName}" Cloudinary-ə yüklənir...`);
 
     try {
         const fileLink = await bot.getFileLink(file.file_id);
-        const response = await axios.get(fileLink, { responseType: 'arraybuffer' });
-        const base64Content = Buffer.from(response.data).toString('base64');
+        
+        // Musiqi üçün Cloudinary konfiqurasiyasını müvəqqəti dəyişirik
+        const musicCloudinary = require('cloudinary').v2;
+        musicCloudinary.config({
+            cloud_name: CLOUDINARY_MUSIC_CONFIG.cloud_name,
+            api_key: CLOUDINARY_MUSIC_CONFIG.api_key,
+            api_secret: CLOUDINARY_MUSIC_CONFIG.api_secret
+        });
 
-        const success = await githubUpload(`music/${fileName}`, base64Content, `🎵 Bot: ${fileName} əlavə edildi`);
+        const result = await musicCloudinary.uploader.upload(fileLink, {
+            folder: 'dunyamiz_music',
+            resource_type: 'video', // Audio üçün 'video' istifadə olunur
+            tags: 'dunyamiz_music'
+        });
+
+        // Update music_list.json so the website can see it
+        const newMusic = {
+            name: fileName,
+            public_id: result.public_id,
+            download_url: result.secure_url,
+            created_at: new Date().toISOString()
+        };
+        const success = await updateJsonList('music_list.json', newMusic, `🎵 Bot: ${fileName} siyahıya əlavə edildi`);
 
         if (success) {
-            // Update music_list.json so the website can see it
-            const newMusic = {
-                name: fileName,
-                public_id: `music_${Date.now()}`,
-                created_at: new Date().toISOString()
-            };
-            await updateJsonList('music_list.json', newMusic, `🎵 Bot: ${fileName} siyahıya əlavə edildi`);
-
-            bot.sendMessage(chatId, `✅ Musiqi uğurla yükləndi!\n📁 Qovluq: music/${fileName}`);
+            bot.sendMessage(chatId, `✅ Musiqi uğurla yükləndi!\n🔗 Link: ${result.secure_url}`);
         } else {
-            bot.sendMessage(chatId, '❌ GitHub yükləmə xətası.');
+            bot.sendMessage(chatId, '❌ JSON siyahısı yenilənərkən xəta baş verdi.');
         }
     } catch (error) {
-        console.error('GitHub Musiqi xətası:', error);
+        console.error('Cloudinary Musiqi xətası:', error);
         bot.sendMessage(chatId, '❌ Musiqi yüklənərkən xəta baş verdi.');
     }
 }
