@@ -25,8 +25,8 @@ const TELEGRAM_TOKEN = process.env.TG_TOKEN;
 
 // Cloudinary ayarları
 cloudinary.config({
-    cloud_name: CLOUDINARY_CONFIG.cloud_name,
-    api_key: CLOUDINARY_CONFIG.api_key,
+    cloud_name: drlzwhblg,
+    api_key: 583362931417988,
     api_secret: CLOUDINARY_CONFIG.api_secret
 });
 
