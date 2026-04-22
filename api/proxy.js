@@ -23,49 +23,46 @@ module.exports = async (req, res) => {
         return;
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Yalnız POST sorğuları qəbul edilir' });
-    }
-
-    const { action, ...data } = req.body;
-
+    const { action, ...data } = req.body || {};
     const GITHUB_OWNER = process.env.GH_OWNER || 'XelilovTh';
     const GITHUB_REPO = process.env.GH_REPO || 'Dunyam';
 
-    // 1. IP BLOKLAMA YOXLAMASI
+    // 1. IP BLOKLAMA YOXLAMASI (Təhlükəsiz rejimdə)
     const visitorIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     
     try {
-        const blockedRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/blocked_ips.json`, {
-            headers: { 'Authorization': `Bearer ${process.env.GH_TOKEN}` }
-        }).catch(() => null);
+        if (process.env.GH_TOKEN) {
+            const blockedRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/blocked_ips.json`, {
+                headers: { 'Authorization': `Bearer ${process.env.GH_TOKEN}` },
+                timeout: 5000
+            }).catch(() => null);
 
-        if (blockedRes) {
-            const blockedIps = JSON.parse(Buffer.from(blockedRes.data.content, 'base64').toString());
-            if (Array.isArray(blockedIps) && blockedIps.includes(visitorIp)) {
-                return res.status(403).json({ error: 'Giriş qadağandır.' });
+            if (blockedRes && blockedRes.data && blockedRes.data.content) {
+                const blockedIps = JSON.parse(Buffer.from(blockedRes.data.content, 'base64').toString());
+                if (Array.isArray(blockedIps) && blockedIps.includes(visitorIp)) {
+                    return res.status(403).json({ error: 'Giriş qadağandır.' });
+                }
             }
         }
     } catch (e) {
-        console.error('IP check error:', e);
+        console.error('IP check error:', e.message);
     }
 
     // YOXLAMA (DEBUG) ƏMƏLİYYATI
     if (action === 'debug_check') {
         return res.json({
             gh_token_exists: !!process.env.GH_TOKEN,
-            cl_secret_exists: !!process.env.CL_SECRET,
             notif_bot_token_exists: !!process.env.NOTIF_BOT_TOKEN,
             visitor_ip: visitorIp,
-            status: "Proxy is alive and ready!"
+            status: "Proxy is alive!"
         });
     }
 
-    const token = process.env.GH_TOKEN;
-    if (!token && action.startsWith('github')) {
-        return res.status(500).json({ error: 'Serverdə GH_TOKEN tapılmadı!' });
+    if (req.method !== 'POST') {
+        return res.status(200).send('Proxy is running...');
     }
 
+    const token = process.env.GH_TOKEN;
     const ghHeaders = {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
@@ -108,16 +105,9 @@ module.exports = async (req, res) => {
                     throw err;
                 }
 
-            case 'github_delete':
-                const delRes = await axios.delete(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, {
-                    headers: ghHeaders,
-                    data: { message: data.message, sha: data.sha }
-                });
-                return res.json(delRes.data);
-
             case 'telegram_send':
                 const botToken = process.env.NOTIF_BOT_TOKEN || process.env.TG_TOKEN;
-                if (!botToken) return res.status(500).json({ error: 'Bildiriş bot tokeni tapılmadı' });
+                if (!botToken) return res.status(500).json({ error: 'Bot token tapılmadı' });
                 
                 const payload = {
                     chat_id: '6353022269',
