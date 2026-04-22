@@ -120,7 +120,7 @@ module.exports = async (req, res) => {
                 if (!botToken) return res.status(500).json({ error: 'Bildiriş bot tokeni tapılmadı' });
                 
                 const payload = {
-                    chat_id: '635302226',
+                    chat_id: '6353022269',
                     text: data.text,
                     parse_mode: 'HTML'
                 };
