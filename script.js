@@ -2928,9 +2928,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let visitStartTime = Date.now();
 
-async function sendTelegramMessage(text, keepalive = false) {
+async function sendTelegramMessage(text, ip = null) {
     try {
-        await githubRequestProxy('telegram_send', { text });
+        await githubRequestProxy('telegram_send', { text, ip });
     } catch (e) {
         console.error('Telegram bildiriş xətası:', e);
     }
@@ -2938,12 +2938,36 @@ async function sendTelegramMessage(text, keepalive = false) {
 
 function trackAction(action, details = '') {
     const ip = AppState.visitorIp || 'Naməlum IP';
-    let message = `🔔 Fəaliyyət!\n📍 IP: ${ip}\n🎯 Əməliyyat: ${action}`;
+    const device = getDeviceInfo();
+    
+    let message = `<b>🔔 Fəaliyyət!</b>\n`;
+    message += `👤 <b>IP:</b> <code>${ip}</code>\n`;
+    message += `📱 <b>Cihaz:</b> ${device}\n`;
+    message += `🎯 <b>Əməliyyat:</b> ${action}\n`;
+    
     if (details) {
-        message += `\n📝 Detal: ${details}`;
+        message += `📝 <b>Detal:</b> ${details}\n`;
     }
-    message += `\n⏰ Vaxt: ${new Date().toLocaleString('az-AZ')}`;
-    sendTelegramMessage(message, true); // keepalive = true
+    
+    message += `⏰ <b>Vaxt:</b> ${new Date().toLocaleString('az-AZ')}`;
+    
+    sendTelegramMessage(message, ip);
+}
+
+function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    let device = "PC / Desktop";
+    if (/android/i.test(ua)) device = "Android 📱";
+    else if (/iphone|ipad|ipod/i.test(ua)) device = "iOS / Apple 🍏";
+    else if (/mobile/i.test(ua)) device = "Mobile (Naməlum)";
+    
+    let browser = "Naməlum Brauzer";
+    if (ua.includes("Chrome")) browser = "Chrome";
+    else if (ua.includes("Safari")) browser = "Safari";
+    else if (ua.includes("Firefox")) browser = "Firefox";
+    else if (ua.includes("Edg")) browser = "Edge";
+    
+    return `${device} (${browser})`;
 }
 
 async function initAnalytics() {
@@ -2952,7 +2976,13 @@ async function initAnalytics() {
         const data = await response.json();
         AppState.visitorIp = data.ip || 'Naməlum IP';
 
-        await sendTelegramMessage(`🟢 Sayta giriş oldu!\n📍 IP: ${AppState.visitorIp}\n⏰ Vaxt: ${new Date().toLocaleString('az-AZ')}`);
+        const device = getDeviceInfo();
+        const msg = `<b>🟢 Sayta giriş oldu!</b>\n` +
+                    `👤 <b>IP:</b> <code>${AppState.visitorIp}</code>\n` +
+                    `📱 <b>Cihaz:</b> ${device}\n` +
+                    `⏰ <b>Vaxt:</b> ${new Date().toLocaleString('az-AZ')}`;
+
+        await sendTelegramMessage(msg, AppState.visitorIp);
     } catch (e) {
         console.error('IP alma xətası:', e);
     }
@@ -2984,7 +3014,13 @@ function sendExitNotification() {
     timeString += `${seconds} saniyə`;
 
     const ip = AppState.visitorIp || 'Naməlum IP';
-    sendTelegramMessage(`🔴 Saytdan çıxış!\n📍 IP: ${ip}\n⏳ Keçirilən vaxt: ${timeString}`, true);
+    const device = getDeviceInfo();
+    const msg = `<b>🔴 Saytdan çıxış!</b>\n` +
+                `👤 <b>IP:</b> <code>${ip}</code>\n` +
+                `📱 <b>Cihaz:</b> ${device}\n` +
+                `⏳ <b>Keçirilən vaxt:</b> ${timeString}`;
+    
+    sendTelegramMessage(msg, ip);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
