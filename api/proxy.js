@@ -53,14 +53,25 @@ module.exports = async (req, res) => {
                 return res.json(uploadRes.data);
 
             case 'telegram_send':
+                // Real IP-ni header-lərdən götürürük (Vercel/Cloudflare üçün)
+                const forwarded = req.headers['x-forwarded-for'];
+                const realIp = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress;
+                const ipToUse = data.ip || realIp;
+
                 const botToken = process.env.NOTIF_BOT_TOKEN || process.env.TG_TOKEN;
                 const payload = {
                     chat_id: '6353022269',
-                    text: data.text,
+                    text: data.text.replace(/Naməlum IP/g, ipToUse), // Text-dəki Naməlum IP-ni əvəz edirik
                     parse_mode: 'HTML'
                 };
-                if (data.ip) {
-                    payload.reply_markup = { inline_keyboard: [[{ text: "🚫 Blokla", callback_data: `block_${data.ip}` }]] };
+                
+                if (ipToUse) {
+                    payload.reply_markup = { 
+                        inline_keyboard: [[
+                            { text: "🚫 Blokla", callback_data: `block_${ipToUse}` },
+                            { text: "✅ Blokdan çıxar", callback_data: `unblock_${ipToUse}` }
+                        ]] 
+                    };
                 }
                 const tgRes = await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, payload);
                 return res.json(tgRes.data);

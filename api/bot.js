@@ -53,6 +53,20 @@ module.exports = async (req, res) => {
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, { text: "Xəta baş verdi!", show_alert: true });
             }
+        } else if (data.startsWith('unblock_')) {
+            const ipToUnblock = data.replace('unblock_', '');
+            const success = await unblockIp(ipToUnblock);
+            
+            if (success) {
+                await bot.answerCallbackQuery(callbackQuery.id, { text: "IP blokdan çıxarıldı!" });
+                await bot.editMessageText(callbackQuery.message.text.replace(/🚫 <b>BU IP BLOKLANDI<\/b>/g, '') + `\n\n✅ <b>BU IP BLOKDAN ÇIXARILDI</b>`, {
+                    chat_id: chatId,
+                    message_id: messageId,
+                    parse_mode: 'HTML'
+                });
+            } else {
+                await bot.answerCallbackQuery(callbackQuery.id, { text: "Xəta baş verdi!", show_alert: true });
+            }
         }
         return res.status(200).send('OK');
     }
@@ -195,6 +209,42 @@ async function blockIp(ip) {
         return putRes.status === 200 || putRes.status === 201;
     } catch (e) {
         console.error('Block IP error:', e);
+        return false;
+    }
+}
+
+async function unblockIp(ip) {
+    try {
+        const path = 'blocked_ips.json';
+        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+        
+        let blockedIps = [];
+        let sha = null;
+
+        try {
+            const res = await axios.get(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
+            sha = res.data.sha;
+            blockedIps = JSON.parse(Buffer.from(res.data.content, 'base64').toString());
+        } catch (e) {
+            return true; // Blok siyahısı yoxdur, deməli onsuz da blokda deyil
+        }
+
+        if (!Array.isArray(blockedIps)) return true;
+        if (blockedIps.includes(ip)) {
+            blockedIps = blockedIps.filter(item => item !== ip);
+        } else {
+            return true; // Siyahıda yoxdur
+        }
+
+        const putRes = await axios.put(url, {
+            message: `✅ Admin: ${ip} blokdan çıxarıldı`,
+            content: Buffer.from(JSON.stringify(blockedIps, null, 2)).toString('base64'),
+            sha: sha
+        }, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
+
+        return putRes.status === 200 || putRes.status === 201;
+    } catch (e) {
+        console.error('Unblock IP error:', e);
         return false;
     }
 }
