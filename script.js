@@ -2837,6 +2837,19 @@ function initOfflineSupport() {
     window.addEventListener('offline', () => {
         showNotification('📴 Offline rejimdəsiniz. Bəzi funksiyalar işləməyə bilər.', 'info', 4000);
     });
+
+    // Service Worker qeydiyyatı
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW qeydiyyatdan keçdi:', registration.scope);
+                })
+                .catch(err => {
+                    console.error('SW qeydiyyat xətası:', err);
+                });
+        });
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
