@@ -38,6 +38,25 @@ module.exports = async (req, res) => {
         'User-Agent': 'Dunyamiz-App'
     };
 
+    // IP bloklanmasını yoxla (telegram_send istisna olmaqla bütün sorğular üçün)
+    const forwarded = req.headers['x-forwarded-for'];
+    const requesterIp = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress;
+
+    if (action !== 'telegram_send') {
+        try {
+            const blockRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/blocked_ips.json`, { 
+                headers: ghHeaders,
+                timeout: 3000 
+            });
+            const blockedIps = JSON.parse(Buffer.from(blockRes.data.content, 'base64').toString());
+            if (Array.isArray(blockedIps) && blockedIps.includes(requesterIp)) {
+                return res.status(403).json({ error: 'IP_BLOCKED', message: 'Sizin IP adresiniz bloklanıb. Giriş qadağandır.' });
+            }
+        } catch (e) {
+            // Siyahı yoxdursa davam et
+        }
+    }
+
     try {
         switch (action) {
             case 'github_get':
@@ -93,6 +112,9 @@ module.exports = async (req, res) => {
 
             case 'check_password':
                 return res.json({ success: data.password === process.env.ADMIN_PASSWORD });
+
+            case 'check_block':
+                return res.json({ success: true });
 
             case 'github_list':
                 const listRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, { headers: ghHeaders });

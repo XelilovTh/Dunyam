@@ -593,12 +593,31 @@ async function githubRequestProxy(action, data) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, ...data })
         });
+        
+        if (response.status === 403) {
+            showBlockedScreen();
+            throw new Error('IP_BLOCKED');
+        }
+        
         if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
         return await response.json();
     } catch (error) {
-        console.error('Request Proxy Error:', error);
+        if (error.message !== 'IP_BLOCKED') {
+            console.error('Request Proxy Error:', error);
+        }
         throw error;
     }
+}
+
+function showBlockedScreen() {
+    document.body.innerHTML = `
+        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0a; color: #fff; font-family: sans-serif; text-align: center; padding: 20px;">
+            <i class="fas fa-user-slash" style="font-size: 80px; color: #e91e63; margin-bottom: 20px;"></i>
+            <h1 style="font-size: 2rem; margin-bottom: 10px;">Giriş Qadağandır</h1>
+            <p style="opacity: 0.8; max-width: 400px;">Sizin IP adresiniz admin tərəfindən bloklanıb. Bu sayta daxil olma icazəniz yoxdur.</p>
+        </div>
+    `;
+    document.body.style.overflow = 'hidden';
 }
 
 async function githubRequest(endpoint, options = {}) {
@@ -2911,10 +2930,18 @@ function initLovePower() {
    SƏHİFƏ YÜKLƏNDİKDƏ BAŞLAT
    ═══════════════════════════════════════════════════════════════════ */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.documentElement.style.setProperty('--progress', '0%');
 
     initStarsCanvas();
+    
+    // Bloklanıb-bloklanmadığını yoxla
+    try {
+        await githubRequestProxy('check_block');
+    } catch (e) {
+        if (e.message === 'IP_BLOCKED') return; // Artıq showBlockedScreen çağırılıb
+    }
+
     initLogin();
     loadAppState();
     initOfflineSupport();
