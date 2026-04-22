@@ -45,10 +45,13 @@ module.exports = async (req, res) => {
             
             if (success) {
                 await bot.answerCallbackQuery(callbackQuery.id, { text: "IP uğurla bloklandı!" });
-                await bot.editMessageText(callbackQuery.message.text + `\n\n🚫 <b>BU IP BLOKLANDI</b>`, {
+                await bot.editMessageText(callbackQuery.message.text.replace(/✅ <b>BU IP BLOKDAN ÇIXARILDI<\/b>/g, '') + `\n\n🚫 <b>BU IP BLOKLANDI</b>`, {
                     chat_id: chatId,
                     message_id: messageId,
-                    parse_mode: 'HTML'
+                    parse_mode: 'HTML',
+                    reply_markup: {
+                        inline_keyboard: [[{ text: "✅ Blokdan çıxar", callback_data: `unblock_${ipToBlock}` }]]
+                    }
                 });
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, { text: "Xəta baş verdi!", show_alert: true });
@@ -62,7 +65,10 @@ module.exports = async (req, res) => {
                 await bot.editMessageText(callbackQuery.message.text.replace(/🚫 <b>BU IP BLOKLANDI<\/b>/g, '') + `\n\n✅ <b>BU IP BLOKDAN ÇIXARILDI</b>`, {
                     chat_id: chatId,
                     message_id: messageId,
-                    parse_mode: 'HTML'
+                    parse_mode: 'HTML',
+                    reply_markup: {
+                        inline_keyboard: [[{ text: "🚫 Blokla", callback_data: `block_${ipToUnblock}` }]]
+                    }
                 });
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, { text: "Xəta baş verdi!", show_alert: true });

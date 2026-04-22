@@ -56,22 +56,37 @@ module.exports = async (req, res) => {
                 // Real IP-ni header-lərdən götürürük (Vercel/Cloudflare üçün)
                 const forwarded = req.headers['x-forwarded-for'];
                 const realIp = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress;
-                const ipToUse = data.ip || realIp;
+                // Əgər client-dən gələn IP keçərsizdirsə, server-dəkiləri istifadə et
+                const ipToUse = (data.ip && data.ip !== 'Naməlum IP') ? data.ip : realIp;
 
                 const botToken = process.env.NOTIF_BOT_TOKEN || process.env.TG_TOKEN;
+
+                // 1. Blok siyahısını GitHub-dan yoxlayırıq
+                let isBlocked = false;
+                try {
+                    const blockRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/blocked_ips.json`, { 
+                        headers: ghHeaders,
+                        timeout: 5000 
+                    });
+                    const blockedIps = JSON.parse(Buffer.from(blockRes.data.content, 'base64').toString());
+                    isBlocked = Array.isArray(blockedIps) && blockedIps.includes(ipToUse);
+                } catch (e) {
+                    console.log('Blocked list not found or error fetching it');
+                }
+
                 const payload = {
                     chat_id: '6353022269',
-                    text: data.text.replace(/Naməlum IP/g, ipToUse), // Text-dəki Naməlum IP-ni əvəz edirik
+                    text: data.text.replace(/Naməlum IP/g, ipToUse),
                     parse_mode: 'HTML'
                 };
                 
                 if (ipToUse) {
-                    payload.reply_markup = { 
-                        inline_keyboard: [[
-                            { text: "🚫 Blokla", callback_data: `block_${ipToUse}` },
-                            { text: "✅ Blokdan çıxar", callback_data: `unblock_${ipToUse}` }
-                        ]] 
-                    };
+                    // Yalnız bir düymə göstərilir: Bloklanıbsa "Çıxar", yoxsa "Blokla"
+                    const button = isBlocked 
+                        ? { text: "✅ Blokdan çıxar", callback_data: `unblock_${ipToUse}` }
+                        : { text: "🚫 Blokla", callback_data: `block_${ipToUse}` };
+                        
+                    payload.reply_markup = { inline_keyboard: [[button]] };
                 }
                 const tgRes = await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, payload);
                 return res.json(tgRes.data);
