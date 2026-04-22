@@ -23,13 +23,6 @@ const CLOUDINARY_MUSIC_CONFIG = {
 
 const TELEGRAM_TOKEN = process.env.TG_TOKEN;
 
-// Cloudinary ayarları
-cloudinary.config({
-    cloud_name: drlzwhblg,
-    api_key: 583362931417988,
-    api_secret: CLOUDINARY_CONFIG.api_secret
-});
-
 // Botu başlat
 const bot = new TelegramBot(TELEGRAM_TOKEN);
 
@@ -50,6 +43,14 @@ module.exports = async (req, res) => {
         if (message.photo) {
             const photo = message.photo[message.photo.length - 1];
             const fileLink = await bot.getFileLink(photo.file_id);
+            
+            // Cloudinary konfiqurasiyası (Şəkil üçün)
+            cloudinary.config({
+                cloud_name: CLOUDINARY_CONFIG.cloud_name,
+                api_key: CLOUDINARY_CONFIG.api_key,
+                api_secret: CLOUDINARY_CONFIG.api_secret
+            });
+
             const result = await cloudinary.uploader.upload(fileLink, { 
                 folder: 'dunyamiz', 
                 tags: 'dunyamiz_gallery' 
@@ -61,9 +62,9 @@ module.exports = async (req, res) => {
                 download_url: result.secure_url,
                 created_at: new Date().toISOString()
             };
-            await updateJsonList('photos_list.json', newPhoto, '📸 Bot: Yeni şəkil əlavə edildi');
+            const success = await updateJsonList('photos_list.json', newPhoto, '📸 Bot: Yeni şəkil əlavə edildi');
 
-            await bot.sendMessage(chatId, `✅ Şəkil yükləndi!`);
+            await bot.sendMessage(chatId, success ? `✅ Şəkil yükləndi və sayta əlavə edildi!` : '❌ Şəkil yükləndi, amma JSON siyahısı yenilənmədi.');
         } 
         
         // 2. MUSİQİ (Audio/Document)
@@ -72,15 +73,18 @@ module.exports = async (req, res) => {
             const fileName = file.file_name || `music_${Date.now()}.mp3`;
             const fileLink = await bot.getFileLink(file.file_id);
             
-            // Musiqi üçün Cloudinary konfiqurasiyasını müvəqqəti dəyişirik
-            const musicCloudinary = require('cloudinary').v2;
-            musicCloudinary.config({
+            // Musiqi üçün Cloudinary konfiqurasiyasını dəyişirik
+            cloudinary.config({
                 cloud_name: CLOUDINARY_MUSIC_CONFIG.cloud_name,
                 api_key: CLOUDINARY_MUSIC_CONFIG.api_key,
                 api_secret: CLOUDINARY_MUSIC_CONFIG.api_secret
             });
 
-            const result = await musicCloudinary.uploader.upload(fileLink, {
+            // Faylı əvvəlcə bufferə yükləyirik (daha etibarlıdır)
+            const audioRes = await axios.get(fileLink, { responseType: 'arraybuffer' });
+            const base64Audio = `data:${file.mime_type || 'audio/mpeg'};base64,${Buffer.from(audioRes.data).toString('base64')}`;
+
+            const result = await cloudinary.uploader.upload(base64Audio, {
                 folder: 'dunyamiz_music',
                 resource_type: 'video',
                 tags: 'dunyamiz_music'
@@ -94,16 +98,22 @@ module.exports = async (req, res) => {
             };
             const success = await updateJsonList('music_list.json', newMusic, `🎵 Bot: ${fileName} siyahıya əlavə edildi`);
 
-            await bot.sendMessage(chatId, success ? `✅ Musiqi yükləndi: ${fileName}` : '❌ JSON yenilənmə xətası!');
+            await bot.sendMessage(chatId, success ? `✅ Musiqi yükləndi: ${fileName}` : '❌ Musiqi yükləndi, amma JSON yenilənmə xətası!');
         }
 
         // 3. KOMANDALAR (Commands)
         else if (text && text.startsWith('/')) {
             if (text.startsWith('/stats')) {
-                const cRes = await axios.get(`https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/list/dunyamiz_gallery.json`);
+                // Şəkil sayını hesabla (Cloudinary-dən və ya JSON-dan)
+                let photoCount = 0;
+                try {
+                    const pContent = await githubGetFile('photos_list.json');
+                    photoCount = JSON.parse(pContent).length;
+                } catch(e) {}
+
                 const songs = (await githubList('music')).length;
                 const letters = (await githubList('letters')).length;
-                await bot.sendMessage(chatId, `📊 *Statistika:*\n📸 Şəkillər: ${cRes.data.resources.length}\n🎵 Musiqilər: ${songs}\n✉️ Məktublar: ${letters}`, { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, `📊 *Statistika:*\n📸 Şəkillər: ${photoCount}\n🎵 Musiqilər: ${songs}\n✉️ Məktublar: ${letters}`, { parse_mode: 'Markdown' });
             } else {
                 await bot.sendMessage(chatId, `🌟 *Dünyamız Botu*\n\n📸 Şəkil göndər -> Qalereya\n🎵 Musiqi göndər -> Pleylist\n✉️ Mətn yaz -> Məktublar\n📊 /stats -> Statistika`);
             }
@@ -126,12 +136,16 @@ module.exports = async (req, res) => {
             const fullContent = `${content}\n\n---\n💕 Sevgilə, Təhmaz\n📅 ${new Date().toLocaleDateString('az-AZ')}`;
             
             const success = await githubUpload(`letters/${fileName}`, Buffer.from(fullContent).toString('base64'), `✉️ Bot: ${title}`);
-            await bot.sendMessage(chatId, success ? `✅ Məktub yükləndi!\n📌 Başlıq: ${title}` : '❌ Xəta baş verdi!');
+            await bot.sendMessage(chatId, success ? `✅ Məktub yükləndi!\n📌 Başlıq: ${title}` : '❌ GitHub xətası!');
         }
 
         res.status(200).send('OK');
     } catch (e) {
-        console.error(e);
+        console.error('Bot Error:', e);
+        // Xəta mesajını bota göndərək ki, istifadəçi bilsin nə baş verir
+        try {
+            await bot.sendMessage(chatId, `❌ Xəta baş verdi: ${e.message}`);
+        } catch(e2) {}
         res.status(200).send('Error but handled'); 
     }
 };
@@ -158,6 +172,16 @@ async function githubList(path) {
     } catch (e) { return []; }
 }
 
+async function githubGetFile(path) {
+    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    try {
+        const res = await axios.get(url, { 
+            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+        });
+        return Buffer.from(res.data.content, 'base64').toString('utf-8');
+    } catch (e) { return '[]'; }
+}
+
 async function updateJsonList(path, newItem, commitMessage) {
     const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
     try {
@@ -171,7 +195,9 @@ async function updateJsonList(path, newItem, commitMessage) {
             sha = res.data.sha;
             currentContent = JSON.parse(Buffer.from(res.data.content, 'base64').toString('utf-8'));
             if (!Array.isArray(currentContent)) currentContent = [];
-        } catch (e) {}
+        } catch (e) {
+            console.log(`File ${path} not found or invalid, creating new list.`);
+        }
 
         // 2. Yeni elementi əlavə et
         currentContent.push(newItem);
@@ -186,7 +212,7 @@ async function updateJsonList(path, newItem, commitMessage) {
         });
         return res.status === 200 || res.status === 201;
     } catch (e) {
-        console.error(`Error updating ${path}:`, e.message);
+        console.error(`Error updating ${path}:`, e.response?.data || e.message);
         return false;
     }
 }
