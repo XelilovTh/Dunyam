@@ -186,9 +186,9 @@ body {
   will-change: transform;
 }
 
-/* Parallax Effekti üçün əlavə */
+/* Parallax Effekti ləğv edildi */
 .universe-background.parallax {
-  transform: translateY(calc(var(--scroll-y, 0) * 0.2px));
+  transform: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -4484,4 +4484,22 @@ body {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   margin-bottom: 15px;
+}
+
+/* Sadə Mətn Lyrics Stili */
+.lyrics-plain-text {
+  text-align: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.lyric-plain-line {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  transition: color 0.3s ease;
+}
+
+.lyric-plain-line:hover {
+  color: white;
 }

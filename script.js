@@ -505,13 +505,7 @@ function initScrollReveal() {
 }
 
 function initParallax() {
-    const stars = document.querySelector('.universe-background');
-    if (!stars) return;
-
-    stars.classList.add('parallax');
-    window.addEventListener('scroll', () => {
-        document.documentElement.style.setProperty('--scroll-y', window.scrollY);
-    });
+    // Arxa plan hərəkəti istifadəçi tərəfindən bəyənilmədiyi üçün ləğv edildi
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2070,31 +2064,47 @@ async function loadLyrics(song) {
     }
 }
 
-function parseLyrics(lrc) {
+function parseLyrics(content) {
     const container = document.getElementById('fsLyricsContainer');
-    const lines = lrc.split('\n');
+    if (!container) return;
+
     const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+    const lines = content.split('\n');
     
     let html = '';
     AppState.currentLyrics = [];
 
-    lines.forEach(line => {
-        const match = timeRegex.exec(line);
-        if (match) {
-            const minutes = parseInt(match[1]);
-            const seconds = parseInt(match[2]);
-            const ms = parseInt(match[3]);
-            const time = minutes * 60 + seconds + (ms / 1000);
-            const text = line.replace(timeRegex, '').trim();
-            
-            if (text) {
-                AppState.currentLyrics.push({ time, text });
-                html += `<div class="lyric-line" data-time="${time}">${escapeHtml(text)}</div>`;
-            }
-        }
-    });
+    const hasTimestamps = lines.some(line => timeRegex.test(line));
 
-    if (container) container.innerHTML = html || '<div class="lyrics-placeholder">Sözlər formatlanmayıb</div>';
+    if (hasTimestamps) {
+        // Karaoke stili (Timestamps var)
+        lines.forEach(line => {
+            const match = timeRegex.exec(line);
+            if (match) {
+                const minutes = parseInt(match[1]);
+                const seconds = parseInt(match[2]);
+                const ms = parseInt(match[3]);
+                const time = minutes * 60 + seconds + (ms / 1000);
+                const text = line.replace(timeRegex, '').trim();
+                
+                if (text) {
+                    AppState.currentLyrics.push({ time, text });
+                    html += `<div class="lyric-line" data-time="${time}">${escapeHtml(text)}</div>`;
+                }
+            }
+        });
+    } else {
+        // Sadə mətn stili (2-ci variant)
+        html = '<div class="lyrics-plain-text">';
+        lines.forEach(line => {
+            if (line.trim()) {
+                html += `<p class="lyric-plain-line">${escapeHtml(line.trim())}</p>`;
+            }
+        });
+        html += '</div>';
+    }
+
+    container.innerHTML = html || '<div class="lyrics-placeholder">Sözlər formatlanmayıb</div>';
 }
 
 function updateLyrics(currentTime) {
