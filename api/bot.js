@@ -115,7 +115,7 @@ module.exports = async (req, res) => {
                 const letters = (await githubList('letters')).length;
                 await bot.sendMessage(chatId, `📊 *Statistika:*\n📸 Şəkillər: ${photoCount}\n🎵 Musiqilər: ${songs}\n✉️ Məktublar: ${letters}`, { parse_mode: 'Markdown' });
             } else {
-                await bot.sendMessage(chatId, `🌟 *Dünyamız Botu*\n\n📸 Şəkil göndər -> Qalereya\n🎵 Musiqi göndər -> Pleylist\n✉️ Mətn yaz -> Məktublar\n📊 /stats -> Statistika`);
+                await bot.sendMessage(chatId, `🌟 *Dünyamız Botu* (v2.1)\n\n📸 Şəkil göndər -> Qalereya\n🎵 Musiqi göndər -> Pleylist\n✉️ Mətn yaz -> Məktublar\n📊 /stats -> Statistika\n\n_Versiya: 2.1 (Vercel)_`);
             }
         }
 
