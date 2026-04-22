@@ -33,7 +33,7 @@ console.log('🤖 Bot işə düşdü...');
 // ─────────────────────────────────────────────────────────────
 bot.onText(/\/start|\/help/, (msg) => {
     const helpText = `
-🌟 *Dünyamız Botuna Xoş Gəlmisiniz!* 🌟
+🌟 *Dünyamız Botuna Xoş Gəlmisiniz!* 🌟 (v2.1)
 
 Bu bot vasitəsilə sayta asanlıqla məzmun əlavə edə bilərsiniz:
 
@@ -44,7 +44,7 @@ Bu bot vasitəsilə sayta asanlıqla məzmun əlavə edə bilərsiniz:
    \`/upload Başlıq: Mətn\` (Xüsusi başlıqla)
 📊 *Statistika:* \`/stats\` yazaraq saydakı sayları görün.
 
-_Hər hansı fayl göndərəndə avtomatik lazımi yerə yüklənəcək._
+_Versiya: 2.1 (Cloudinary Music Support)_
     `;
     bot.sendMessage(msg.chat.id, helpText, { parse_mode: 'Markdown' });
 });
@@ -148,7 +148,7 @@ async function handleMusicUpload(msg, file) {
         }
     } catch (error) {
         console.error('Cloudinary Musiqi xətası:', error);
-        bot.sendMessage(chatId, `❌ Musiqi yüklənərkən xəta baş verdi: ${error.message}`);
+        bot.sendMessage(chatId, `❌ Musiqi yüklənərkən xəta baş verdi!\nSəbəb: ${error.message || 'Naməlum xəta'}`);
     }
 }
 
