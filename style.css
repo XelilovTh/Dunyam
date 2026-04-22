@@ -1789,45 +1789,61 @@ body {
 
 .bottom-navigation {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: var(--z-navigation);
-  background: rgba(10, 5, 15, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--glass-border);
-  padding: 8px 0;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  background: rgba(15, 8, 20, 0.25);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(233, 30, 99, 0.2);
+  border-radius: 40px;
+  padding: 8px 12px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(233, 30, 99, 0.1);
+  width: auto;
+  min-width: 300px;
+  max-width: 92%;
+  display: flex;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bottom-navigation:hover {
+  background: rgba(25, 12, 30, 0.35);
+  border-color: rgba(233, 30, 99, 0.4);
+  transform: translateX(-50%) translateY(-5px);
+  box-shadow: 
+    0 20px 45px rgba(0, 0, 0, 0.5),
+    0 0 25px rgba(233, 30, 99, 0.2);
 }
 
 .nav-container {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  width: 100%;
+  gap: 5px;
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 16px;
+  gap: 2px;
+  padding: 8px 20px;
   background: none;
   border: none;
-  color: var(--text-tertiary);
-  font-size: 0.7rem;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+  border-radius: 25px;
+  transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
 }
 
 .nav-item i {
@@ -1846,11 +1862,16 @@ body {
 
 .nav-item.active {
   color: var(--primary-pink);
+  background: rgba(233, 30, 99, 0.1);
 }
 
 .nav-item.active i {
-  transform: translateY(-2px);
-  filter: drop-shadow(0 0 8px var(--primary-pink-glow));
+  transform: translateY(-2px) scale(1.1);
+  filter: drop-shadow(0 0 12px var(--primary-pink-glow));
+}
+
+.nav-item.active span {
+  font-weight: 700;
 }
 
 .nav-item::after {
@@ -1876,20 +1897,22 @@ body {
 
 .music-player {
   position: fixed;
-  bottom: 80px;
+  bottom: 100px;
   left: 50%;
-  transform: translateX(-50%) translateY(100%);
+  transform: translateX(-50%) translateY(120%);
   z-index: var(--z-player);
-  width: calc(100% - 32px);
-  max-width: 500px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  padding: 12px 16px;
-  box-shadow: var(--shadow-xl), 0 0 32px rgba(233, 30, 99, 0.15);
-  transition: transform var(--transition-slower);
+  width: calc(100% - 40px);
+  max-width: 480px;
+  background: rgba(20, 10, 25, 0.3);
+  backdrop-filter: blur(25px) saturate(160%);
+  -webkit-backdrop-filter: blur(25px) saturate(160%);
+  border: 1px solid rgba(233, 30, 99, 0.2);
+  border-radius: 28px;
+  padding: 12px 18px;
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(233, 30, 99, 0.1);
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
   opacity: 0;
   pointer-events: none;
 }
@@ -1898,6 +1921,24 @@ body {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
   pointer-events: all;
+}
+
+/* Dinamik Glow Animasiyası */
+@keyframes playerDynamicGlow {
+  0%, 100% {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(233, 30, 99, 0.15);
+    border-color: rgba(233, 30, 99, 0.2);
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  50% {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 35px rgba(233, 30, 99, 0.4);
+    border-color: rgba(233, 30, 99, 0.5);
+    transform: translateX(-50%) translateY(-3px) scale(1.01);
+  }
+}
+
+.music-player.playing {
+  animation: playerDynamicGlow 3s ease-in-out infinite;
 }
 
 .player-container {

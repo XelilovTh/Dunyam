@@ -2078,6 +2078,14 @@ function updatePlayButton(isPlaying) {
         }
     }
 
+    if (DOM.musicPlayer) {
+        if (isPlaying) {
+            DOM.musicPlayer.classList.add('playing');
+        } else {
+            DOM.musicPlayer.classList.remove('playing');
+        }
+    }
+
     // Vizuallaşdırıcını musiqinin vəziyyətinə uyğun idarə et
     if (typeof Visualizer !== 'undefined') {
         if (isPlaying) {
