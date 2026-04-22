@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>✨ Sürpriz #1 • Fidan üçün ✨</title>
+
+  <!-- Fonts (Ana saytla eyni) -->
+  <link rel="preconnect"
+    href="https://fonts.googleapis.com">
+  <link rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet"
+    href="style.css">
+</head>
+
+<body>
+
+
+  <!-- ARXA FON ANİMASİYASI -->
+  <div class="universe-background"
+    id="universe-bg"></div>
+
+
+
+  <!-- ƏSAS KONTEYNER -->
+  <main class="surprise-container">
+
+    <!-- GERİ DÖNÜŞ DÜYMƏSİ (Ana Sayta) -->
+    <a href="../index.html"
+      class="back-to-home">
+      <i class="fas fa-arrow-left"></i>
+      <span>Geri</span>
+    </a>
+
+    <!-- HERO BÖLMƏSİ -->
+    <section class="hero-section-surprise">
+      <div class="hero-content-surprise">
+        <div class="crown-wrapper">
+          <i class="fas fa-crown"></i>
+        </div>
+        <h1 class="hero-title-surprise">
+          <span class="title-line1">Ad günün mübarək</span>
+          <span class="title-line2">Fidanım</span>
+        </h1>
+
+      </div>
+
+      <!-- Xarakter (Ana saytdakı kimi) -->
+      <div class="character-surprise">
+        <div class="char-body">
+          <div class="char-face">
+            <div class="char-eyes">
+              <div class="eye left-eye">
+                <div class="pupil"></div>
+              </div>
+              <div class="eye right-eye">
+                <div class="pupil"></div>
+              </div>
+            </div>
+            <div class="char-blush"></div>
+            <div class="char-mouth">💕</div>
+          </div>
+          <div class="char-heart-hold">💞</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MƏKTUB BÖLMƏSİ -->
+    <section class="letter-section-surprise">
+      <div class="section-header-surprise">
+        <i class="fas fa-envelope-open-text"></i>
+        <h2>Sənə Şeirim</h2>
+        <span class="header-line"></span>
+      </div>
+
+      <div class="letter-paper-surprise">
+        <div class="letter-deco top-left">🩷</div>
+        <div class="letter-deco top-right">🩷</div>
+        <div class="letter-deco bottom-left">🩷</div>
+        <div class="letter-deco bottom-right">🩷</div>
+
+        <p class="letter-date-surprise">Sən mənimsən</p>
+
+        <div class="letter-body-surprise"
+          id="letterBodySurprise"></div>
+
+        <p class="letter-sign-surprise">
+          Sonsuz sevgilə<br>
+          <em>Səni sevən</em> 💕
+        </p>
+      </div>
+    </section>
+
+
+    
+        <!-- VIDEO BÖLMƏSİ (Şeir və Toxun düyməsi arasında) -->
+    <section class="video-section-surprise">
+      <div class="video-container-surprise">
+        <div class="video-wrapper">
+          <video id="surpriseVideo" class="surprise-video" preload="metadata">
+            <source src="../surpriz_No2-main/video/video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <button id="videoPlayBtn" class="video-play-btn">
+            <i class="fas fa-play"></i>
+          </button>
+          <button id="videoCloseBtn" class="video-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+
+
+    <!-- SÜRPRİZ DÜYMƏSİ VƏ MESAJ -->
+    <section class="action-section-surprise">
+      <div class="surprise-button-wrapper-surprise">
+        <button id="surpriseBtn"
+          class="surprise-btn-main">
+          <span class="btn-inner">
+            <i class="fas fa-gift gift-icon"></i>
+            <span>Toxun</span>
+          </span>
+          <div class="btn-ripple"></div>
+        </button>
+      </div>
+
+      <div id="surpriseMsg"
+        class="surprise-message-main hidden">
+        <div class="msg-heart-big">
+          <i class="fas fa-heart"></i>
+        </div>
+        <h3>Səni çox sevirəm, Fidanım!</h3>
+        <p>Ümid eliyirəm hər şey sənin ürəyincə olar Həyatım. İndiyə qədər həmişə çalışdım ki hər şey sənin ürəyincə
+          olsun. Bilmirəm lazımi qədər bacardım ya yox ama həmişə əlimdən gələnin də artığını eləməyə çalışdım . Səni
+          həmişə hər şeyə rəgmən sevdim sevəcəmdə . </p>
+        <p>Ad günün mübarək sevgilim ❤️</p>
+      </div>
+    </section>
+
+    <!-- DİLƏK BÖLMƏSİ (GitHub API ilə işləyən) -->
+    <section class="wish-section-surprise">
+      <div class="section-header-surprise">
+        <i class="fas fa-star"></i>
+        <h2>Diləyini yaz</h2>
+        <span class="header-line"></span>
+        <p class="section-sub">Menden ürəyindən keçən bir şey dilə</p>
+      </div>
+
+      <div class="wish-card-surprise">
+        <div class="wish-deco tl">✦</div>
+        <div class="wish-deco tr">✦</div>
+        <div class="wish-deco bl">✦</div>
+        <div class="wish-deco br">✦</div>
+
+
+
+        <div class="wish-field">
+          <label for="wishText">💫 Diləyin</label>
+          <textarea id="wishText"
+            class="wish-textarea"
+            placeholder="Bu il ən böyük diləyim..."
+            rows="4"></textarea>
+          <div class="wish-char-count"><span id="charCount">0</span> simvol</div>
+        </div>
+
+        <button id="sendWishBtn"
+          class="send-wish-btn">
+          <span class="send-inner">
+            <i class="fas fa-paper-plane"></i>
+            <span>Diləyi göndər</span>
+          </span>
+          <div class="send-shimmer"></div>
+        </button>
+
+        <div id="wishStatus"
+          class="wish-status hidden"></div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-surprise">
+      <div class="footer-hearts">
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+      </div>
+      <p>Sənin üçün hazırlanmışdır • Fidan & Təhmaz</p>
+      <p class="footer-year">✨ 2026 ✨</p>
+    </footer>
+  </main>
+
+  <!-- CONFETTİ CANVAS -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- JAVASCRIPT -->
+  <script src="script.js"></script>
+</body>
+
+</html>

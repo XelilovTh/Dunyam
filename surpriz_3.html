@@ -7,8 +7,34 @@
     <meta name="language" content="az">
     <meta name="description" content="Sənin üçün üçüncü sürpriz...">
     <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/sun0225SUN/photos/img/20210715233345.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
+        .back-to-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            color: #ff3366;
+            text-decoration: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 51, 102, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.2);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .back-to-home:hover {
+            transform: translateX(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(255, 51, 102, 0.4);
+        }
         * {
             margin: 0;
             padding: 0;
@@ -82,6 +108,10 @@
     </script>
 </head>
 <body>
+    <a href="index.html" class="back-to-home">
+        <i class="fas fa-arrow-left"></i>
+        <span>Geri</span>
+    </a>
     <div id="info">✨ Səni çox sevirəm Fidanım ✨</div>
 
     <script type="module">
