@@ -39,6 +39,7 @@ module.exports = async (req, res) => {
             cl_secret_exists: !!process.env.CL_SECRET,
             cl_music_secret_exists: !!process.env.CL_MUSIC_SECRET,
             tg_token_exists: !!process.env.TG_TOKEN,
+            notif_bot_token_exists: !!process.env.NOTIF_BOT_TOKEN,
             gh_owner: GITHUB_OWNER,
             gh_repo: GITHUB_REPO,
             status: "Proxy is alive and ready!"
@@ -113,8 +114,9 @@ module.exports = async (req, res) => {
                 return res.json(result);
 
             case 'telegram_send':
-                if (!process.env.TG_TOKEN) return res.status(500).json({ error: 'TG_TOKEN tapılmadı' });
-                const tgRes = await axios.post(`https://api.telegram.org/bot${process.env.TG_TOKEN}/sendMessage`, {
+                const botToken = process.env.NOTIF_BOT_TOKEN || process.env.TG_TOKEN;
+                if (!botToken) return res.status(500).json({ error: 'Bildiriş bot tokeni tapılmadı' });
+                const tgRes = await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     chat_id: '635302226',
                     text: data.text
                 });
