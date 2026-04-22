@@ -1,41 +1,27 @@
-/**
- * DÜNYAMIZ - Telegram Bot
- * 
- * Bu bot vasitəsilə sayta şəkil, musiqi və məktub yükləyə bilərsiniz.
- * 
- * Quraşdırma:
- * 1. Node.js quraşdırılmış olmalıdır.
- * 2. Terminalda bu əmri işə salın:
- *    npm install node-telegram-bot-api cloudinary axios
- * 3. Botu başladın:
- *    node telegram_bot.js
- */
-
 const TelegramBot = require('node-telegram-bot-api');
 const cloudinary = require('cloudinary').v2;
 const axios = require('axios');
 
-// KONFİQURASİYA (script.js-dən götürülüb)
+// KONFİQURASİYA
 const GITHUB_CONFIG = {
-    owner: 'XelilovTh',
-    repo: 'Dunyam',
+    owner: process.env.GH_OWNER || 'XelilovTh',
+    repo: process.env.GH_REPO || 'Dunyam',
     token: process.env.GH_TOKEN
 };
 
 const CLOUDINARY_CONFIG = {
-    cloud_name: 'dojz9uzhe',
-    api_key: '241982348988817',
+    cloud_name: process.env.CL_NAME || 'dojz9uzhe',
+    api_key: process.env.CL_KEY || '241982348988817',
     api_secret: process.env.CL_SECRET
 };
 
-const TELEGRAM_TOKEN = process.env.TG_TOKEN;
+const CLOUDINARY_MUSIC_CONFIG = {
+    cloud_name: process.env.CL_MUSIC_NAME || 'drlzwhblg',
+    api_key: process.env.CL_MUSIC_KEY || '583362931417988',
+    api_secret: process.env.CL_MUSIC_SECRET
+};
 
-// Cloudinary ayarları
-cloudinary.config({
-    cloud_name: CLOUDINARY_CONFIG.cloud_name,
-    api_key: CLOUDINARY_CONFIG.api_key,
-    api_secret: CLOUDINARY_CONFIG.api_secret
-});
+const TELEGRAM_TOKEN = process.env.TG_TOKEN;
 
 // Botu başlat
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
@@ -75,20 +61,40 @@ bot.on('photo', async (msg) => {
     try {
         const fileLink = await bot.getFileLink(photo.file_id);
         
+        cloudinary.config({
+            cloud_name: CLOUDINARY_CONFIG.cloud_name,
+            api_key: CLOUDINARY_CONFIG.api_key,
+            api_secret: CLOUDINARY_CONFIG.api_secret
+        });
+
         const result = await cloudinary.uploader.upload(fileLink, {
             folder: 'dunyamiz',
             tags: 'dunyamiz_gallery'
         });
 
-        bot.sendMessage(chatId, `✅ Şəkil uğurla yükləndi!\n🔗 Link: ${result.secure_url}`);
+        // Add to photos_list.json so the website can see it
+        const newPhoto = {
+            name: `photo_${Date.now()}.jpg`,
+            public_id: result.public_id,
+            download_url: result.secure_url,
+            created_at: new Date().toISOString()
+        };
+        const success = await updateJsonList('photos_list.json', newPhoto, '📸 Bot: Yeni şəkil əlavə edildi');
+        
+        if (success) {
+            bot.sendMessage(chatId, `✅ Şəkil uğurla yükləndi və sayta əlavə edildi!\n🔗 Link: ${result.secure_url}`);
+        } else {
+            bot.sendMessage(chatId, `⚠️ Şəkil yükləndi, amma sayt siyahısına əlavə edilərkən xəta baş verdi.`);
+        }
+        
     } catch (error) {
         console.error('Cloudinary xətası:', error);
-        bot.sendMessage(chatId, '❌ Şəkil yüklənərkən xəta baş verdi.');
+        bot.sendMessage(chatId, `❌ Şəkil yüklənərkən xəta baş verdi: ${error.message}`);
     }
 });
 
 // ─────────────────────────────────────────────────────────────
-// MUSİQİ YÜKLƏMƏ (GitHub)
+// MUSİQİ YÜKLƏMƏ (Cloudinary Music)
 // ─────────────────────────────────────────────────────────────
 bot.on('audio', async (msg) => {
     handleMusicUpload(msg, msg.audio);
@@ -106,23 +112,43 @@ async function handleMusicUpload(msg, file) {
     const chatId = msg.chat.id;
     const fileName = file.file_name || `music_${Date.now()}.mp3`;
     
-    bot.sendMessage(chatId, `⏳ "${fileName}" GitHub-a yüklənir...`);
+    bot.sendMessage(chatId, `⏳ "${fileName}" Cloudinary-ə yüklənir...`);
 
     try {
         const fileLink = await bot.getFileLink(file.file_id);
-        const response = await axios.get(fileLink, { responseType: 'arraybuffer' });
-        const base64Content = Buffer.from(response.data).toString('base64');
+        
+        cloudinary.config({
+            cloud_name: CLOUDINARY_MUSIC_CONFIG.cloud_name,
+            api_key: CLOUDINARY_MUSIC_CONFIG.api_key,
+            api_secret: CLOUDINARY_MUSIC_CONFIG.api_secret
+        });
 
-        const success = await githubUpload(`music/${fileName}`, base64Content, `🎵 Bot: ${fileName} əlavə edildi`);
+        // Buffer ilə yükləmə (URL-dən daha etibarlıdır)
+        const response = await axios.get(fileLink, { responseType: 'arraybuffer' });
+        const base64Audio = `data:${file.mime_type || 'audio/mpeg'};base64,${Buffer.from(response.data).toString('base64')}`;
+
+        const result = await cloudinary.uploader.upload(base64Audio, {
+            folder: 'dunyamiz_music',
+            resource_type: 'video',
+            tags: 'dunyamiz_music'
+        });
+
+        const newMusic = {
+            name: fileName,
+            public_id: result.public_id,
+            download_url: result.secure_url,
+            created_at: new Date().toISOString()
+        };
+        const success = await updateJsonList('music_list.json', newMusic, `🎵 Bot: ${fileName} siyahıya əlavə edildi`);
 
         if (success) {
-            bot.sendMessage(chatId, `✅ Musiqi uğurla yükləndi!\n📁 Qovluq: music/${fileName}`);
+            bot.sendMessage(chatId, `✅ Musiqi uğurla yükləndi!\n🔗 Link: ${result.secure_url}`);
         } else {
-            bot.sendMessage(chatId, '❌ GitHub yükləmə xətası.');
+            bot.sendMessage(chatId, '❌ Musiqi yükləndi, amma JSON siyahısı yenilənərkən xəta baş verdi.');
         }
     } catch (error) {
-        console.error('GitHub Musiqi xətası:', error);
-        bot.sendMessage(chatId, '❌ Musiqi yüklənərkən xəta baş verdi.');
+        console.error('Cloudinary Musiqi xətası:', error);
+        bot.sendMessage(chatId, `❌ Musiqi yüklənərkən xəta baş verdi: ${error.message}`);
     }
 }
 
@@ -171,11 +197,13 @@ bot.onText(/\/stats/, async (msg) => {
     bot.sendMessage(chatId, '📊 Statistika toplanır...');
 
     try {
-        // Cloudinary şəkil sayı
-        const cloudinaryRes = await axios.get(`https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloud_name}/image/list/dunyamiz_gallery.json`);
-        const photoCount = cloudinaryRes.data.resources.length;
+        let photoCount = 0;
+        try {
+            const pRes = await githubGet('photos_list.json');
+            const pContent = Buffer.from(pRes.content, 'base64').toString('utf-8');
+            photoCount = JSON.parse(pContent).length;
+        } catch(e) {}
 
-        // GitHub Musiqi və Məktub sayı
         const musicFiles = await githubList('music');
         const songCount = musicFiles.filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f.name)).length;
 
@@ -232,5 +260,61 @@ async function githubList(path) {
         return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
         return [];
+    }
+}
+
+async function githubGet(path) {
+    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    try {
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        return null;
+    }
+}
+
+async function updateJsonList(path, newItem, commitMessage) {
+    try {
+        const fileData = await githubGet(path);
+        let list = [];
+        let sha = undefined;
+        
+        if (fileData) {
+            sha = fileData.sha;
+            const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
+            try {
+                list = JSON.parse(decodedContent);
+                if (!Array.isArray(list)) list = [];
+            } catch (e) {
+                list = [];
+            }
+        }
+        
+        list.push(newItem);
+        
+        const newContentBase64 = Buffer.from(JSON.stringify(list, null, 2), 'utf-8').toString('base64');
+        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+        
+        const payload = {
+            message: commitMessage,
+            content: newContentBase64
+        };
+        if (sha) payload.sha = sha;
+        
+        const response = await axios.put(url, payload, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        return response.status === 200 || response.status === 201;
+    } catch (error) {
+        console.error(`Error updating ${path}:`, error.response?.data || error.message);
+        return false;
     }
 }
