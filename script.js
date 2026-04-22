@@ -10,31 +10,30 @@
    KONFİQURASİYA VƏ SABİTLƏR
    ═══════════════════════════════════════════════════════════════════ */
 
-const GITHUB_CONFIG = {
-    owner: 'XelilovTh',
-    repo: 'Dunyam',
-    baseUrl: 'https://api.github.com'
-};
-
 const APP_CONFIG = {
     startDate: new Date('2023-02-01T00:00:00'),
-    version: '2.1.0',
+    version: '2.2.0-beta',
+    github: {
+        owner: 'XelilovTh',
+        repo: 'Dunyam',
+        baseUrl: 'https://api.github.com'
+    },
+    cloudinary: {
+        images: {
+            cloud_name: 'dojz9uzhe',
+            upload_preset: 'dunyamiz',
+            api_key: '241982348988817'
+        },
+        music: {
+            cloud_name: 'drlzwhblg',
+            upload_preset: 'dunyamiz_music',
+            api_key: '583362931417988'
+        }
+    },
     maxFileSize: {
         image: 10 * 1024 * 1024,
         music: 30 * 1024 * 1024
     }
-};
-
-const CLOUDINARY_CONFIG = {
-    cloud_name: 'dojz9uzhe',
-    upload_preset: 'dunyamiz',
-    api_key: '241982348988817'
-};
-
-const CLOUDINARY_MUSIC_CONFIG = {
-    cloud_name: 'drlzwhblg',
-    upload_preset: 'dunyamiz_music',
-    api_key: '583362931417988'
 };
 
 
@@ -488,7 +487,31 @@ function initApp() {
         item.classList.toggle('active', item.dataset.section === 'home');
     });
 
+    initScrollReveal();
+    initParallax();
     initAutoSave();
+}
+
+function initScrollReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+}
+
+function initParallax() {
+    const stars = document.querySelector('.universe-background');
+    if (!stars) return;
+
+    stars.classList.add('parallax');
+    window.addEventListener('scroll', () => {
+        document.documentElement.style.setProperty('--scroll-y', window.scrollY);
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -503,20 +526,40 @@ function initCounter() {
 function updateCounter() {
     const now = new Date();
     const start = APP_CONFIG.startDate;
-    const diff = now - start;
+    
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    let days = now.getDate() - start.getDate();
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    if (days < 0) {
+        months--;
+        const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        days += lastMonth.getDate();
+    }
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
 
-    if (DOM.daysCounter) DOM.daysCounter.textContent = String(days).padStart(4, '0');
+    const diffMs = now - start;
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+    // Ekranda göstər (Years/Months/Days formatında)
+    if (DOM.daysCounter) DOM.daysCounter.textContent = String(years * 365 + months * 30 + days).padStart(4, '0');
+    
+    // Alt etiketləri yeniləyə bilərik (Amma hazırkı dizayna uyğun saxlayırıq)
     if (DOM.hoursCounter) DOM.hoursCounter.textContent = String(hours).padStart(2, '0');
     if (DOM.minutesCounter) DOM.minutesCounter.textContent = String(minutes).padStart(2, '0');
     if (DOM.secondsCounter) DOM.secondsCounter.textContent = String(seconds).padStart(2, '0');
 
-    const progress = ((diff % 60000) / 60000) * 100;
+    // Tooltip və ya başlıq üçün tam mətn
+    const fullText = `${years} il, ${months} ay, ${days} gün`;
+    const counterHeader = document.querySelector('.counter-header h3');
+    if (counterHeader) counterHeader.title = fullText;
 
+    const progress = ((diffMs % 60000) / 60000) * 100;
     if (DOM.loveProgressBar) {
         DOM.loveProgressBar.style.setProperty('--progress', progress + '%');
     }
@@ -921,12 +964,11 @@ async function loadPhotos() {
 
 function showGalleryLoading() {
     if (DOM.galleryGrid) {
-        DOM.galleryGrid.innerHTML = `
-            <div class="gallery-loading">
-                <div class="loading-spinner"></div>
-                <p>Xatirələr yüklənir...</p>
-            </div>
-        `;
+        let skeletons = '';
+        for(let i=0; i<6; i++) {
+            skeletons += `<div class="skeleton skeleton-photo"></div>`;
+        }
+        DOM.galleryGrid.innerHTML = skeletons;
     }
 }
 
@@ -1102,7 +1144,7 @@ function updateLightboxImage() {
    ═══════════════════════════════════════════════════════════════════ */
 
 async function cloudinaryDelete(publicId, resourceType = 'image') {
-    const config = resourceType === 'video' ? CLOUDINARY_MUSIC_CONFIG : CLOUDINARY_CONFIG;
+    const config = resourceType === 'video' ? APP_CONFIG.cloudinary.music : APP_CONFIG.cloudinary.images;
     try {
         const data = await githubRequestProxy('cloudinary_delete', { 
             public_id: publicId,
@@ -1152,12 +1194,19 @@ async function loadLetters() {
 
 function showLettersLoading() {
     if (DOM.lettersList) {
-        DOM.lettersList.innerHTML = `
-            <div class="letters-loading">
-                <div class="loading-spinner"></div>
-                <p>Məktublar yüklənir...</p>
-            </div>
-        `;
+        let skeletons = '';
+        for(let i=0; i<3; i++) {
+            skeletons += `
+                <div class="letter-card-item skeleton">
+                    <div class="skeleton-circle"></div>
+                    <div class="letter-card-content" style="width: 100%">
+                        <div class="skeleton-line" style="width: 60%"></div>
+                        <div class="skeleton-line" style="width: 90%"></div>
+                    </div>
+                </div>
+            `;
+        }
+        DOM.lettersList.innerHTML = skeletons;
     }
 }
 
@@ -1384,12 +1433,14 @@ async function loadSongs() {
 
 function showMusicLoading() {
     if (DOM.musicPlaylist) {
-        DOM.musicPlaylist.innerHTML = `
-            <div class="music-loading">
-                <div class="loading-spinner"></div>
-                <p>Musiqilər yüklənir...</p>
-            </div>
-        `;
+        let skeletons = '';
+        for(let i=0; i<5; i++) {
+            skeletons += `
+                <div class="music-track-item skeleton" style="height: 70px; margin-bottom: 10px; border-radius: 12px; opacity: 0.5;">
+                </div>
+            `;
+        }
+        DOM.musicPlaylist.innerHTML = skeletons;
     }
 }
 
@@ -1918,48 +1969,162 @@ function playSong(index) {
     const song = AppState.songs[index];
     trackAction("Musiqi dinləyir", cleanFileName(song.name));
 
-    if (AppState.player.currentIndex !== -1) {
-        const prevSong = AppState.songs[AppState.player.currentIndex];
-        const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
-        if (prevItem) {
-            prevItem.classList.remove('playing');
-            const icon = prevItem.querySelector('.track-play-icon i');
-            if (icon) icon.className = 'fas fa-play';
-        }
-    }
-
-    AppState.player.currentIndex = index;
-
-    const audioUrl = getAudioUrl(song);
-    audioPlayer.pause();
-    audioPlayer.currentTime = 0;
-    audioPlayer.src = audioUrl;
-    audioPlayer.crossOrigin = 'anonymous';
-    audioPlayer.load();
-
-    const onCanPlay = () => {
-        audioPlayer.play()
-            .then(() => { AppState.player.isPlaying = true; })
-            .catch(err => {
-                console.error('Playback error:', err);
-                audioPlayer.crossOrigin = null;
-                audioPlayer.src = audioUrl;
-                audioPlayer.load();
-                audioPlayer.play().catch(e => console.error('Retry failed:', e));
-            });
-        audioPlayer.removeEventListener('canplay', onCanPlay);
+    // Audio Crossfade Məntiqi (Fade Out)
+    const fadeOut = (audio, duration, callback) => {
+        const startVolume = audio.volume;
+        const interval = 50;
+        const steps = duration / interval;
+        const stepAmount = startVolume / steps;
+        
+        const fade = setInterval(() => {
+            if (audio.volume > stepAmount) {
+                audio.volume -= stepAmount;
+            } else {
+                audio.volume = 0;
+                clearInterval(fade);
+                if (callback) callback();
+            }
+        }, interval);
     };
-    audioPlayer.addEventListener('canplay', onCanPlay);
 
+    const startNewSong = () => {
+        AppState.player.currentIndex = index;
+        const audioUrl = getAudioUrl(song);
+        
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        audioPlayer.src = audioUrl;
+        audioPlayer.crossOrigin = 'anonymous';
+        audioPlayer.volume = 0; // Fade in üçün sıfırdan başlayırıq
+        audioPlayer.load();
 
-    const currentItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${song.public_id}"]`);
-    if (currentItem) {
-        currentItem.classList.add('playing');
-        const icon = currentItem.querySelector('.track-play-icon i');
-        if (icon) icon.className = 'fas fa-pause';
+        const onCanPlay = () => {
+            audioPlayer.play()
+                .then(() => { 
+                    AppState.player.isPlaying = true;
+                    // Fade In
+                    const fadeInInterval = setInterval(() => {
+                        if (audioPlayer.volume < AppState.player.volume - 0.05) {
+                            audioPlayer.volume += 0.05;
+                        } else {
+                            audioPlayer.volume = AppState.player.volume;
+                            clearInterval(fadeInInterval);
+                        }
+                    }, 50);
+                })
+                .catch(err => {
+                    console.error('Playback error:', err);
+                    audioPlayer.volume = AppState.player.volume;
+                    audioPlayer.play().catch(e => console.error('Retry failed:', e));
+                });
+            audioPlayer.removeEventListener('canplay', onCanPlay);
+        };
+        audioPlayer.addEventListener('canplay', onCanPlay);
+
+        // Lyrics yüklə
+        loadLyrics(song);
+        
+        // UI Yenilə
+        const prevPlaying = DOM.musicPlaylist?.querySelector('.music-track-item.playing');
+        if (prevPlaying) prevPlaying.classList.remove('playing');
+        
+        const currentItem = DOM.musicPlaylist?.querySelector(`.music-track-item[data-id="${song.public_id}"]`);
+        if (currentItem) {
+            currentItem.classList.add('playing');
+            const icon = currentItem.querySelector('.track-play-icon i');
+            if (icon) icon.className = 'fas fa-pause';
+        }
+        showPlayer(song);
+    };
+
+    if (AppState.player.isPlaying && !audioPlayer.paused) {
+        fadeOut(audioPlayer, 1000, startNewSong);
+    } else {
+        startNewSong();
     }
+}
 
-    showPlayer(song);
+/* ═══════════════════════════════════════════════════════════════════
+   MAHNI SÖZLƏRİ (LYRICS) MƏNTİQİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+async function loadLyrics(song) {
+    const container = document.getElementById('fsLyricsContainer');
+    if (!container) return;
+
+    container.innerHTML = '<div class="lyrics-placeholder">Sözlər axtarılır...</div>';
+    AppState.currentLyrics = [];
+
+    try {
+        // Gələcəkdə hər mahnı üçün .lrc faylı ola bilər
+        const lyricsPath = `lyrics/${song.public_id}.lrc`;
+        const content = await githubGetFile(lyricsPath);
+        
+        if (content) {
+            parseLyrics(content);
+        } else {
+            container.innerHTML = '<div class="lyrics-placeholder">Bu mahnı üçün sözlər tapılmadı ❤️</div>';
+        }
+    } catch (e) {
+        container.innerHTML = '<div class="lyrics-placeholder">Sözlər yoxdur</div>';
+    }
+}
+
+function parseLyrics(lrc) {
+    const container = document.getElementById('fsLyricsContainer');
+    const lines = lrc.split('\n');
+    const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+    
+    let html = '';
+    AppState.currentLyrics = [];
+
+    lines.forEach(line => {
+        const match = timeRegex.exec(line);
+        if (match) {
+            const minutes = parseInt(match[1]);
+            const seconds = parseInt(match[2]);
+            const ms = parseInt(match[3]);
+            const time = minutes * 60 + seconds + (ms / 1000);
+            const text = line.replace(timeRegex, '').trim();
+            
+            if (text) {
+                AppState.currentLyrics.push({ time, text });
+                html += `<div class="lyric-line" data-time="${time}">${escapeHtml(text)}</div>`;
+            }
+        }
+    });
+
+    if (container) container.innerHTML = html || '<div class="lyrics-placeholder">Sözlər formatlanmayıb</div>';
+}
+
+function updateLyrics(currentTime) {
+    const container = document.getElementById('fsLyricsContainer');
+    if (!container || !AppState.currentLyrics || AppState.currentLyrics.length === 0) return;
+
+    const lines = container.querySelectorAll('.lyric-line');
+    let activeLine = null;
+
+    AppState.currentLyrics.forEach((lyric, index) => {
+        const nextLyric = AppState.currentLyrics[index + 1];
+        const isCurrent = currentTime >= lyric.time && (!nextLyric || currentTime < nextLyric.time);
+        
+        if (isCurrent) {
+            activeLine = lines[index];
+        }
+    });
+
+    if (activeLine && !activeLine.classList.contains('active')) {
+        lines.forEach(l => l.classList.remove('active'));
+        activeLine.classList.add('active');
+        
+        // Avtomatik scroll
+        const containerHeight = container.offsetHeight;
+        const lineOffset = activeLine.offsetTop;
+        container.scrollTo({
+            top: lineOffset - containerHeight / 2 + 20,
+            behavior: 'smooth'
+        });
+    }
 }
 
 function showPlayer(song) {
@@ -2115,6 +2280,9 @@ function updateProgress() {
     if (DOM.fsProgressSlider) DOM.fsProgressSlider.value = percent;
     if (DOM.fsProgressFill) DOM.fsProgressFill.style.width = percent + '%';
     if (DOM.fsCurrentTime) DOM.fsCurrentTime.textContent = formatTime(audioPlayer.currentTime);
+
+    // Lyrics yenilə
+    updateLyrics(audioPlayer.currentTime);
 
     const prevSong = AppState.songs[AppState.player.currentIndex];
     const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
