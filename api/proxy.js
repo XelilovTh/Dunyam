@@ -117,7 +117,7 @@ module.exports = async (req, res) => {
                 const botToken = process.env.NOTIF_BOT_TOKEN || process.env.TG_TOKEN;
                 if (!botToken) return res.status(500).json({ error: 'Bildiriş bot tokeni tapılmadı' });
                 const tgRes = await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    chat_id: '635302226',
+                    chat_id: '6353022269',
                     text: data.text
                 });
                 return res.json(tgRes.data);
