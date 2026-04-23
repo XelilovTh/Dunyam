@@ -81,9 +81,9 @@
   --z-header: 40;
   --z-navigation: 50;
   --z-player: 45;
-  --z-modal: 100;
-  --z-lightbox: 200;
-  --z-admin: 300;
+  --z-modal: 1500;
+  --z-lightbox: 1600;
+  --z-admin: 1700;
   --z-notification: 2000;
 }
 
