@@ -692,7 +692,7 @@
             <!-- Seçilmiş musiqilər bura düşəcək -->
           </div>
         </div>
-        
+
         <div class="form-group" style="margin-top: 15px;">
           <label for="musicLyricsInput" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9rem;">
             <i class="fas fa-quote-right" style="margin-right: 5px;"></i> Mahnı sözləri (Opsionel)
@@ -766,8 +766,15 @@
   
   <!-- Məlumatlar -->
   <div class="fs-info">
-    <h2 class="fs-title" id="fsTitle">Musiqi seçilməyib</h2>
-    <p class="fs-artist" id="fsArtist">▶︎•၊၊||၊|။|||||။၊|။•</p>
+    <div class="fs-text-content">
+      <h2 class="fs-title" id="fsTitle">Musiqi seçilməyib</h2>
+      <p class="fs-artist" id="fsArtist"></p>
+    </div>
+    
+    <!-- Mahnı Sözləri (Lyrics) Konteyneri -->
+    <div class="fs-lyrics-container" id="fsLyricsContainer">
+      <div class="lyrics-placeholder">Mahnı sözləri yüklənir...</div>
+    </div>
   </div>
   
   <!-- Proqress -->
@@ -833,12 +840,17 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<<<<<<< HEAD
 ── LYRICS MODAL (Fullscreen Player üçün)                           -->
+=======
+<!-- LYRICS MODAL                                                 -->
+>>>>>>> origin/main
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="lyrics-modal" id="lyricsModal">
   <div class="lyrics-modal-container">
     <div class="lyrics-modal-header">
       <h3 id="lyricsModalTitle">Mahnı Sözləri</h3>
+<<<<<<< HEAD
       <button class="lyrics-modal-close" id="lyricsModalClose">
         <i class="fas fa-times"></i>
       </button>
@@ -861,6 +873,16 @@
       <div class="lyrics-modal-footer">
         <button id="editLyricsBtn" class="edit-lyrics-btn">
           <i class="fas fa-edit"></i> Sözləri redaktə et
+=======
+      <button class="lyrics-modal-close" id="lyricsModalClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="lyrics-modal-body">
+      <p class="lyrics-tip">Məsləhət: [00:12.50] Mətn formatında yazsanız, musiqi ilə sinxron olar.</p>
+      <textarea id="lyricsTextArea" placeholder="Mahnı sözlərini bura daxil edin..."></textarea>
+      <div class="lyrics-modal-footer">
+        <button id="saveLyricsBtn" class="save-lyrics-btn">
+          <i class="fas fa-save"></i> GitHub-a Yüklə
+>>>>>>> origin/main
         </button>
       </div>
     </div>
