@@ -718,9 +718,43 @@ async function updateMusicMetadata(newSongs) {
             JSON.stringify(songs, null, 2),
             `🎵 Musiqi siyahısı yeniləndi (${songsToAdd.length} yeni)`
         );
-        return success;
+
+        if (!success) throw new Error('Metadata update failed');
+        return true;
     } catch (error) {
-        console.error('Metadata yeniləmə xətası:', error);
+        console.error('Music metadata update error:', error);
+        return false;
+    }
+}
+
+async function saveLyricsForSongs(songs, lyricsText) {
+    try {
+        for (const song of songs) {
+            // Musiqi adından fayl adı yarat
+            const fileName = song.public_id.split('/').pop() + '.lrc';
+            const filePath = `lyrics/${fileName}`;
+            
+            // LRC formatında yaz (vaxt etiketləri varsa qoruyaq)
+            let formattedLyrics = lyricsText;
+            
+            // Əgər vaxt etiketləri yoxdursa, sadəcə mətni yaz
+            if (!lyricsText.match(/\[\d{2}:\d{2}\.\d{2}\]/)) {
+                formattedLyrics = lyricsText;
+            }
+            
+            const success = await githubUploadFile(
+                filePath,
+                formattedLyrics,
+                `📝 Mahnı sözləri əlavə edildi: ${song.name}`
+            );
+            
+            if (!success) {
+                console.error(`Failed to save lyrics for ${song.name}`);
+            }
+        }
+        return true;
+    } catch (error) {
+        console.error('Save lyrics error:', error);
         return false;
     }
 }
@@ -2682,6 +2716,13 @@ function initMusicUpload() {
             if (results.length > 0) {
                 showStatus(status, '⏳ Metadata yenilənir...', 'loading', 0);
                 await updateMusicMetadata(results);
+                
+                // Musiqi sözlərini yüklə
+                const lyricsInput = document.getElementById('musicLyricsInput');
+                if (lyricsInput && lyricsInput.value.trim()) {
+                    await saveLyricsForSongs(results, lyricsInput.value.trim());
+                    lyricsInput.value = ''; // Input-u təmizlə
+                }
                 
                 showStatus(status, `✅ ${results.length} musiqi uğurla yükləndi!`, 'success');
                 trackAction("Toplu musiqi yüklədi", `${results.length} ədəd`);
