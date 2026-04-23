@@ -825,14 +825,14 @@ async function removePhotoFromMetadata(publicId) {
 async function cloudinaryUpload(file) {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
+    formData.append('upload_preset', APP_CONFIG.cloudinary.images.upload_preset);
     formData.append('folder', 'dunyamiz'); // Cloudinary-də yaranacaq qovluğun adı
 
     // Əgər aşağıdakı Variant 2 (List API) istifadə ediləcəksə, şəkillərə mütləq tag (etiket) vurulmalıdır:
     formData.append('tags', 'dunyamiz_gallery');
 
     try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/upload`, {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${APP_CONFIG.cloudinary.images.cloud_name}/image/upload`, {
             method: 'POST',
             body: formData
         });
@@ -849,12 +849,12 @@ async function cloudinaryUpload(file) {
 async function cloudinaryUploadAudio(file) {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_MUSIC_CONFIG.upload_preset);
+    formData.append('upload_preset', APP_CONFIG.cloudinary.music.upload_preset);
     formData.append('folder', 'dunyamiz_music');
     formData.append('tags', 'dunyamiz_music');
 
     try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_MUSIC_CONFIG.cloud_name}/video/upload`, {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${APP_CONFIG.cloudinary.music.cloud_name}/video/upload`, {
             method: 'POST',
             body: formData
         });
@@ -2526,7 +2526,12 @@ function initSurpriseButtons() {
    ADMIN PANEL
    ═══════════════════════════════════════════════════════════════════ */
 
+let adminPanelInitialized = false;
+
 function initAdminPanel() {
+    if (adminPanelInitialized) return;
+    adminPanelInitialized = true;
+
     if (DOM.heroHeart) {
         DOM.heroHeart.addEventListener('dblclick', openAdminPanel);
     }
