@@ -4503,3 +4503,119 @@ body {
 .lyric-plain-line:hover {
   color: white;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LYRICS MODAL STİLLƏRİ
+   ═══════════════════════════════════════════════════════════════════ */
+
+.lyrics-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-modal);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.lyrics-modal.active {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+.lyrics-modal-container {
+  background: var(--dark-bg-secondary);
+  width: 100%;
+  max-width: 600px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.lyrics-modal-header {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lyrics-modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.lyrics-modal-body {
+  padding: 20px;
+}
+
+.lyrics-tip {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-bottom: 15px;
+  background: rgba(233, 30, 99, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-pink);
+}
+
+#lyricsTextArea {
+  width: 100%;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  padding: 15px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+
+#lyricsTextArea:focus {
+  border-color: var(--primary-pink);
+}
+
+.lyrics-modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-lyrics-btn {
+  background: var(--primary-pink);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.save-lyrics-btn:hover {
+  background: var(--primary-pink-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+}
+
+.save-lyrics-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  transform: none;
+}

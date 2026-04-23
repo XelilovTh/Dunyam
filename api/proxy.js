@@ -120,6 +120,16 @@ module.exports = async (req, res) => {
                 const listRes = await axios.get(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, { headers: ghHeaders });
                 return res.json(listRes.data);
 
+            case 'github_delete':
+                const deleteRes = await axios.delete(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${data.path}`, {
+                    headers: ghHeaders,
+                    data: {
+                        message: data.message,
+                        sha: data.sha
+                    }
+                });
+                return res.json(deleteRes.data);
+
             case 'cloudinary_delete':
                 const cloudConfig = {
                     cloud_name: data.cloud_name || process.env.CL_NAME,
