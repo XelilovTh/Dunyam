@@ -733,6 +733,7 @@
       <div class="fs-more-container">
         <button class="fs-btn" id="fsMoreBtn"><i class="fas fa-ellipsis-v"></i></button>
         <div class="fs-more-dropdown" id="fsMoreDropdown">
+          <button id="fsLyricsBtn"><i class="fas fa-quote-right"></i> Mahnı sözləri</button>
           <button id="fsRenameBtn"><i class="fas fa-edit"></i> Adı dəyiş</button>
           <button id="fsPlaylistAddBtn"><i class="fas fa-list-ul"></i> Playlistə əlavə et</button>
           <button id="fsDeleteBtn" class="delete-option"><i class="fas fa-trash-alt"></i> Sil</button>
@@ -826,6 +827,41 @@
       
       <div class="existing-playlists" id="existingPlaylistsList">
         <!-- Playlistlər bura düşəcək -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+── LYRICS MODAL (Fullscreen Player üçün)                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="lyrics-modal" id="lyricsModal">
+  <div class="lyrics-modal-container">
+    <div class="lyrics-modal-header">
+      <h3 id="lyricsModalTitle">Mahnı Sözləri</h3>
+      <button class="lyrics-modal-close" id="lyricsModalClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="lyrics-modal-body">
+      <div class="lyrics-display" id="lyricsDisplay">
+        <p class="lyrics-placeholder">Mahnı sözləri yüklənir...</p>
+      </div>
+      <div class="lyrics-edit-section" id="lyricsEditSection" style="display: none;">
+        <textarea id="lyricsTextArea" placeholder="Mahnı sözlərini bura daxil edin..."></textarea>
+        <div class="lyrics-edit-actions">
+          <button id="saveLyricsBtn" class="save-lyrics-btn">
+            <i class="fas fa-save"></i> Yadda saxla
+          </button>
+          <button id="cancelEditLyricsBtn" class="cancel-lyrics-btn">
+            <i class="fas fa-times"></i> Ləğv et
+          </button>
+        </div>
+      </div>
+      <div class="lyrics-modal-footer">
+        <button id="editLyricsBtn" class="edit-lyrics-btn">
+          <i class="fas fa-edit"></i> Sözləri redaktə et
+        </button>
       </div>
     </div>
   </div>

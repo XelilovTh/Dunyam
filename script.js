@@ -227,6 +227,7 @@ const DOM = {
     letterModalDelete: document.getElementById('letterModalDelete'),
     fsMoreBtn: document.getElementById('fsMoreBtn'),
     fsMoreDropdown: document.getElementById('fsMoreDropdown'),
+    fsLyricsBtn: document.getElementById('fsLyricsBtn'),
     fsRenameBtn: document.getElementById('fsRenameBtn'),
     fsDeleteBtn: document.getElementById('fsDeleteBtn'),
     fsHeartBtn: document.getElementById('fsHeartBtn'),
@@ -239,6 +240,16 @@ const DOM = {
     playlistNameInput: document.getElementById('playlistNameInput'),
     savePlaylistBtn: document.getElementById('savePlaylistBtn'),
     existingPlaylistsList: document.getElementById('existingPlaylistsList'),
+    // Lyrics Modal
+    lyricsModal: document.getElementById('lyricsModal'),
+    lyricsModalClose: document.getElementById('lyricsModalClose'),
+    lyricsModalTitle: document.getElementById('lyricsModalTitle'),
+    lyricsDisplay: document.getElementById('lyricsDisplay'),
+    lyricsEditSection: document.getElementById('lyricsEditSection'),
+    lyricsTextArea: document.getElementById('lyricsTextArea'),
+    saveLyricsBtn: document.getElementById('saveLyricsBtn'),
+    cancelEditLyricsBtn: document.getElementById('cancelEditLyricsBtn'),
+    editLyricsBtn: document.getElementById('editLyricsBtn'),
     toastContainer: document.getElementById('toast-container'),
     // Toplu seçim düymələri
     gallerySelectBtn: document.getElementById('gallerySelectBtn'),
@@ -1672,6 +1683,17 @@ function initMusicMoreMenu() {
     document.addEventListener('click', () => {
         if (DOM.fsMoreDropdown) DOM.fsMoreDropdown.classList.remove('show');
     });
+
+    if (DOM.fsLyricsBtn) {
+        DOM.fsLyricsBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const song = AppState.songs[AppState.player.currentIndex];
+            if (!song) return;
+            
+            DOM.fsMoreDropdown.classList.remove('show');
+            openLyricsModal(song);
+        });
+    }
 
     if (DOM.fsRenameBtn) {
         DOM.fsRenameBtn.addEventListener('click', async (e) => {
@@ -3141,8 +3163,8 @@ window.DunyamizApp = {
     getState: () => ({ ...AppState }),
     refreshData: loadSectionData,
     version: APP_CONFIG.version,
-    cancelPhotoSelection: () => {}, // Assigned in initPhotoUpload
-    cancelMusicSelection: () => {}   // Assigned in initMusicUpload
+    cancelPhotoSelection: () => {}, 
+    cancelMusicSelection: () => {}   
 };
 
 console.log(`
@@ -3175,6 +3197,12 @@ function initSelectionSystem() {
     if (DOM.musicBulkDeleteBtn) {
         DOM.musicBulkDeleteBtn.addEventListener('click', bulkDeleteMusic);
     }
+
+    // Lyrics Modal event listeners
+    if (DOM.lyricsModalClose) DOM.lyricsModalClose.addEventListener('click', closeLyricsModal);
+    if (DOM.editLyricsBtn) DOM.editLyricsBtn.addEventListener('click', showLyricsEditSection);
+    if (DOM.saveLyricsBtn) DOM.saveLyricsBtn.addEventListener('click', saveLyricsFromModal);
+    if (DOM.cancelEditLyricsBtn) DOM.cancelEditLyricsBtn.addEventListener('click', hideLyricsEditSection);
 }
 
 // --- QALEREYA SEÇİMİ ---
@@ -3521,3 +3549,220 @@ const Visualizer = (() => {
 
     return { init, start, pause, resume };
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   LYRICS MODAL FUNKSİYALARI
+   ═══════════════════════════════════════════════════════════════════ */
+
+let currentLyricsSong = null;
+
+async function openLyricsModal(song) {
+    currentLyricsSong = song;
+    
+    if (DOM.lyricsModalTitle) {
+        DOM.lyricsModalTitle.textContent = `${cleanFileName(song.name)} - Mahnı Sözləri`;
+    }
+    
+    // Lyrics yüklə
+    await loadLyricsForSong(song);
+    
+    // Modalı göstər
+    if (DOM.lyricsModal) {
+        DOM.lyricsModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    trackAction("Mahnı sözlərini açdı", song.name);
+}
+
+function closeLyricsModal() {
+    if (DOM.lyricsModal) {
+        DOM.lyricsModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Edit section-u gizlət
+    hideLyricsEditSection();
+    
+    currentLyricsSong = null;
+}
+
+async function loadLyricsForSong(song) {
+    if (!DOM.lyricsDisplay) return;
+    
+    // Show loading
+    DOM.lyricsDisplay.innerHTML = '<p class="lyrics-placeholder">Mahnı sözləri yüklənir...</p>';
+    
+    try {
+        // Lyrics fayl adını yarat
+        const fileName = song.public_id.split('/').pop() + '.lrc';
+        const lyricsPath = `lyrics/${fileName}`;
+        
+        // GitHub-dan yüklə
+        const lyricsContent = await githubGetFile(lyricsPath);
+        
+        if (lyricsContent && lyricsContent.trim()) {
+            // LRC formatında sözləri parse et və göstər
+            displayLyrics(lyricsContent);
+        } else {
+            // Sözlər yoxdur
+            DOM.lyricsDisplay.innerHTML = `
+                <div class="lyrics-empty">
+                    <i class="fas fa-music"></i>
+                    <p>Bu mahnının sözləri əlavə edilməyib</p>
+                    <button class="add-lyrics-btn" onclick="showLyricsEditSection()">
+                        <i class="fas fa-plus"></i> Sözlər əlavə et
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Edit button-u göstər/gizlət
+        if (DOM.editLyricsBtn) {
+            DOM.editLyricsBtn.style.display = lyricsContent ? 'block' : 'none';
+        }
+        
+    } catch (error) {
+        console.error('Lyrics yükləmə xətası:', error);
+        DOM.lyricsDisplay.innerHTML = `
+            <div class="lyrics-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Mahnı sözləri yüklənə bilmədi</p>
+            </div>
+        `;
+    }
+}
+
+function displayLyrics(lyricsContent) {
+    if (!DOM.lyricsDisplay) return;
+    
+    // LRC formatını parse et
+    const lines = lyricsContent.split('\n');
+    let html = '';
+    
+    lines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+        
+        // Vaxt etiketini yoxla ([mm:ss.xx])
+        const timeMatch = trimmedLine.match(/^\[(\d{2}):(\d{2})\.(\d{2})\](.*)$/);
+        
+        if (timeMatch) {
+            const [, minutes, seconds, centiseconds, text] = timeMatch;
+            const timeInSeconds = parseInt(minutes) * 60 + parseInt(seconds) + parseInt(centiseconds) / 100;
+            
+            html += `<div class="lyrics-line" data-time="${timeInSeconds}">${text.trim()}</div>`;
+        } else {
+            // Vaxt etiketi olmayan sətir
+            html += `<div class="lyrics-line no-time">${trimmedLine}</div>`;
+        }
+    });
+    
+    DOM.lyricsDisplay.innerHTML = html || `<div class="lyrics-line no-time">${lyricsContent}</div>`;
+    
+    // Musiqi ilə sinxronizasiya üçün listener əlavə et
+    setupLyricsSync();
+}
+
+function setupLyricsSync() {
+    if (!audioPlayer || !DOM.lyricsDisplay) return;
+    
+    // Musiqi vaxtını yoxla və uyğun sətri highlight et
+    audioPlayer.addEventListener('timeupdate', () => {
+        const currentTime = audioPlayer.currentTime;
+        const lyricsLines = DOM.lyricsDisplay.querySelectorAll('.lyrics-line[data-time]');
+        
+        let activeLine = null;
+        
+        // Hazırkı vaxta ən yaxın sətri tap
+        lyricsLines.forEach(line => {
+            const lineTime = parseFloat(line.dataset.time);
+            if (lineTime <= currentTime) {
+                activeLine = line;
+            }
+        });
+        
+        // Bütün sətirlərdən active classını çıxar
+        lyricsLines.forEach(line => line.classList.remove('active'));
+        
+        // Aktiv sətri highlight et
+        if (activeLine) {
+            activeLine.classList.add('active');
+            // Aktiv sətri görünən sahəyə sürüşdür
+            activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+}
+
+function showLyricsEditSection() {
+    if (DOM.lyricsEditSection && DOM.lyricsDisplay) {
+        DOM.lyricsEditSection.style.display = 'block';
+        DOM.lyricsDisplay.style.display = 'none';
+        
+        // Mövcud sözləri textarea-ya yüklə
+        if (DOM.lyricsTextArea && currentLyricsSong) {
+            const fileName = currentLyricsSong.public_id.split('/').pop() + '.lrc';
+            const lyricsPath = `lyrics/${fileName}`;
+            
+            githubGetFile(lyricsPath).then(content => {
+                if (content) {
+                    DOM.lyricsTextArea.value = content;
+                } else {
+                    DOM.lyricsTextArea.value = '';
+                }
+            }).catch(() => {
+                DOM.lyricsTextArea.value = '';
+            });
+        }
+    }
+}
+
+function hideLyricsEditSection() {
+    if (DOM.lyricsEditSection && DOM.lyricsDisplay) {
+        DOM.lyricsEditSection.style.display = 'none';
+        DOM.lyricsDisplay.style.display = 'block';
+        
+        if (DOM.lyricsTextArea) {
+            DOM.lyricsTextArea.value = '';
+        }
+    }
+}
+
+async function saveLyricsFromModal() {
+    if (!DOM.lyricsTextArea || !currentLyricsSong) return;
+    
+    const lyricsContent = DOM.lyricsTextArea.value.trim();
+    if (!lyricsContent) {
+        showNotification('⚠️ Mahnı sözləri boş ola bilməz!', 'error');
+        return;
+    }
+    
+    try {
+        // Fayl adı və path yarat
+        const fileName = currentLyricsSong.public_id.split('/').pop() + '.lrc';
+        const filePath = `lyrics/${fileName}`;
+        
+        // GitHub-a yüklə
+        const success = await githubUploadFile(
+            filePath,
+            lyricsContent,
+            `📝 Mahnı sözləri yeniləndi: ${currentLyricsSong.name}`
+        );
+        
+        if (success) {
+            showNotification('✅ Mahnı sözləri uğurla yadda saxlanıldı!', 'success');
+            
+            // Edit section-u gizlət və sözləri yenidən yüklə
+            hideLyricsEditSection();
+            await loadLyricsForSong(currentLyricsSong);
+            
+            trackAction("Mahnı sözləri redaktə etdi", currentLyricsSong.name);
+        } else {
+            showNotification('❌ Mahnı sözləri yadda saxlanıla bilmədi!', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Lyrics yadda saxlama xətası:', error);
+        showNotification('❌ Xəta baş verdi, yenidən cəhd edin!', 'error');
+    }
+}
