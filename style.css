@@ -3544,6 +3544,56 @@ body {
   height: 12px;
   background: #111;
   border-radius: 50%;
+<<<<<<< Updated upstream
+=======
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* -------------------------------------------
+   LYRICS ACTIVE STATE (Toggled by click)
+   ------------------------------------------- */
+.fullscreen-player.show-lyrics .fs-header {
+  padding-left: 80px;
+  transition: padding 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fullscreen-player.show-lyrics .fs-vinyl-container {
+  flex: 0;
+  min-height: 0;
+  max-height: 0;
+  margin: 0;
+}
+
+.fullscreen-player.show-lyrics .fs-vinyl-record-wrapper {
+  position: absolute;
+  top: 20px;
+  left: 80px;
+  width: 70px;
+  height: 70px;
+  z-index: 110;
+}
+
+.fullscreen-player.show-lyrics .fs-vinyl-record {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5), inset 0 0 0 3px #0a0a0a, inset 0 0 0 4px #333;
+}
+
+.fullscreen-player.show-lyrics .fs-vinyl-center {
+  width: 22px;
+  height: 22px;
+  font-size: 0.6rem;
+  box-shadow: inset 0 0 0 2px #111, inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen-player.show-lyrics .fs-vinyl-center::after {
+  width: 4px;
+  height: 4px;
+}
+
+.fullscreen-player.show-lyrics .fs-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+>>>>>>> Stashed changes
 }
 
 @keyframes spin {
@@ -4618,4 +4668,64 @@ body {
   background: #666;
   cursor: not-allowed;
   transform: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   iOS / MOBİL OPTIMALLAQDIRMALAR
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* touch-action: manipulation — ikili toxunma zoom-unu aradan qaldırır */
+.nav-item,
+.music-track-item,
+.surprise-card,
+.gallery-item,
+.letter-card-item,
+.playlist-card,
+.fs-btn,
+.fs-btn-control,
+.action-btn,
+.login-button,
+.surprise-button,
+button {
+  touch-action: manipulation;
+}
+
+/* Range input iOS dəstəyi */
+input[type="range"] {
+  -webkit-appearance: none;
+  touch-action: manipulation;
+}
+
+/* Nav ikon minimum ölçüsü */
+.nav-item i {
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Safe Area — iPhone Alt Cərgəsi (Home Indicator) */
+#toast-container {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-navigation {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS overflow scroll dəstəyi */
+.app-main,
+.fs-lyrics-container,
+.letter-modal-body,
+.fs-playlist-list,
+.admin-panel,
+.playlist-modal-body {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* fs-playlist-list: flex column təyin et */
+.fs-playlist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
 }

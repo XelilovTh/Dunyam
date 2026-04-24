@@ -1523,9 +1523,6 @@ function renderMusicPlaylist() {
                     <div class="track-title">${escapeHtml(name)}</div>
                     <div class="track-artist">Dünyamız • Bizim mahnımız</div>
                 </div>
-                <div class="track-play-icon">
-                    <i class="fas ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>
-                </div>
             </div>
         `;
     });
@@ -1599,6 +1596,7 @@ function renderPlaylistsGrid() {
     DOM.musicPlaylist.querySelectorAll('.playlist-card').forEach(card => {
         card.addEventListener('click', () => {
             AppState.currentPlaylist = card.dataset.name;
+            updateQueueContext();
             renderMusicPlaylist();
         });
     });
@@ -1688,6 +1686,9 @@ function initMusicMoreMenu() {
     }
 
     document.addEventListener('click', () => {
+        if (DOM.fsMoreDropdown) DOM.fsMoreDropdown.classList.remove('show');
+    });
+    document.addEventListener('touchend', () => {
         if (DOM.fsMoreDropdown) DOM.fsMoreDropdown.classList.remove('show');
     });
 
@@ -1827,6 +1828,7 @@ function initMusicTabListeners() {
             tab.classList.add('active');
             AppState.currentMusicTab = tab.dataset.tab;
             AppState.currentPlaylist = null;
+            updateQueueContext();
             renderMusicPlaylist();
         });
     });
@@ -2074,6 +2076,10 @@ function playSong(index) {
         audioPlayer.load();
 
         const onCanPlay = () => {
+            // iOS: AudioContext-i yenidən başlat
+            if (typeof Visualizer !== 'undefined' && Visualizer.resumeContext) {
+                Visualizer.resumeContext();
+            }
             audioPlayer.play()
                 .then(() => { 
                     AppState.player.isPlaying = true;
@@ -2112,7 +2118,9 @@ function playSong(index) {
         showPlayer(song);
     };
 
-    if (AppState.player.isPlaying && !audioPlayer.paused) {
+    // Mobil cihazlarda (< 768px) crossfade-i atlayırıq
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile && AppState.player.isPlaying && !audioPlayer.paused) {
         fadeOut(audioPlayer, 1000, startNewSong);
     } else {
         startNewSong();
@@ -2361,7 +2369,11 @@ function updateDuration() {
     if (DOM.fsProgressSlider) DOM.fsProgressSlider.max = 100;
 }
 
+let lastProgressUpdate = 0;
 function updateProgress() {
+    const _now = Date.now();
+    if (_now - lastProgressUpdate < 100) return; // 100ms throttle
+    lastProgressUpdate = _now;
     if (!audioPlayer.duration) return;
 
     const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -3007,7 +3019,8 @@ function initStarsCanvas() {
     }
 
     function generateStars() {
-        const count = Math.floor((canvas.width * canvas.height) / 3000);
+        let count = Math.floor((canvas.width * canvas.height) / 3000);
+        if (window.innerWidth < 768) count = Math.floor(count / 2);
         stars = [];
 
         for (let i = 0; i < count; i++) {
@@ -3058,6 +3071,15 @@ function initStarsCanvas() {
     }
 
     window.addEventListener('resize', debounce(resizeCanvas, 200));
+
+    // Performans: Səhifə gizlənəndə animasiyanı dayandır
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            cancelAnimationFrame(animationFrame);
+        } else {
+            animationFrame = requestAnimationFrame(drawStars);
+        }
+    });
 
     resizeCanvas();
     animationFrame = requestAnimationFrame(drawStars);
@@ -3715,6 +3737,11 @@ const Visualizer = (() => {
 
     function animate() {
         if (!analyser) return;
+        // Yalnız tam ekran pleyer açıqsa animasiyanı davam et
+        if (!DOM.fullscreenPlayer || !DOM.fullscreenPlayer.classList.contains('active')) {
+            animFrameId = null;
+            return;
+        }
 
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(dataArray);
@@ -3757,5 +3784,11 @@ const Visualizer = (() => {
         start();
     }
 
-    return { init, start, pause, resume };
+    function resumeContext() {
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    return { init, start, pause, resume, resumeContext };
 })();
