@@ -2195,6 +2195,7 @@ function updateLyrics(currentTime) {
 
     const lines = container.querySelectorAll('.lyric-line');
     let activeLine = null;
+    let activeIndex = -1;
 
     AppState.currentLyrics.forEach((lyric, index) => {
         const nextLyric = AppState.currentLyrics[index + 1];
@@ -2202,6 +2203,7 @@ function updateLyrics(currentTime) {
         
         if (isCurrent) {
             activeLine = lines[index];
+            activeIndex = index;
         }
     });
 
@@ -2209,11 +2211,17 @@ function updateLyrics(currentTime) {
         lines.forEach(l => l.classList.remove('active'));
         activeLine.classList.add('active');
         
-        // Avtomatik scroll
+        // Avtomatik mərkəzləşdirilmiş scroll
         const containerHeight = container.offsetHeight;
         const lineOffset = activeLine.offsetTop;
+        const lineHeight = activeLine.offsetHeight;
+        
+        // Mərkəzləşdirmə hesabı: 
+        // Container-in tam mərkəzi nöqtəsini hədəf alırıq
+        const scrollTarget = lineOffset - (containerHeight / 2) + (lineHeight / 2);
+        
         container.scrollTo({
-            top: lineOffset - containerHeight / 2 + 20,
+            top: scrollTarget,
             behavior: 'smooth'
         });
     }
