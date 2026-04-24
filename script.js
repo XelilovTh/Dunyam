@@ -2229,6 +2229,7 @@ function updateLyrics(currentTime) {
 
     const lines = container.querySelectorAll('.lyric-line');
     let activeLine = null;
+    let activeIndex = -1;
 
     AppState.currentLyrics.forEach((lyric, index) => {
         const nextLyric = AppState.currentLyrics[index + 1];
@@ -2236,6 +2237,7 @@ function updateLyrics(currentTime) {
         
         if (isCurrent) {
             activeLine = lines[index];
+            activeIndex = index;
         }
     });
 
@@ -2243,11 +2245,17 @@ function updateLyrics(currentTime) {
         lines.forEach(l => l.classList.remove('active'));
         activeLine.classList.add('active');
         
-        // Avtomatik scroll
+        // Avtomatik mərkəzləşdirilmiş scroll
         const containerHeight = container.offsetHeight;
         const lineOffset = activeLine.offsetTop;
+        const lineHeight = activeLine.offsetHeight;
+        
+        // Mərkəzləşdirmə hesabı: 
+        // Container-in tam mərkəzi nöqtəsini hədəf alırıq
+        const scrollTarget = lineOffset - (containerHeight / 2) + (lineHeight / 2);
+        
         container.scrollTo({
-            top: lineOffset - containerHeight / 2 + 20,
+            top: scrollTarget,
             behavior: 'smooth'
         });
     }
@@ -3421,7 +3429,43 @@ window.DunyamizApp = {
     refreshData: loadSectionData,
     version: APP_CONFIG.version,
     cancelPhotoSelection: () => {}, // Assigned in initPhotoUpload
-    cancelMusicSelection: () => {}   // Assigned in initMusicUpload
+    cancelMusicSelection: () => {},  // Assigned in initMusicUpload
+    toggleLyrics: function() {
+        const player = document.getElementById('fullscreenPlayer');
+        const wrapper = document.getElementById('fsVinylRecordWrapper');
+        
+        if (!player || !wrapper) return;
+        
+        // FLIP animation logic
+        // 1. FIRST
+        const firstRect = wrapper.getBoundingClientRect();
+        
+        // 2. LAST (Toggle class)
+        player.classList.toggle('show-lyrics');
+        const lastRect = wrapper.getBoundingClientRect();
+        
+        // 3. INVERT
+        const deltaX = firstRect.left - lastRect.left;
+        const deltaY = firstRect.top - lastRect.top;
+        const scaleX = firstRect.width / lastRect.width;
+        const scaleY = firstRect.height / lastRect.height;
+        
+        // 4. PLAY
+        wrapper.animate([
+            {
+                transformOrigin: 'top left',
+                transform: `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`
+            },
+            {
+                transformOrigin: 'top left',
+                transform: 'none'
+            }
+        ], {
+            duration: 600,
+            easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+            fill: 'both'
+        });
+    }
 };
 
 console.log(`
