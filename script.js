@@ -1648,6 +1648,13 @@ function initMusicPlayer() {
         });
     }
     if (DOM.fsCloseBtn) DOM.fsCloseBtn.addEventListener('click', closeFullscreenPlayer);
+    if (DOM.fsVinylRecord) {
+        DOM.fsVinylRecord.addEventListener('click', () => {
+            if (DOM.fullscreenPlayer) {
+                DOM.fullscreenPlayer.classList.toggle('show-lyrics');
+            }
+        });
+    }
     if (DOM.fsPlayBtn) DOM.fsPlayBtn.addEventListener('click', togglePlay);
     if (DOM.fsPrevBtn) DOM.fsPrevBtn.addEventListener('click', playPrevious);
     if (DOM.fsNextBtn) DOM.fsNextBtn.addEventListener('click', playNext);
@@ -2218,10 +2225,11 @@ function updateLyrics(currentTime) {
         activeLine.classList.add('active');
         
         // Avtomatik scroll
-        const containerHeight = container.offsetHeight;
+        const containerHeight = container.clientHeight;
         const lineOffset = activeLine.offsetTop;
+        const lineHeight = activeLine.offsetHeight;
         container.scrollTo({
-            top: lineOffset - containerHeight / 2 + 20,
+            top: lineOffset - (containerHeight / 2) + (lineHeight / 2),
             behavior: 'smooth'
         });
     }
@@ -2433,6 +2441,10 @@ function openFullscreenPlayer() {
     DOM.fullscreenPlayer.classList.add('active');
     document.body.style.overflow = 'hidden';
     updateFsPlaylist();
+    if (AppState.player.isPlaying) {
+        Visualizer.resumeContext();
+        Visualizer.start();
+    }
     trackAction("Tam ekran pleyeri açdı");
 }
 
