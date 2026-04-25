@@ -32,6 +32,18 @@
         --pillar-width: 70px;
         --shard-width: 12px;
     }
+    
+    /* Performance: Disable expensive filters on weak mobile */
+    .card {
+        backdrop-filter: none !important;
+        background: rgba(20, 20, 25, 0.9) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+    }
+    
+    .shard {
+        backdrop-filter: none !important;
+        background: rgba(233, 30, 99, 0.1) !important;
+    }
 }
 
 body {
@@ -152,6 +164,7 @@ body {
     justify-content: center;
     align-items: center;
     background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+    will-change: perspective;
 }
 
 @media (min-width: 768px) {
@@ -272,8 +285,9 @@ body {
         filter 0.4s ease;
     
     transform-style: preserve-3d;
-    backface-visibility: visible;
+    backface-visibility: hidden; /* Optimization: hardware acceleration */
     overflow: hidden;
+    will-change: transform, opacity; /* Optimization: hardware acceleration */
 }
 
 .card video {

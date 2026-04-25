@@ -74,7 +74,8 @@ function initParticles() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     particles = [];
-    const particleCount = window.innerWidth < 768 ? 80 : 150;
+    // Optimization: even fewer particles on mobile
+    const particleCount = window.innerWidth < 768 ? 40 : 150;
     for (let i = 0; i < particleCount; i++) {
         particles.push({
             x: Math.random() * canvas.width,
@@ -231,13 +232,16 @@ function animate() {
         
         card.style.transform = transform;
         
-        // Dərinlik və Fokus (DOF)
+        // Dərinlik və Fokus (DOF) - Optimizasiya: Mobildə söndürülür
         const angleRad = (angle % 360) * Math.PI / 180;
         const zDepth = Math.cos(angleRad); // 1 = qabaq, -1 = arxa
         
-        // Arxa tərəfdə kəskin blur, mərkəzdə tam itilik
-        const blurAmount = Math.max(0, (1 - zDepth) * 10);
-        card.style.filter = `blur(${blurAmount}px)`;
+        if (window.innerWidth >= 768) {
+            const blurAmount = Math.max(0, (1 - zDepth) * 10);
+            card.style.filter = `blur(${blurAmount}px)`;
+        } else {
+            card.style.filter = 'none';
+        }
         
         // Opacity dəyərini zDepth ilə kəskin əlaqələndirmə
         const fadeRange = 1500;
