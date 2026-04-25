@@ -243,14 +243,7 @@ const DOM = {
     gallerySelectBtn: document.getElementById('gallerySelectBtn'),
     galleryBulkDeleteBtn: document.getElementById('galleryBulkDeleteBtn'),
     musicSelectBtn: document.getElementById('musicSelectBtn'),
-    musicBulkDeleteBtn: document.getElementById('musicBulkDeleteBtn'),
-    // Lyrics Modal
-    lyricsModal: document.getElementById('lyricsModal'),
-    lyricsModalClose: document.getElementById('lyricsModalClose'),
-    lyricsTextArea: document.getElementById('lyricsTextArea'),
-    saveLyricsBtn: document.getElementById('saveLyricsBtn'),
-    lyricsModalTitle: document.getElementById('lyricsModalTitle'),
-    fsLyricsBtn: document.getElementById('fsLyricsBtn')
+    musicBulkDeleteBtn: document.getElementById('musicBulkDeleteBtn')
 };
 
 const audioPlayer = new Audio();
@@ -1557,9 +1550,6 @@ function renderMusicPlaylist() {
                     <div class="track-title">${escapeHtml(name)}</div>
                     <div class="track-artist">Dünyamız • Bizim mahnımız</div>
                 </div>
-                <div class="track-play-icon">
-                    <i class="fas ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>
-                </div>
             </div>
         `;
     });
@@ -1633,6 +1623,7 @@ function renderPlaylistsGrid() {
     DOM.musicPlaylist.querySelectorAll('.playlist-card').forEach(card => {
         card.addEventListener('click', () => {
             AppState.currentPlaylist = card.dataset.name;
+            updateQueueContext();
             renderMusicPlaylist();
         });
     });
@@ -1684,6 +1675,9 @@ function initMusicPlayer() {
         });
     }
     if (DOM.fsCloseBtn) DOM.fsCloseBtn.addEventListener('click', closeFullscreenPlayer);
+    if (DOM.fsVinylRecord) {
+        // Lyrics feature removed
+    }
     if (DOM.fsPlayBtn) DOM.fsPlayBtn.addEventListener('click', togglePlay);
     if (DOM.fsPrevBtn) DOM.fsPrevBtn.addEventListener('click', playPrevious);
     if (DOM.fsNextBtn) DOM.fsNextBtn.addEventListener('click', playNext);
@@ -1722,6 +1716,9 @@ function initMusicMoreMenu() {
     }
 
     document.addEventListener('click', () => {
+        if (DOM.fsMoreDropdown) DOM.fsMoreDropdown.classList.remove('show');
+    });
+    document.addEventListener('touchend', () => {
         if (DOM.fsMoreDropdown) DOM.fsMoreDropdown.classList.remove('show');
     });
 
@@ -1861,6 +1858,7 @@ function initMusicTabListeners() {
             tab.classList.add('active');
             AppState.currentMusicTab = tab.dataset.tab;
             AppState.currentPlaylist = null;
+            updateQueueContext();
             renderMusicPlaylist();
         });
     });
@@ -1900,23 +1898,7 @@ function initPlaylistManagement() {
         });
     }
 
-    if (DOM.fsLyricsBtn) {
-        DOM.fsLyricsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            DOM.fsMoreDropdown.classList.remove('show');
-            openLyricsModal();
-        });
-    }
 
-    if (DOM.lyricsModalClose) {
-        DOM.lyricsModalClose.addEventListener('click', () => {
-            DOM.lyricsModal.classList.remove('active');
-        });
-    }
-
-    if (DOM.saveLyricsBtn) {
-        DOM.saveLyricsBtn.addEventListener('click', saveLyrics);
-    }
 
     // Modal bağlama
     if (DOM.playlistModalClose) {
@@ -1999,61 +1981,6 @@ function renderExistingPlaylists() {
     });
 }
 
-async function openLyricsModal() {
-    const song = AppState.songs[AppState.player.currentIndex];
-    if (!song) return;
-
-    DOM.lyricsModalTitle.textContent = `${cleanFileName(song.name)} - Sözlər`;
-    DOM.lyricsTextArea.value = '';
-    DOM.lyricsModal.classList.add('active');
-    DOM.saveLyricsBtn.disabled = true;
-    DOM.saveLyricsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yüklənir...';
-
-    try {
-        const cleanId = song.public_id.split('/').pop();
-        const content = await githubGetFile(`lyrics/${cleanId}.lrc`);
-        DOM.lyricsTextArea.value = content || '';
-    } catch (e) {
-        console.log('Sözlər hələ yoxdur');
-    } finally {
-        DOM.saveLyricsBtn.disabled = false;
-        DOM.saveLyricsBtn.innerHTML = '<i class="fas fa-save"></i> GitHub-a Yüklə';
-    }
-}
-
-async function saveLyrics() {
-    const song = AppState.songs[AppState.player.currentIndex];
-    if (!song) return;
-
-    const lyrics = DOM.lyricsTextArea.value.trim();
-    const cleanId = song.public_id.split('/').pop();
-    
-    DOM.saveLyricsBtn.disabled = true;
-    DOM.saveLyricsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GitHub-a göndərilir...';
-
-    try {
-        const success = await githubUploadFile(
-            `lyrics/${cleanId}.lrc`,
-            lyrics,
-            `📝 Mahnı sözləri yeniləndi: ${song.name}`
-        );
-
-        if (success) {
-            showNotification('✅ Sözlər uğurla yadda saxlanıldı!', 'success');
-            DOM.lyricsModal.classList.remove('active');
-            // Hazırkı lyrics-i yenidən yüklə ki, pleyerdə görünsün
-            loadLyrics(song);
-        } else {
-            showNotification('❌ Xəta baş verdi, yadda saxlanılmadı', 'error');
-        }
-    } catch (err) {
-        console.error('Lyrics save error:', err);
-        showNotification('❌ Xəta baş verdi', 'error');
-    } finally {
-        DOM.saveLyricsBtn.disabled = false;
-        DOM.saveLyricsBtn.innerHTML = '<i class="fas fa-save"></i> GitHub-a Yüklə';
-    }
-}
 
 function updateHeartStatus(song) {
     if (!DOM.fsHeartBtn) return;
@@ -2108,6 +2035,10 @@ function playSong(index) {
         audioPlayer.load();
 
         const onCanPlay = () => {
+            // iOS: AudioContext-i yenidən başlat
+            if (typeof Visualizer !== 'undefined' && Visualizer.resumeContext) {
+                Visualizer.resumeContext();
+            }
             audioPlayer.play()
                 .then(() => { 
                     AppState.player.isPlaying = true;
@@ -2130,9 +2061,7 @@ function playSong(index) {
         };
         audioPlayer.addEventListener('canplay', onCanPlay);
 
-        // Lyrics yüklə
-        loadLyrics(song);
-        
+
         // UI Yenilə
         const prevPlaying = DOM.musicPlaylist?.querySelector('.music-track-item.playing');
         if (prevPlaying) prevPlaying.classList.remove('playing');
@@ -2146,120 +2075,15 @@ function playSong(index) {
         showPlayer(song);
     };
 
-    if (AppState.player.isPlaying && !audioPlayer.paused) {
+    // Mobil cihazlarda (< 768px) crossfade-i atlayırıq
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile && AppState.player.isPlaying && !audioPlayer.paused) {
         fadeOut(audioPlayer, 1000, startNewSong);
     } else {
         startNewSong();
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   MAHNI SÖZLƏRİ (LYRICS) MƏNTİQİ
-   ═══════════════════════════════════════════════════════════════════ */
-
-async function loadLyrics(song) {
-    const container = document.getElementById('fsLyricsContainer');
-    if (!container) return;
-
-    container.innerHTML = '<div class="lyrics-placeholder">Sözlər axtarılır...</div>';
-    AppState.currentLyrics = [];
-
-    try {
-        // ID-ni sadələşdiririk: 'qovluq/id' -> 'id'
-        const cleanId = song.public_id.split('/').pop();
-        const lyricsPath = `lyrics/${cleanId}.lrc`;
-        const content = await githubGetFile(lyricsPath);
-        
-        if (content) {
-            parseLyrics(content);
-        } else {
-            container.innerHTML = '<div class="lyrics-placeholder">Bu mahnı üçün sözlər tapılmadı ❤️</div>';
-        }
-    } catch (e) {
-        container.innerHTML = '<div class="lyrics-placeholder">Sözlər yoxdur</div>';
-    }
-}
-
-function parseLyrics(content) {
-    const container = document.getElementById('fsLyricsContainer');
-    if (!container) return;
-
-    const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-    const lines = content.split('\n');
-    
-    let html = '';
-    AppState.currentLyrics = [];
-
-    const hasTimestamps = lines.some(line => timeRegex.test(line));
-
-    if (hasTimestamps) {
-        // Karaoke stili (Timestamps var)
-        lines.forEach(line => {
-            const match = timeRegex.exec(line);
-            if (match) {
-                const minutes = parseInt(match[1]);
-                const seconds = parseInt(match[2]);
-                const ms = parseInt(match[3]);
-                const time = minutes * 60 + seconds + (ms / 1000);
-                const text = line.replace(timeRegex, '').trim();
-                
-                if (text) {
-                    AppState.currentLyrics.push({ time, text });
-                    html += `<div class="lyric-line" data-time="${time}">${escapeHtml(text)}</div>`;
-                }
-            }
-        });
-    } else {
-        // Sadə mətn stili (2-ci variant)
-        html = '<div class="lyrics-plain-text">';
-        lines.forEach(line => {
-            if (line.trim()) {
-                html += `<p class="lyric-plain-line">${escapeHtml(line.trim())}</p>`;
-            }
-        });
-        html += '</div>';
-    }
-
-    container.innerHTML = html || '<div class="lyrics-placeholder">Sözlər formatlanmayıb</div>';
-}
-
-function updateLyrics(currentTime) {
-    const container = document.getElementById('fsLyricsContainer');
-    if (!container || !AppState.currentLyrics || AppState.currentLyrics.length === 0) return;
-
-    const lines = container.querySelectorAll('.lyric-line');
-    let activeLine = null;
-    let activeIndex = -1;
-
-    AppState.currentLyrics.forEach((lyric, index) => {
-        const nextLyric = AppState.currentLyrics[index + 1];
-        const isCurrent = currentTime >= lyric.time && (!nextLyric || currentTime < nextLyric.time);
-        
-        if (isCurrent) {
-            activeLine = lines[index];
-            activeIndex = index;
-        }
-    });
-
-    if (activeLine && !activeLine.classList.contains('active')) {
-        lines.forEach(l => l.classList.remove('active'));
-        activeLine.classList.add('active');
-        
-        // Avtomatik mərkəzləşdirilmiş scroll
-        const containerHeight = container.offsetHeight;
-        const lineOffset = activeLine.offsetTop;
-        const lineHeight = activeLine.offsetHeight;
-        
-        // Mərkəzləşdirmə hesabı: 
-        // Container-in tam mərkəzi nöqtəsini hədəf alırıq
-        const scrollTarget = lineOffset - (containerHeight / 2) + (lineHeight / 2);
-        
-        container.scrollTo({
-            top: scrollTarget,
-            behavior: 'smooth'
-        });
-    }
-}
 
 function showPlayer(song) {
     const name = cleanFileName(song.name);
@@ -2403,7 +2227,11 @@ function updateDuration() {
     if (DOM.fsProgressSlider) DOM.fsProgressSlider.max = 100;
 }
 
+let lastProgressUpdate = 0;
 function updateProgress() {
+    const _now = Date.now();
+    if (_now - lastProgressUpdate < 100) return; // 100ms throttle
+    lastProgressUpdate = _now;
     if (!audioPlayer.duration) return;
 
     const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -2414,9 +2242,6 @@ function updateProgress() {
     if (DOM.fsProgressSlider) DOM.fsProgressSlider.value = percent;
     if (DOM.fsProgressFill) DOM.fsProgressFill.style.width = percent + '%';
     if (DOM.fsCurrentTime) DOM.fsCurrentTime.textContent = formatTime(audioPlayer.currentTime);
-
-    // Lyrics yenilə
-    updateLyrics(audioPlayer.currentTime);
 
     const prevSong = AppState.songs[AppState.player.currentIndex];
     const prevItem = DOM.musicPlaylist.querySelector(`.music-track-item[data-id="${prevSong.public_id}"]`);
@@ -2463,6 +2288,10 @@ function openFullscreenPlayer() {
     DOM.fullscreenPlayer.classList.add('active');
     document.body.style.overflow = 'hidden';
     updateFsPlaylist();
+    if (AppState.player.isPlaying) {
+        Visualizer.resumeContext();
+        Visualizer.start();
+    }
     trackAction("Tam ekran pleyeri açdı");
 }
 
@@ -2961,9 +2790,6 @@ function initMusicUpload() {
                 return;
             }
 
-            const lyricsInput = document.getElementById('musicLyricsInput');
-            const lyrics = lyricsInput ? lyricsInput.value.trim() : '';
-
             isUploading = true;
             uploadBtn.disabled = true;
             
@@ -2984,15 +2810,6 @@ function initMusicUpload() {
                             created_at: new Date().toISOString()
                         });
 
-                        // Mahnı sözləri varsa GitHub-a yüklə
-                        if (lyrics) {
-                            const cleanId = uploadResult.public_id.split('/').pop();
-                            await githubUploadFile(
-                                `lyrics/${cleanId}.lrc`,
-                                lyrics,
-                                `📝 Mahnı sözləri əlavə edildi: ${file.name}`
-                            );
-                        }
                     }
                 } catch (err) {
                     console.error(`Upload error for ${file.name}:`, err);
@@ -3056,7 +2873,8 @@ function initStarsCanvas() {
     }
 
     function generateStars() {
-        const count = Math.floor((canvas.width * canvas.height) / 3000);
+        let count = Math.floor((canvas.width * canvas.height) / 3000);
+        if (window.innerWidth < 768) count = Math.floor(count / 2);
         stars = [];
 
         for (let i = 0; i < count; i++) {
@@ -3107,6 +2925,15 @@ function initStarsCanvas() {
     }
 
     window.addEventListener('resize', debounce(resizeCanvas, 200));
+
+    // Performans: Səhifə gizlənəndə animasiyanı dayandır
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            cancelAnimationFrame(animationFrame);
+        } else {
+            animationFrame = requestAnimationFrame(drawStars);
+        }
+    });
 
     resizeCanvas();
     animationFrame = requestAnimationFrame(drawStars);
@@ -3800,6 +3627,11 @@ const Visualizer = (() => {
 
     function animate() {
         if (!analyser) return;
+        // Yalnız tam ekran pleyer açıqsa animasiyanı davam et
+        if (!DOM.fullscreenPlayer || !DOM.fullscreenPlayer.classList.contains('active')) {
+            animFrameId = null;
+            return;
+        }
 
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(dataArray);
@@ -3842,5 +3674,11 @@ const Visualizer = (() => {
         start();
     }
 
-    return { init, start, pause, resume };
+    function resumeContext() {
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    return { init, start, pause, resume, resumeContext };
 })();
