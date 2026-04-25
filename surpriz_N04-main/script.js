@@ -117,6 +117,7 @@ function drawParticles() {
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
     });
+    if (window.innerWidth < 768) return; // Optimization: Disable particles on mobile
     requestAnimationFrame(drawParticles);
 }
 
@@ -126,7 +127,7 @@ drawParticles();
 
 window.addEventListener('scroll', () => {
     targetScroll = window.scrollY;
-});
+}, { passive: true });
 
 function animate() {
     // Sürət və hamarlıq hesablama

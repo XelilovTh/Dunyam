@@ -40,9 +40,8 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
     }
     
-    .shard {
-        backdrop-filter: none !important;
-        background: rgba(233, 30, 99, 0.1) !important;
+    .shard, .shard-system, .pillar-container, #particles {
+        display: none !important;
     }
 }
 
