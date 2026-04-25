@@ -764,37 +764,6 @@ async function updateMusicMetadata(newSongs) {
     }
 }
 
-async function saveLyricsForSongs(songs, lyricsText) {
-    try {
-        for (const song of songs) {
-            // Musiqi adından fayl adı yarat
-            const fileName = song.public_id.split('/').pop() + '.lrc';
-            const filePath = `lyrics/${fileName}`;
-            
-            // LRC formatında yaz (vaxt etiketləri varsa qoruyaq)
-            let formattedLyrics = lyricsText;
-            
-            // Əgər vaxt etiketləri yoxdursa, sadəcə mətni yaz
-            if (!lyricsText.match(/\[\d{2}:\d{2}\.\d{2}\]/)) {
-                formattedLyrics = lyricsText;
-            }
-            
-            const success = await githubUploadFile(
-                filePath,
-                formattedLyrics,
-                `📝 Mahnı sözləri əlavə edildi: ${song.name}`
-            );
-            
-            if (!success) {
-                console.error(`Failed to save lyrics for ${song.name}`);
-            }
-        }
-        return true;
-    } catch (error) {
-        console.error('Save lyrics error:', error);
-        return false;
-    }
-}
 
 async function updatePhotoMetadata(newPhotos) {
     try {
@@ -1675,9 +1644,7 @@ function initMusicPlayer() {
         });
     }
     if (DOM.fsCloseBtn) DOM.fsCloseBtn.addEventListener('click', closeFullscreenPlayer);
-    if (DOM.fsVinylRecord) {
-        // Lyrics feature removed
-    }
+
     if (DOM.fsPlayBtn) DOM.fsPlayBtn.addEventListener('click', togglePlay);
     if (DOM.fsPrevBtn) DOM.fsPrevBtn.addEventListener('click', playPrevious);
     if (DOM.fsNextBtn) DOM.fsNextBtn.addEventListener('click', playNext);
@@ -2384,13 +2351,8 @@ function initSurpriseButtons() {
         });
     });
 
-    const specialSurprise4 = document.getElementById('specialSurprise4');
-    if (specialSurprise4) {
-        specialSurprise4.addEventListener('click', (e) => {
-            e.preventDefault();
-            showNotification('🎉 Bu sürpriz tezliklə əlavə olunacaq!', 'info');
-        });
-    }
+    // Special Surprise #4 is now active, so we remove the "coming soon" notification
+    // The general listener above handles tracking and navigation via the href attribute.
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2820,18 +2782,10 @@ function initMusicUpload() {
                 showStatus(status, '⏳ Metadata yenilənir...', 'loading', 0);
                 await updateMusicMetadata(results);
                 
-                // Musiqi sözlərini yüklə
-                const lyricsInput = document.getElementById('musicLyricsInput');
-                if (lyricsInput && lyricsInput.value.trim()) {
-                    await saveLyricsForSongs(results, lyricsInput.value.trim());
-                    lyricsInput.value = ''; // Input-u təmizlə
-                }
-                
                 showStatus(status, `✅ ${results.length} musiqi uğurla yükləndi!`, 'success');
                 trackAction("Toplu musiqi yüklədi", `${results.length} ədəd`);
 
                 AppState.admin.selectedMusic = [];
-                if (lyricsInput) lyricsInput.value = '';
                 renderMusicPreviews();
 
                 await loadStats();
@@ -3257,42 +3211,7 @@ window.DunyamizApp = {
     version: APP_CONFIG.version,
     cancelPhotoSelection: () => {}, // Assigned in initPhotoUpload
     cancelMusicSelection: () => {},  // Assigned in initMusicUpload
-    toggleLyrics: function() {
-        const player = document.getElementById('fullscreenPlayer');
-        const wrapper = document.getElementById('fsVinylRecordWrapper');
-        
-        if (!player || !wrapper) return;
-        
-        // FLIP animation logic
-        // 1. FIRST
-        const firstRect = wrapper.getBoundingClientRect();
-        
-        // 2. LAST (Toggle class)
-        player.classList.toggle('show-lyrics');
-        const lastRect = wrapper.getBoundingClientRect();
-        
-        // 3. INVERT
-        const deltaX = firstRect.left - lastRect.left;
-        const deltaY = firstRect.top - lastRect.top;
-        const scaleX = firstRect.width / lastRect.width;
-        const scaleY = firstRect.height / lastRect.height;
-        
-        // 4. PLAY
-        wrapper.animate([
-            {
-                transformOrigin: 'top left',
-                transform: `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`
-            },
-            {
-                transformOrigin: 'top left',
-                transform: 'none'
-            }
-        ], {
-            duration: 600,
-            easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-            fill: 'both'
-        });
-    }
+
 };
 
 console.log(`

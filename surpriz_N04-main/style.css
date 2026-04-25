@@ -1,0 +1,257 @@
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+}
+
+:root {
+    --accent-color: #e91e63;
+    --accent-glow: rgba(233, 30, 99, 0.5);
+    --bg-dark: #0a0a0f;
+    --card-bg: rgba(255, 255, 255, 0.01);
+    --card-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background: var(--bg-dark);
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    overflow-x: hidden;
+}
+
+
+#particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -2;
+    pointer-events: none;
+}
+
+.scroll-space {
+    height: 800vh;
+}
+
+.scene {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    perspective: 1500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+}
+
+
+
+.gallery {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+}
+
+/* Prismatic Shard Core - Professional 3D Structure */
+.pillar-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px; height: 100vh;
+    transform-style: preserve-3d;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.shard-system {
+    position: absolute;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+}
+
+.shard {
+    position: absolute;
+    top: -50vh; left: 50%;
+    width: 40px; height: 200vh;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        rgba(233, 30, 99, 0.1) 20%, 
+        rgba(233, 30, 99, 0.2) 50%, 
+        rgba(233, 30, 99, 0.1) 80%, 
+        transparent
+    );
+    backdrop-filter: blur(10px);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    transform-style: preserve-3d;
+}
+
+/* Individual shard offsets */
+.shard-1 { transform: rotateY(0deg) translateZ(60px); }
+.shard-2 { transform: rotateY(72deg) translateZ(80px) scaleX(0.7); }
+.shard-3 { transform: rotateY(144deg) translateZ(50px) scaleX(1.2); }
+.shard-4 { transform: rotateY(216deg) translateZ(90px) scaleX(0.5); }
+.shard-5 { transform: rotateY(288deg) translateZ(70px) scaleX(0.9); }
+
+.light-beam {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px; height: 200vh;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        var(--accent-color), 
+        #ff6b9d, 
+        var(--accent-color), 
+        transparent
+    );
+    filter: blur(15px);
+    opacity: 0.4;
+}
+
+.pillar-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px; height: 100vh;
+    background: #fff;
+    box-shadow: 0 0 40px var(--accent-color), 0 0 80px #ff6b9d;
+    opacity: 0.3;
+}
+
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: translateX(-50%) scaleX(1); }
+    50% { opacity: 0.8; transform: translateX(-50%) scaleX(3); }
+}
+
+
+.card {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 380px; height: 240px;
+    margin-left: -190px;
+    margin-top: -120px;
+    
+    /* Advanced Glassmorphism */
+    background: rgba(255, 255, 255, 0.015);
+    backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    
+    /* Rim Light effect */
+    box-shadow: 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 10px 30px rgba(0, 0, 0, 0.5);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0; /* Padding removed for edge-to-edge video */
+    
+    transition: 
+        box-shadow 0.6s ease, 
+        border-color 0.6s ease,
+        filter 0.4s ease;
+    
+    transform-style: preserve-3d;
+    backface-visibility: visible;
+    overflow: hidden;
+}
+
+.card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 30px;
+    opacity: 0.6; /* Reduced base opacity for better focus contrast */
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(20%);
+}
+
+.card.focused video {
+    opacity: 1;
+    filter: grayscale(0%);
+}
+
+/* Grain/Noise Texture */
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Enhanced Shine Effect */
+.card::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(
+        45deg, 
+        transparent 45%, 
+        rgba(255, 255, 255, 0.15) 50%, 
+        transparent 55%
+    );
+    transform: translate(var(--shine-x, 0%), var(--shine-y, 0%));
+    pointer-events: none;
+    z-index: 2;
+}
+
+
+.card .icon {
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    filter: drop-shadow(0 0 10px var(--accent-glow));
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card:hover .icon,
+.card.focused .icon {
+    transform: scale(1.2) translateZ(30px);
+}
+
+.card h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, #fff, #888);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.card p {
+    font-size: 0.95rem;
+    opacity: 0.5;
+    font-weight: 300;
+}
+
+.card:hover,
+.card.focused {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+    box-shadow: 
+        inset 0 0 20px rgba(233, 30, 99, 0.2),
+        0 0 50px rgba(233, 30, 99, 0.4),
+        0 0 100px rgba(233, 30, 99, 0.1);
+}
+
+
+/* Background effects */
+.bg-dots {
+    position: fixed;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(circle, #222 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.3;
+    z-index: -1;
+    animation: moveDots 60s linear infinite;
+}
+
+@keyframes moveDots {
+    from { background-position: 0 0; }
+    to { background-position: 80px 80px; }
+}
