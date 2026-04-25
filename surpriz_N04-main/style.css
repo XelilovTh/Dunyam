@@ -27,10 +27,10 @@
 
 @media (max-width: 480px) {
     :root {
-        --card-width: 200px;
-        --card-height: 125px;
-        --pillar-width: 70px;
-        --shard-width: 12px;
+        --card-width: 150px;
+        --card-height: 95px;
+        --pillar-width: 60px;
+        --shard-width: 10px;
     }
     
     /* Performance: Disable expensive filters on weak mobile */

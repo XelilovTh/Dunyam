@@ -157,7 +157,7 @@ function animate() {
 
     cards.forEach((card, index) => {
         const isMobile = window.innerWidth < 768;
-        const scrollStep = isMobile ? 180 : 250; 
+        const scrollStep = isMobile ? 140 : 250; 
         const rawRelScroll = currentScroll - (index * scrollStep); 
         const video = card.querySelector('video');
         
@@ -216,7 +216,7 @@ function animate() {
         const angle = (relScroll * 0.14) + (floatX * 0.1); 
         
         // Dinamik Radius (Responsive)
-        const baseRadius = window.innerWidth < 480 ? 250 : (window.innerWidth < 768 ? 400 : 600);
+        const baseRadius = window.innerWidth < 480 ? 200 : (window.innerWidth < 768 ? 400 : 600);
         const breathing = Math.sin(time * 0.8 + index) * 15;
         const speedExpand = scrollVelocity * 0.5;
         const radius = baseRadius + breathing + speedExpand;
