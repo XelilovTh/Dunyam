@@ -8,6 +8,30 @@
     --bg-dark: #0a0a0f;
     --card-bg: rgba(255, 255, 255, 0.01);
     --card-border: rgba(255, 255, 255, 0.1);
+    
+    /* Responsive Variables */
+    --card-width: 380px;
+    --card-height: 240px;
+    --pillar-width: 200px;
+    --shard-width: 40px;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --card-width: 300px;
+        --card-height: 190px;
+        --pillar-width: 150px;
+        --shard-width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-width: 200px;
+        --card-height: 125px;
+        --pillar-width: 70px;
+        --shard-width: 12px;
+    }
 }
 
 body {
@@ -42,13 +66,19 @@ body {
 
 .loader-heart {
     position: relative;
-    font-size: 3rem;
+    font-size: 2.5rem;
     color: var(--accent-color);
     margin-bottom: 20px;
     animation: heartPulse 1.5s ease-in-out infinite;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+@media (min-width: 768px) {
+    .loader-heart {
+        font-size: 3rem;
+    }
 }
 
 .heart-ring {
@@ -117,11 +147,17 @@ body {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    perspective: 1500px;
+    perspective: 1000px;
     display: flex;
     justify-content: center;
     align-items: center;
     background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+}
+
+@media (min-width: 768px) {
+    .scene {
+        perspective: 1500px;
+    }
 }
 
 
@@ -138,7 +174,7 @@ body {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 200px; height: 100vh;
+    width: var(--pillar-width); height: 100vh;
     transform-style: preserve-3d;
     pointer-events: none;
     z-index: -1;
@@ -153,7 +189,7 @@ body {
 .shard {
     position: absolute;
     top: -50vh; left: 50%;
-    width: 40px; height: 200vh;
+    width: var(--shard-width); height: 200vh;
     background: linear-gradient(to bottom, 
         transparent, 
         rgba(233, 30, 99, 0.1) 20%, 
@@ -210,9 +246,9 @@ body {
 .card {
     position: absolute;
     top: 50%; left: 50%;
-    width: 380px; height: 240px;
-    margin-left: -190px;
-    margin-top: -120px;
+    width: var(--card-width); height: var(--card-height);
+    margin-left: calc(var(--card-width) / -2);
+    margin-top: calc(var(--card-height) / -2);
     
     /* Advanced Glassmorphism */
     background: rgba(255, 255, 255, 0.015);

@@ -39,6 +39,21 @@ setTimeout(() => {
     }
 }, 15000);
 
+// Mobil cihazlarda səs blokunu qaldırmaq üçün istifadəçi toxunuşu
+window.addEventListener('touchstart', () => {
+    videos.forEach(v => {
+        v.muted = false;
+        if (v.classList.contains('focused') && v.paused) {
+            v.play().catch(() => {});
+        }
+    });
+}, { once: true });
+window.addEventListener('click', () => {
+    videos.forEach(v => {
+        v.muted = false;
+    });
+}, { once: true });
+
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 const shardSystem = document.querySelector('.shard-system');
@@ -59,7 +74,8 @@ function initParticles() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     particles = [];
-    for (let i = 0; i < 150; i++) {
+    const particleCount = window.innerWidth < 768 ? 80 : 150;
+    for (let i = 0; i < particleCount; i++) {
         particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
@@ -138,7 +154,8 @@ function animate() {
     }
 
     cards.forEach((card, index) => {
-        const scrollStep = 250; 
+        const isMobile = window.innerWidth < 768;
+        const scrollStep = isMobile ? 180 : 250; 
         const rawRelScroll = currentScroll - (index * scrollStep); 
         const video = card.querySelector('video');
         
@@ -159,11 +176,20 @@ function animate() {
             if (isClosest) {
                 // Əgər mərkəzə yaxındırsa, videonu başlat və səsi yavaşca artır
                 if (video.paused) {
-                    video.play().catch(() => {});
+                    video.play().catch(() => {
+                        // Səs bloklanıbsa muted davam etsin
+                    });
                 }
-                // Hamar səs keçidi (Professional Fading)
+                
+                // Səsi aktiv et
+                video.muted = false;
+                
                 const targetVolume = 1.0;
-                video.volume += (targetVolume - video.volume) * 0.1;
+                if (video.volume < 0.95) {
+                    video.volume += (targetVolume - video.volume) * 0.1;
+                } else {
+                    video.volume = 1.0;
+                }
                 card.classList.add('focused');
             } else {
                 // Mərkəzdən uzaqlaşdıqda səsi yavaşca azalt və sonra dayandır
@@ -171,6 +197,7 @@ function animate() {
                     video.volume += (0 - video.volume) * 0.1;
                 } else {
                     video.volume = 0;
+                    video.muted = true;
                     if (!video.paused) video.pause();
                 }
                 card.classList.remove('focused');
@@ -186,8 +213,8 @@ function animate() {
         const yPos = (-relScroll * 0.45) + floatY;
         const angle = (relScroll * 0.14) + (floatX * 0.1); 
         
-        // Dinamik Radius (550px - 650px)
-        const baseRadius = 600;
+        // Dinamik Radius (Responsive)
+        const baseRadius = window.innerWidth < 480 ? 250 : (window.innerWidth < 768 ? 400 : 600);
         const breathing = Math.sin(time * 0.8 + index) * 15;
         const speedExpand = scrollVelocity * 0.5;
         const radius = baseRadius + breathing + speedExpand;
