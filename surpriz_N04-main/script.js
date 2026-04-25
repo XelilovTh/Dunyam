@@ -110,26 +110,31 @@ function animate() {
         }
 
         // Mərkəzə yaxınlıq (Video idarəsi üçün)
-        const proximity = 1 - Math.min(1, Math.abs(rawRelScroll) / 400); // 400px daxilində səs başlayır
+        const proximity = 1 - Math.min(1, Math.abs(rawRelScroll) / 400);
+        
+        // Mərkəzə ən yaxın olan kartı tapmaq və video idarəsi
+        const isClosest = Math.abs(rawRelScroll) < 150; // Mərkəzə yaxınlıq həddi
         
         if (video) {
-            // Video Play/Pause və Səs Keçidi (Crossfade)
-            if (proximity > 0) {
-                if (video.paused) video.play().catch(() => {}); // Autoplay bloklanarsa xəta verməsin
-                video.volume = Math.pow(proximity, 2); // Daha təbii səs keçidi üçün kvadratik
-            } else {
-                if (!video.paused) {
-                    video.pause();
-                    video.volume = 0;
+            if (isClosest) {
+                // Əgər mərkəzə yaxındırsa, videonu başlat və səsi yavaşca artır
+                if (video.paused) {
+                    video.play().catch(() => {});
                 }
+                // Hamar səs keçidi (Professional Fading)
+                const targetVolume = 1.0;
+                video.volume += (targetVolume - video.volume) * 0.1;
+                card.classList.add('focused');
+            } else {
+                // Mərkəzdən uzaqlaşdıqda səsi yavaşca azalt və sonra dayandır
+                if (video.volume > 0.05) {
+                    video.volume += (0 - video.volume) * 0.1;
+                } else {
+                    video.volume = 0;
+                    if (!video.paused) video.pause();
+                }
+                card.classList.remove('focused');
             }
-        }
-
-        // Mərkəzə ən yaxın olan kartı tapmaq
-        if (Math.abs(rawRelScroll) < 100) {
-            card.classList.add('focused');
-        } else {
-            card.classList.remove('focused');
         }
 
         // Canlı 'Floating' Yellənmə Animasiyası
@@ -148,11 +153,13 @@ function animate() {
         const radius = baseRadius + breathing + speedExpand;
         
         // 3D Transform
+        const scale = isClosest ? 1.05 : 1.0;
         const transform = `
             rotateY(${angle}deg) 
             translateY(${yPos}px) 
             translateZ(${radius}px)
             rotateX(${-yPos * 0.01 + floatRot}deg)
+            scale(${scale})
         `;
         
         card.style.transform = transform;

@@ -162,12 +162,14 @@ body {
     height: 100%;
     object-fit: cover;
     border-radius: 30px;
-    opacity: 0.8;
-    transition: opacity 0.5s ease;
+    opacity: 0.6; /* Reduced base opacity for better focus contrast */
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(20%);
 }
 
 .card.focused video {
     opacity: 1;
+    filter: grayscale(0%);
 }
 
 /* Grain/Noise Texture */
@@ -229,11 +231,12 @@ body {
 
 .card:hover,
 .card.focused {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.1);
     border-color: var(--accent-color);
     box-shadow: 
-        inset 0 0 0 1px var(--accent-color),
-        0 0 40px var(--accent-glow);
+        inset 0 0 20px rgba(233, 30, 99, 0.2),
+        0 0 50px rgba(233, 30, 99, 0.4),
+        0 0 100px rgba(233, 30, 99, 0.1);
 }
 
 
