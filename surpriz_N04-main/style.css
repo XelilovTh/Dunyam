@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    overflow-x: hidden;
+    min-height: 300vh; /* Long enough to scroll through all blocks */
+}
+
+/* Central Column */
+.central-column {
+    position: fixed;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: #333;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+/* Container for blocks */
+.scroll-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50vh 0; /* Start half way down the page */
+    gap: 80px; /* Space between blocks in the pile */
+    position: relative;
+    z-index: 2;
+}
+
+/* Individual Block */
+.block {
+    width: 200px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%); /* Dark blue/grey gradient */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
+}
+
+/* Initial state: Left blocks */
+.block:nth-child(odd) {
+    transform: translate(-400px, 200px) rotate(-45deg) scale(0.5);
+}
+
+/* Initial state: Right blocks */
+.block:nth-child(even) {
+    transform: translate(400px, 200px) rotate(45deg) scale(0.5);
+}
+
+/* Active state: When scrolled into view */
+.block.active {
+    opacity: 1;
+    transform: translate(0, 0) rotate(var(--rotation, 0deg)) scale(1);
+    pointer-events: auto;
+}
+
+/* Pile effect: Slight offsets for each block to look more natural */
+.block:nth-child(3n) { margin-left: -10px; }
+.block:nth-child(3n+1) { margin-left: 10px; }
+.block:nth-child(3n+2) { margin-left: 0px; }
+
+/* Back Button */
+.back-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 100;
+    transition: 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.back-btn i {
+    font-size: 1rem;
+}

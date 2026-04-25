@@ -2351,13 +2351,8 @@ function initSurpriseButtons() {
         });
     });
 
-    const specialSurprise4 = document.getElementById('specialSurprise4');
-    if (specialSurprise4) {
-        specialSurprise4.addEventListener('click', (e) => {
-            e.preventDefault();
-            showNotification('🎉 Bu sürpriz tezliklə əlavə olunacaq!', 'info');
-        });
-    }
+    // Special Surprise #4 is now active, so we remove the "coming soon" notification
+    // The general listener above handles tracking and navigation via the href attribute.
 }
 
 /* ═══════════════════════════════════════════════════════════════════
