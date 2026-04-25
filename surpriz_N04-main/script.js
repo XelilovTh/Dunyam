@@ -1,4 +1,44 @@
 const cards = document.querySelectorAll('.card');
+const videos = document.querySelectorAll('video');
+const preloader = document.getElementById('preloader');
+const loaderBar = document.getElementById('loader-bar');
+const loadedCountEl = document.getElementById('loaded-count');
+
+let loadedVideos = 0;
+const totalVideos = videos.length;
+
+function updateLoader() {
+    loadedVideos++;
+    const progress = (loadedVideos / totalVideos) * 100;
+    if (loaderBar) loaderBar.style.width = `${progress}%`;
+    if (loadedCountEl) loadedCountEl.textContent = loadedVideos;
+
+    if (loadedVideos >= totalVideos) {
+        setTimeout(() => {
+            if (preloader) preloader.classList.add('hidden');
+        }, 500);
+    }
+}
+
+// Hər video üçün yüklənməni izləyirik
+videos.forEach(video => {
+    // Əgər artıq yüklənibsə (cache-dən gələ bilər)
+    if (video.readyState >= 4) {
+        updateLoader();
+    } else {
+        video.addEventListener('canplaythrough', updateLoader, { once: true });
+        // Xəta olarsa da davam edirik ki, sayt ilişib qalmasın
+        video.addEventListener('error', updateLoader, { once: true });
+    }
+});
+
+// Təhlükəsizlik üçün: Əgər 10 saniyə keçərsə və hələ də yüklənməyibsə, loader-i bağla
+setTimeout(() => {
+    if (preloader && !preloader.classList.contains('hidden')) {
+        preloader.classList.add('hidden');
+    }
+}, 15000);
+
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 const shardSystem = document.querySelector('.shard-system');
