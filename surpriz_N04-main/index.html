@@ -1,39 +1,48 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sürpriz #4 - Animasiya</title>
+    <title>3D Premium Helix Scroll</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="central-column-container">
-        <div class="central-column"></div>
+    <canvas id="particles"></canvas>
+    <div class="bg-dots"></div>
+    <div class="scene">
+        <div class="gallery">
+            <div class="pillar-container">
+                <!-- Prismatic Shard Core -->
+                <div class="shard-system">
+                    <div class="shard shard-1"></div>
+                    <div class="shard shard-2"></div>
+                    <div class="shard shard-3"></div>
+                    <div class="shard shard-4"></div>
+                    <div class="shard shard-5"></div>
+                </div>
+                <div class="light-beam"></div>
+                <div class="pillar-glow"></div>
+            </div>
+
+
+            
+            <div class="card"><video src="video/video1.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video2.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video3.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video4.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video5.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video6.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video7.mp4" loop playsinline></video></div>
+            <div class="card"><video src="video/video8.mp4" loop playsinline></video></div>
+
+        </div>
     </div>
 
-    <div class="scroll-container">
-        <!-- We will generate 15 blocks here -->
-        <div class="block" id="block-1">Test</div>
-        <div class="block" id="block-2">Test</div>
-        <div class="block" id="block-3">Test</div>
-        <div class="block" id="block-4">Test</div>
-        <div class="block" id="block-5">Test</div>
-        <div class="block" id="block-6">Test</div>
-        <div class="block" id="block-7">Test</div>
-        <div class="block" id="block-8">Test</div>
-        <div class="block" id="block-9">Test</div>
-        <div class="block" id="block-10">Test</div>
-        <div class="block" id="block-11">Test</div>
-        <div class="block" id="block-12">Test</div>
-        <div class="block" id="block-13">Test</div>
-        <div class="block" id="block-14">Test</div>
-        <div class="block" id="block-15">Test</div>
-    </div>
 
-    <a href="../index.html" class="back-btn">
-        <i class="fas fa-arrow-left"></i> Geri
-    </a>
+    <div class="scroll-space"></div>
 
     <script src="script.js"></script>
 </body>
