@@ -12,7 +12,7 @@
 
 const APP_CONFIG = {
     startDate: new Date('2023-02-01T00:00:00'),
-    version: '2.2.0-beta',
+    version: '2.2.1',
     github: {
         owner: 'XelilovTh',
         repo: 'Dunyam',
@@ -2953,10 +2953,32 @@ function initOfflineSupport() {
             navigator.serviceWorker.register('/sw.js')
                 .then(registration => {
                     console.log('SW qeydiyyatdan keçdi:', registration.scope);
+
+                    // Yeni versiya yoxlanışı
+                    registration.onupdatefound = () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.onstatechange = () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    showNotification('🔄 Yeni versiya hazır! Yenilənir...', 'success', 2000);
+                                    setTimeout(() => window.location.reload(), 2000);
+                                }
+                            };
+                        }
+                    };
                 })
                 .catch(err => {
                     console.error('SW qeydiyyat xətası:', err);
                 });
+        });
+
+        // Yeni SW aktivləşəndə səhifəni avtomatik yenilə
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
         });
     }
 }
