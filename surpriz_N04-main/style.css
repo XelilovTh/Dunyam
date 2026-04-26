@@ -106,6 +106,49 @@ body {
     #cursor-dot, #cursor-outline { display: none; }
 }
 
+/* Back Button Styles */
+.back-to-home {
+    position: fixed;
+    top: 30px; left: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 12px 24px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.back-to-home:hover {
+    background: rgba(233, 30, 99, 0.15);
+    border-color: var(--accent-color);
+    color: #fff;
+    transform: translateX(-5px);
+    box-shadow: 0 0 25px rgba(233, 30, 99, 0.3);
+}
+
+.back-to-home i {
+    color: var(--accent-color);
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .back-to-home {
+        top: 20px; left: 20px;
+        padding: 10px 20px;
+        font-size: 0.8rem;
+    }
+}
+
 /* Scroll Indicator */
 .scroll-indicator {
     position: fixed;

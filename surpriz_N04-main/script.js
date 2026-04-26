@@ -146,7 +146,7 @@ if (!isMobile && cursorDot && cursorOutline) {
         cursorY = e.clientY;
         cursorDot.style.left = `${cursorX}px`;
         cursorDot.style.top = `${cursorY}px`;
-        const target = e.target.closest('.card');
+        const target = e.target.closest('.card, .back-to-home');
         if (target) cursorOutline.classList.add('hover');
         else cursorOutline.classList.remove('hover');
     });
