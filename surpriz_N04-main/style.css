@@ -29,8 +29,8 @@
     :root {
         --card-width: 220px;
         --card-height: 140px;
-        --pillar-width: 0px; /* Hide pillar on mobile */
-        --shard-width: 0px;
+        --pillar-width: 80px; 
+        --shard-width: 15px;
     }
     
     /* Strict Performance Mode for Mobile */
@@ -47,7 +47,7 @@
     }
 
     /* Disable expensive decorative elements */
-    .shard, .shard-system, .pillar-container, #particles, .bg-dots {
+    #particles, .bg-dots {
         display: none !important;
     }
 
@@ -256,7 +256,7 @@ body {
 }
 
 .scroll-space {
-    height: 800vh;
+    /* Height set dynamically in script.js */
 }
 
 .scene {

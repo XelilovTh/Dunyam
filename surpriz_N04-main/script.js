@@ -1,5 +1,13 @@
-// Strict Mobile Detection
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+function updateScrollHeight() {
+    const scrollStep = isMobile ? 220 : 250;
+    const totalScroll = (cards.length - 1) * scrollStep;
+    const scrollSpace = document.querySelector('.scroll-space');
+    if (scrollSpace) {
+        scrollSpace.style.height = `${totalScroll + window.innerHeight}px`;
+    }
+}
 
 if (isMobile) {
     document.body.classList.add('is-mobile');
@@ -34,6 +42,16 @@ videos.forEach(video => {
         video.addEventListener('canplaythrough', updateLoader, { once: true });
         video.addEventListener('error', updateLoader, { once: true });
     }
+});
+
+// Initialize scroll height
+updateScrollHeight();
+
+window.addEventListener('resize', () => {
+    isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    if (isMobile) document.body.classList.add('is-mobile');
+    else document.body.classList.remove('is-mobile');
+    updateScrollHeight();
 });
 
 setTimeout(() => {
@@ -157,8 +175,8 @@ function animate() {
 
     const time = Date.now() * 0.001;
 
-    // Prismatic Shard Core Animation - Disabled on Mobile for performance
-    if (!isMobile && shardSystem) {
+    // Prismatic Shard Core Animation
+    if (shardSystem) {
         shardSystem.style.transform = `rotateY(${currentScroll * 0.05}deg)`;
         shards.forEach((shard, i) => {
             const offset = Math.sin(time + i) * 20;
