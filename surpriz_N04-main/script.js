@@ -21,6 +21,7 @@ const loadedCountEl = document.getElementById('loaded-count');
 
 let loadedVideos = 0;
 const totalVideos = videos.length;
+let isLoading = true;
 
 function updateLoader() {
     loadedVideos++;
@@ -31,6 +32,7 @@ function updateLoader() {
     if (loadedVideos >= totalVideos) {
         setTimeout(() => {
             if (preloader) preloader.classList.add('hidden');
+            isLoading = false;
         }, 500);
     }
 }
@@ -57,6 +59,7 @@ window.addEventListener('resize', () => {
 setTimeout(() => {
     if (preloader && !preloader.classList.contains('hidden')) {
         preloader.classList.add('hidden');
+        isLoading = false;
     }
 }, 15000);
 
@@ -201,7 +204,7 @@ function animate() {
         const isClosest = Math.abs(rawRelScroll) < 120;
         
         if (video) {
-            if (isClosest) {
+            if (isClosest && !isLoading) {
                 if (video.paused) video.play().catch(() => {});
                 video.muted = false;
                 const targetVolume = 1.0;
