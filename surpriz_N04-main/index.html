@@ -7,9 +7,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-outline"></div>
+
     <!-- Premium Preloader -->
     <div id="preloader">
         <div class="loader-content">
@@ -23,6 +28,14 @@
             </div>
             <div class="loader-status"><span id="loaded-count">0</span> / 8 video</div>
         </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+        <div class="mouse">
+            <div class="wheel"></div>
+        </div>
+        <span>Aşağı çək</span>
     </div>
 
     <canvas id="particles"></canvas>
@@ -44,14 +57,62 @@
 
 
             
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video1.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video2.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video3.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video4.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video5.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video6.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video7.mp4" loop playsinline muted preload="auto"></video></div>
-            <div class="card"><video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video8.mp4" loop playsinline muted preload="auto"></video></div>
+            <div class="card" data-title="Bizim Hekayəmiz" data-desc="Hər şeyin başladığı o gözəl an.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video1.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Bizim Hekayəmiz</h3>
+                    <p>Hər şeyin başladığı o gözəl an.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Gözəl Xatirələr" data-desc="Gülüşlərlə dolu şirin saniyələr.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video2.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Gözəl Xatirələr</h3>
+                    <p>Gülüşlərlə dolu şirin saniyələr.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Səninlə Hər An" data-desc="Dünyanın ən xoşbəxt hissəsi.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video3.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Səninlə Hər An</h3>
+                    <p>Dünyanın ən xoşbəxt hissəsi.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Möcüzəli Səyahət" data-desc="Birlikdə keçdiyimiz yollar.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video4.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Möcüzəli Səyahət</h3>
+                    <p>Birlikdə keçdiyimiz yollar.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Qəlbimin Səsi" data-desc="Səninlə həyat daha rəngarəngdir.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video5.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Qəlbimin Səsi</h3>
+                    <p>Səninlə həyat daha rəngarəngdir.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Birlikdə Güclüyük" data-desc="Sevginin ən saf halı.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video6.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Birlikdə Güclüyük</h3>
+                    <p>Sevginin ən saf halı.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Əbədi Sevgi" data-desc="Bitməyən bir macəra.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video7.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Əbədi Sevgi</h3>
+                    <p>Bitməyən bir macəra.</p>
+                </div>
+            </div>
+            <div class="card" data-title="Yeni Üfüqlər" data-desc="Gələcəyimizə doğru bir addım.">
+                <video src="https://res.cloudinary.com/dojz9uzhe/video/upload/q_auto,f_auto,w_360/video8.mp4" loop playsinline muted preload="auto"></video>
+                <div class="card-content">
+                    <h3>Yeni Üfüqlər</h3>
+                    <p>Gələcəyimizə doğru bir addım.</p>
+                </div>
+            </div>
 
         </div>
     </div>

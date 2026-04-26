@@ -1,3 +1,10 @@
+// Strict Mobile Detection
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+if (isMobile) {
+    document.body.classList.add('is-mobile');
+}
+
 const cards = document.querySelectorAll('.card');
 const videos = document.querySelectorAll('video');
 const preloader = document.getElementById('preloader');
@@ -20,42 +27,32 @@ function updateLoader() {
     }
 }
 
-// Hər video üçün yüklənməni izləyirik
 videos.forEach(video => {
-    // Əgər artıq yüklənibsə (cache-dən gələ bilər)
     if (video.readyState >= 4) {
         updateLoader();
     } else {
         video.addEventListener('canplaythrough', updateLoader, { once: true });
-        // Xəta olarsa da davam edirik ki, sayt ilişib qalmasın
         video.addEventListener('error', updateLoader, { once: true });
     }
 });
 
-// Təhlükəsizlik üçün: Əgər 10 saniyə keçərsə və hələ də yüklənməyibsə, loader-i bağla
 setTimeout(() => {
     if (preloader && !preloader.classList.contains('hidden')) {
         preloader.classList.add('hidden');
     }
 }, 15000);
 
-// Mobil cihazlarda səs blokunu qaldırmaq üçün istifadəçi toxunuşu
-window.addEventListener('touchstart', () => {
-    videos.forEach(v => {
-        v.muted = false;
-        if (v.classList.contains('focused') && v.paused) {
-            v.play().catch(() => {});
-        }
-    });
-}, { once: true });
-window.addEventListener('click', () => {
+// Input Handling
+const handleInteraction = () => {
     videos.forEach(v => {
         v.muted = false;
     });
-}, { once: true });
+};
+window.addEventListener('touchstart', handleInteraction, { once: true });
+window.addEventListener('click', handleInteraction, { once: true });
 
 const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
+const ctx = canvas ? canvas.getContext('2d') : null;
 const shardSystem = document.querySelector('.shard-system');
 const shards = document.querySelectorAll('.shard');
 const pillarGlow = document.querySelector('.pillar-glow');
@@ -66,16 +63,16 @@ let currentScroll = 0;
 let lastScroll = 0;
 let scrollVelocity = 0;
 
-// Particle System
+// Particle System - Disabled on Mobile
 let particles = [];
 const colors = ['#e91e63', '#ff6b9d', '#ff80ab', '#ffffff'];
 
 function initParticles() {
+    if (!canvas || isMobile) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     particles = [];
-    // Optimization: even fewer particles on mobile
-    const particleCount = window.innerWidth < 768 ? 40 : 150;
+    const particleCount = 150;
     for (let i = 0; i < particleCount; i++) {
         particles.push({
             x: Math.random() * canvas.width,
@@ -90,114 +87,113 @@ function initParticles() {
 }
 
 function drawParticles() {
+    if (!canvas || isMobile) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Scroll sürətinə görə hissəciklərin reaksiyası
     const velocityFactor = 1 + scrollVelocity * 0.05;
     
     particles.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.opacity;
         ctx.beginPath();
-        // 3D boşluq illüziyası üçün ölçü dinamik dəyişir
         const dynamicSize = p.size * velocityFactor;
         ctx.arc(p.x, p.y, dynamicSize, 0, Math.PI * 2);
         ctx.fill();
-        
         p.x += p.speedX;
         p.y += p.speedY;
-        
-        // Sürətli scroll zamanı hissəciklər kənara doğru qaçır
-        if (scrollVelocity > 2) {
-            p.y += (p.y - canvas.height/2) * 0.01 * scrollVelocity;
-        }
-
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
     });
-    if (window.innerWidth < 768) return; // Optimization: Disable particles on mobile
     requestAnimationFrame(drawParticles);
 }
 
-window.addEventListener('resize', initParticles);
-initParticles();
-drawParticles();
+if (!isMobile) {
+    window.addEventListener('resize', initParticles);
+    initParticles();
+    drawParticles();
+}
 
+// Custom Cursor Logic - Disabled on Mobile
+const cursorDot = document.getElementById('cursor-dot');
+const cursorOutline = document.getElementById('cursor-outline');
+
+if (!isMobile && cursorDot && cursorOutline) {
+    let cursorX = 0, cursorY = 0, outlineX = 0, outlineY = 0;
+    window.addEventListener('mousemove', (e) => {
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+        cursorDot.style.left = `${cursorX}px`;
+        cursorDot.style.top = `${cursorY}px`;
+        const target = e.target.closest('.card');
+        if (target) cursorOutline.classList.add('hover');
+        else cursorOutline.classList.remove('hover');
+    });
+
+    function animateCursor() {
+        outlineX += (cursorX - outlineX) * 0.15;
+        outlineY += (cursorY - outlineY) * 0.15;
+        cursorOutline.style.left = `${outlineX}px`;
+        cursorOutline.style.top = `${outlineY}px`;
+        requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+}
+
+// Scroll Indicator Logic
+const scrollIndicator = document.querySelector('.scroll-indicator');
 window.addEventListener('scroll', () => {
     targetScroll = window.scrollY;
+    if (scrollIndicator) {
+        scrollIndicator.style.opacity = window.scrollY > 100 ? '0' : '0.7';
+    }
 }, { passive: true });
 
 function animate() {
-    // Sürət və hamarlıq hesablama
     const prevScroll = currentScroll;
-    currentScroll += (targetScroll - currentScroll) * 0.08;
+    const lerpFactor = isMobile ? 0.12 : 0.08; // Faster response on mobile touch
+    currentScroll += (targetScroll - currentScroll) * lerpFactor;
     scrollVelocity = Math.abs(currentScroll - prevScroll);
 
     const time = Date.now() * 0.001;
 
-    // Prismatic Shard Core Animation
-    if (shardSystem) {
+    // Prismatic Shard Core Animation - Disabled on Mobile for performance
+    if (!isMobile && shardSystem) {
         shardSystem.style.transform = `rotateY(${currentScroll * 0.05}deg)`;
-    }
-    
-    shards.forEach((shard, i) => {
-        const offset = Math.sin(time + i) * 20;
-        const individualRot = currentScroll * (0.02 + i * 0.01);
-        shard.style.transform = `rotateY(${i * 72 + individualRot}deg) translateZ(${60 + i * 10}px) translateY(${offset}px)`;
-    });
+        shards.forEach((shard, i) => {
+            const offset = Math.sin(time + i) * 20;
+            const individualRot = currentScroll * (0.02 + i * 0.01);
+            shard.style.transform = `rotateY(${i * 72 + individualRot}deg) translateZ(${60 + i * 10}px) translateY(${offset}px)`;
+        });
 
-    if (pillarGlow && lightBeam) {
-        const intensity = 0.3 + (scrollVelocity * 0.03);
-        pillarGlow.style.opacity = Math.min(0.8, intensity);
-        lightBeam.style.opacity = Math.min(0.6, intensity);
-        lightBeam.style.width = `${10 + scrollVelocity * 2}px`;
+        if (pillarGlow && lightBeam) {
+            const intensity = 0.3 + (scrollVelocity * 0.03);
+            pillarGlow.style.opacity = Math.min(0.8, intensity);
+            lightBeam.style.opacity = Math.min(0.6, intensity);
+            lightBeam.style.width = `${10 + scrollVelocity * 2}px`;
+        }
     }
 
     cards.forEach((card, index) => {
-        const isMobile = window.innerWidth < 768;
         const scrollStep = isMobile ? 220 : 250; 
         const rawRelScroll = currentScroll - (index * scrollStep); 
         const video = card.querySelector('video');
         
-        // "Ortada qalma" (Magnetic Snap) effekti
-        const snapRange = 150;
-        let relScroll = rawRelScroll;
-        if (Math.abs(rawRelScroll) < snapRange) {
-            relScroll = rawRelScroll * Math.pow(Math.abs(rawRelScroll / snapRange), 0.5);
-        }
-
-        // Mərkəzə yaxınlıq (Video idarəsi üçün)
-        const proximity = 1 - Math.min(1, Math.abs(rawRelScroll) / 400);
-        
-        // Mərkəzə ən yaxın olan kartı tapmaq və video idarəsi
-        const isClosest = Math.abs(rawRelScroll) < 150; // Mərkəzə yaxınlıq həddi
+        // Center Focus Check
+        const isClosest = Math.abs(rawRelScroll) < 120;
         
         if (video) {
             if (isClosest) {
-                // Əgər mərkəzə yaxındırsa, videonu başlat və səsi yavaşca artır
-                if (video.paused) {
-                    video.play().catch(() => {
-                        // Səs bloklanıbsa muted davam etsin
-                    });
-                }
-                
-                // Səsi aktiv et
+                if (video.paused) video.play().catch(() => {});
                 video.muted = false;
-                
                 const targetVolume = 1.0;
-                if (video.volume < 0.95) {
-                    video.volume += (targetVolume - video.volume) * 0.1;
-                } else {
-                    video.volume = 1.0;
-                }
+                if (video.volume < 0.9) video.volume += (targetVolume - video.volume) * 0.1;
+                else video.volume = 1.0;
                 card.classList.add('focused');
             } else {
-                // Mərkəzdən uzaqlaşdıqda səsi yavaşca azalt və sonra dayandır
-                if (video.volume > 0.05) {
-                    video.volume += (0 - video.volume) * 0.1;
-                } else {
+                // Strictly stop videos that are not in focus to save CPU/Memory on mobile
+                if (video.volume > 0.1) video.volume -= 0.1;
+                else {
                     video.volume = 0;
                     video.muted = true;
                     if (!video.paused) video.pause();
@@ -206,58 +202,55 @@ function animate() {
             }
         }
 
-        // Canlı 'Floating' Yellənmə Animasiyası
-        const floatY = Math.sin(time + index * 0.8) * 15;
-        const floatX = Math.cos(time + index * 0.8) * 10;
-        const floatRot = Math.sin(time * 0.5 + index) * 2;
+        // Float Animation - Simplified on Mobile
+        const floatY = isMobile ? 0 : Math.sin(time + index * 0.8) * 15;
+        const floatRot = isMobile ? 0 : Math.sin(time * 0.5 + index) * 2;
         
-        // Dinamik Spiral və Nəfəs Alma Effekti
-        const yPos = (-relScroll * 0.45) + floatY;
-        const angle = (relScroll * 0.2) + (floatX * 0.1); 
+        const yPos = (-rawRelScroll * 0.45) + floatY;
+        const angle = (rawRelScroll * (isMobile ? 0.3 : 0.2)); 
         
-        // Dinamik Radius (Responsive)
-        const baseRadius = window.innerWidth < 480 ? 220 : (window.innerWidth < 768 ? 400 : 600);
-        const breathing = Math.sin(time * 0.8 + index) * 15;
-        const speedExpand = scrollVelocity * 0.5;
-        const radius = baseRadius + breathing + speedExpand;
+        // Adaptive Radius
+        const baseRadius = isMobile ? 250 : 600;
+        const breathing = isMobile ? 0 : Math.sin(time * 0.8 + index) * 15;
+        const radius = baseRadius + breathing;
         
         // 3D Transform
-        const scale = isClosest ? 1.05 : 1.0;
+        const scale = isClosest ? (isMobile ? 1.1 : 1.05) : 1.0;
         const transform = `
             rotateY(${angle}deg) 
             translateY(${yPos}px) 
             translateZ(${radius}px)
-            rotateX(${-yPos * 0.01 + floatRot}deg)
+            ${!isMobile ? `rotateX(${-yPos * 0.01 + floatRot}deg)` : ''}
             scale(${scale})
         `;
         
         card.style.transform = transform;
         
-        // Dərinlik və Fokus (DOF) - Optimizasiya: Mobildə söndürülür
-        const angleRad = (angle % 360) * Math.PI / 180;
-        const zDepth = Math.cos(angleRad); // 1 = qabaq, -1 = arxa
-        
-        if (window.innerWidth >= 768) {
+        // Depth and Focus (DOF) - Only for Desktop
+        if (!isMobile) {
+            const angleRad = (angle % 360) * Math.PI / 180;
+            const zDepth = Math.cos(angleRad);
             const blurAmount = Math.max(0, (1 - zDepth) * 10);
             card.style.filter = `blur(${blurAmount}px)`;
+            card.style.zIndex = Math.round((zDepth + 1) * 100);
+            
+            // Opacity based on depth
+            const opacityY = 1 - Math.abs(yPos / 1500);
+            const opacityZ = Math.pow((zDepth + 1) / 2, 2) * 0.8 + 0.2; 
+            card.style.opacity = Math.max(0, opacityY * opacityZ);
         } else {
+            // Simplified visibility for Mobile
+            const opacity = 1 - Math.abs(yPos / 800);
+            card.style.opacity = Math.max(0, opacity);
             card.style.filter = 'none';
+            card.style.zIndex = isClosest ? 100 : 1;
         }
         
-        // Opacity dəyərini zDepth ilə kəskin əlaqələndirmə
-        const fadeRange = 1500;
-        const opacityY = 1 - Math.abs(yPos / fadeRange);
-        const opacityZ = Math.pow((zDepth + 1) / 2, 2) * 0.8 + 0.2; 
-        
-        const finalOpacity = Math.max(0, opacityY * opacityZ);
-        card.style.opacity = finalOpacity;
-        
-        // Shine effekti
-        const shineX = (angle % 360) / 2;
-        card.style.setProperty('--shine-x', `${shineX}%`);
-        
-        // Z-Index simulyasiyası
-        card.style.zIndex = Math.round((zDepth + 1) * 100);
+        // Shine effect - Only for Desktop
+        if (!isMobile) {
+            const shineX = (angle % 360) / 2;
+            card.style.setProperty('--shine-x', `${shineX}%`);
+        }
     });
 
     requestAnimationFrame(animate);
