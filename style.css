@@ -1201,6 +1201,73 @@ body {
   transition: width 1s linear;
 }
 
+/* Gündəlik Sitat */
+.daily-quote-card {
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.10), rgba(255, 64, 129, 0.05));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(233, 30, 99, 0.25);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg) var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.10);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.daily-quote-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(233, 30, 99, 0.08) 0%, transparent 70%);
+  animation: quoteGlow 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.daily-quote-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(233, 30, 99, 0.18);
+}
+
+.quote-icon {
+  font-size: 1.4rem;
+  color: var(--primary-pink);
+  margin-bottom: var(--spacing-xs);
+  opacity: 0.85;
+}
+
+.quote-text {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: #fff;
+  margin: 0 0 var(--spacing-sm) 0;
+  font-weight: 500;
+  font-style: italic;
+  position: relative;
+  z-index: 1;
+}
+
+.quote-author {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--primary-pink);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes quoteGlow {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(10%, 10%) scale(1.1); opacity: 1; }
+}
+
 /* Statistikalar */
 .stats-container {
   display: grid;
@@ -3052,6 +3119,10 @@ body {
 
   .hero-title {
     font-size: 2rem;
+  }
+
+  .quote-text {
+    font-size: 1.15rem;
   }
 
   .counter-item {

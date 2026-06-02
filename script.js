@@ -160,8 +160,8 @@ const DOM = {
     photoCount: document.getElementById('photoCount'),
     letterCount: document.getElementById('letterCount'),
     songCount: document.getElementById('songCount'),
-    dailyQuote: document.getElementById('dailyQuote'),
-    quoteDate: document.getElementById('quoteDate'),
+    dailyQuote: document.getElementById('dailyQuoteText'),
+    quoteDate: document.getElementById('dailyQuoteAuthor'),
     galleryGrid: document.getElementById('galleryGrid'),
     lettersList: document.getElementById('lettersList'),
     musicPlaylist: document.getElementById('musicPlaylist'),
@@ -568,8 +568,8 @@ function setDailyQuote() {
     const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
     const quote = DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
 
-    if (DOM.dailyQuote) DOM.dailyQuote.textContent = `"${quote.text}"`;
-    if (DOM.quoteDate) DOM.quoteDate.textContent = formatDate(now);
+    if (DOM.dailyQuote) DOM.dailyQuote.textContent = quote.text;
+    if (DOM.quoteDate) DOM.quoteDate.textContent = `— ${quote.author}`;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
