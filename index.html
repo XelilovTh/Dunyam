@@ -8,19 +8,22 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- jsmediatags for music metadata -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+  <!-- GSAP for choreographed motion -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#e91e63">
+    <meta name="theme-color" content="#ff4d8d">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=2.2.1">
+    <link rel="stylesheet" href="style.css?v=3.0.0">
 </head>
 <body>
 
@@ -29,6 +32,7 @@
 <!-- ARXA FON ANİMASİYASI (Canvas və ya CSS)                        -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="universe-background" id="universe-bg"></div>
+<canvas id="aurora-canvas"></canvas>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- BİLDİRİŞ PANELİ                                                 -->
@@ -111,14 +115,21 @@
   <!-- ───────────────────────────────────────────────────────────── -->
   <header class="app-header">
     <div class="header-content">
-      
+
       <!-- Mərkəz - Başlıq -->
       <div class="header-center">
         <h1 class="header-title">
-          <span class="title-main">💗Bizim Dünyamız💗</span>
+          <span class="title-main"><i class="fas fa-heart title-heart"></i>Bizim Dünyamız<i class="fas fa-heart title-heart"></i></span>
         </h1>
       </div>
-      
+
+      <!-- Sağ - Tema keçidi -->
+      <div class="header-right">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Tema dəyiş" title="Tema dəyiş">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+
     </div>
   </header>
   
@@ -833,6 +844,7 @@
 </div>
 
 <script src="script.js?v=2.2.1"></script>
+<script src="enhance.js?v=1.0.0"></script>
 
 </body>
 </html>
