@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Press+Start+2P&family=Montserrat:wght@300;400;500;600&family=Courier+Prime&display=swap" rel="stylesheet">
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- jsmediatags for music metadata -->
@@ -20,7 +20,7 @@
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=3.0.0">
+    <link rel="stylesheet" href="style.css?v=6.0.0">
 </head>
 <body>
 
@@ -28,31 +28,24 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 ✦ KOSMİK FON - AURORA MİST ✦                                       -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="cosmic-void"></div>
+<!-- CRT Scanline + Vignette (Köhnə Monitor Effekti) -->
+<div class="crt-overlay"></div>
+<div class="crt-vignette"></div>
 
-<div class="aurora-mist">
-  <div class="mist-wave"></div>
-  <div class="mist-wave"></div>
-  <div class="mist-wave"></div>
-</div>
+<!-- 90s Ulduz fonu -->
+<div class="retro-stars"></div>
+<div class="star-twinkle"></div>
 
-<!-- Kəpənək & ulduz tozu hissəcikləri (Canvas) -->
+<!-- Hissəciklər (Canvas) -->
 <canvas id="particles-canvas"></canvas>
 
-<!-- 3D Üzən şüşə həndəsi fiqurlar -->
-<div class="glass-geometry">
-  <div class="shape"></div>
-  <div class="shape shape-hex"></div>
-  <div class="shape shape-triangle"></div>
-  <div class="shape shape-diamond"></div>
-  <div class="shape"></div>
-</div>
-
-<!-- Parlayan ay -->
-<div class="moon-glow">
-  <div class="moon-core"></div>
-  <div class="moon-ring"></div>
-  <div class="moon-ring"></div>
+<!-- 90s Marquee Banner -->
+<div class="retro-marquee">
+  <div class="retro-marquee-text">
+    <span>✦ Fidan & Təhmaz ✦ Sonsuz Sevgi ✦ Bizim Dünyamız ✦</span>
+    <span>⚡ Sevgi ən güclü koddur ⚡</span>
+    <span>♥ Fidan & Təhmaz ♥ 4ever ♥</span>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -868,9 +861,7 @@
       </div>
     </div>
   </div>
-</div>
-
-<script src="script.js?v=3.0.0"></script>
+</div>  <script src="script.js?v=6.0.0"></script>
 
 </body>
 </html>
