@@ -2987,11 +2987,6 @@ function initStarsCanvas() {
     
     resizeCanvas();
     animationFrame = requestAnimationFrame(animate);
-        }
-    });
-
-    resizeCanvas();
-    animationFrame = requestAnimationFrame(drawStars);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
