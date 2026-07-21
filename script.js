@@ -12,7 +12,7 @@
 
 const APP_CONFIG = {
     startDate: new Date('2023-02-01T00:00:00'),
-    version: '4.0.0',
+    version: '5.0.0',
     github: {
         owner: 'XelilovTh',
         repo: 'Dunyam',
