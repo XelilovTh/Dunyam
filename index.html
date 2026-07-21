@@ -20,15 +20,23 @@
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=2.2.1">
+    <link rel="stylesheet" href="style.css?v=3.0.0">
 </head>
 <body>
 
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- ARXA FON ANİMASİYASI (Canvas və ya CSS)                        -->
+<!-- KOSMİK ARXA FON - ANİMASİYALI HİSSƏCİKLƏR VƏ QRADİENT           -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="universe-background" id="universe-bg"></div>
+
+<!-- Hissəcik sistemi (Canvas) -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Üzən dekorativ orb-lar -->
+<div class="floating-orb"></div>
+<div class="floating-orb"></div>
+<div class="floating-orb"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- BİLDİRİŞ PANELİ                                                 -->
@@ -50,6 +58,16 @@
     
     <!-- Əsas giriş kartı -->
     <div class="login-card">
+      
+      <!-- Üzən ürəklər fonu -->
+      <div class="login-hearts-bg">
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-heart"></i>
+      </div>
       
       <!-- Animasiyalı ürək -->
       <div class="login-heart">
@@ -832,7 +850,7 @@
   </div>
 </div>
 
-<script src="script.js?v=2.2.1"></script>
+<script src="script.js?v=3.0.0"></script>
 
 </body>
 </html>

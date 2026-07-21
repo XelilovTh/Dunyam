@@ -12,7 +12,7 @@
 
 const APP_CONFIG = {
     startDate: new Date('2023-02-01T00:00:00'),
-    version: '2.2.1',
+    version: '3.0.0',
     github: {
         owner: 'XelilovTh',
         repo: 'Dunyam',
@@ -2805,87 +2805,188 @@ function initMusicUpload() {
   CANVAS ULDUZ ANİMASİYASI
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════
+   PREMİUM KOSMİK HİSSƏCİK SİSTEMİ (Canvas)
+   ═══════════════════════════════════════════════════════════════════ */
+
 function initStarsCanvas() {
-    const container = document.getElementById('universe-bg');
-    if (!container) return;
-
-    const existingCanvas = document.getElementById('starsCanvas');
-    if (existingCanvas) existingCanvas.remove();
-
-    const canvas = document.createElement('canvas');
-    canvas.id = 'starsCanvas';
-    container.appendChild(canvas);
+    const canvas = document.getElementById('particles-canvas');
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    let stars = [];
+    let particles = [];
+    let hearts = [];
     let animationFrame;
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        generateStars();
+        initParticles();
     }
 
-    function generateStars() {
-        let count = Math.floor((canvas.width * canvas.height) / 3000);
-        if (window.innerWidth < 768) count = Math.floor(count / 2);
-        stars = [];
+    function initParticles() {
+        particles = [];
+        hearts = [];
+        
+        const starCount = Math.min(Math.floor((canvas.width * canvas.height) / 4000), 120);
+        const heartCount = Math.min(Math.floor((canvas.width * canvas.height) / 15000), 5);
+        const sparkleCount = Math.min(Math.floor((canvas.width * canvas.height) / 12000), 15);
 
-        for (let i = 0; i < count; i++) {
-            stars.push({
+        // Ulduzlar
+        for (let i = 0; i < starCount; i++) {
+            particles.push({
+                type: 'star',
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                size: Math.random() * 2.5 + 0.5,
-                opacity: Math.random() * 0.7 + 0.3,
-                speed: Math.random() * 0.05 + 0.01,
-                twinkleSpeed: Math.random() * 0.02 + 0.005,
+                size: Math.random() * 2 + 0.5,
+                baseOpacity: Math.random() * 0.6 + 0.2,
+                twinkleSpeed: Math.random() * 0.03 + 0.01,
                 twinklePhase: Math.random() * Math.PI * 2,
-                color: Math.random() > 0.8 ? '#e91e63' : '#ffffff'
+                color: Math.random() > 0.85 ? '#ff2d6b' : (Math.random() > 0.5 ? '#ffffff' : '#ffd700'),
+                driftX: (Math.random() - 0.5) * 0.15,
+                driftY: (Math.random() - 0.5) * 0.08
+            });
+        }
+
+        // Parıltılar
+        for (let i = 0; i < sparkleCount; i++) {
+            particles.push({
+                type: 'sparkle',
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5 + 0.5,
+                baseOpacity: Math.random() * 0.5 + 0.3,
+                twinkleSpeed: Math.random() * 0.04 + 0.02,
+                twinklePhase: Math.random() * Math.PI * 2,
+                color: '#ff2d6b',
+                driftX: (Math.random() - 0.5) * 0.1,
+                driftY: (Math.random() - 0.5) * 0.05,
+                angle: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Üzən ürəklər
+        for (let i = 0; i < heartCount; i++) {
+            hearts.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 6 + 4,
+                opacity: Math.random() * 0.15 + 0.05,
+                speed: Math.random() * 0.3 + 0.1,
+                phase: Math.random() * Math.PI * 2,
+                wobble: Math.random() * 2 + 1,
+                wobbleSpeed: Math.random() * 0.02 + 0.01
             });
         }
     }
 
-    function drawStars(timestamp) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        stars.forEach(star => {
-            const twinkle = Math.sin(timestamp * star.twinkleSpeed + star.twinklePhase);
-            const opacity = star.opacity * (0.6 + 0.4 * twinkle);
-
-            if (star.color === '#e91e63') {
-                ctx.fillStyle = `rgba(233, 30, 99, ${opacity})`;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = 'rgba(233, 30, 99, 0.6)';
-            } else {
-                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                ctx.shadowBlur = star.size > 1.5 ? 4 : 0;
-                ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
-            }
-
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-            ctx.fill();
-
-            star.y -= star.speed;
-
-            if (star.y < -10) {
-                star.y = canvas.height + 10;
-                star.x = Math.random() * canvas.width;
-            }
-        });
-
-        ctx.shadowBlur = 0;
-        animationFrame = requestAnimationFrame(drawStars);
+    function drawHeart(ctx, cx, cy, size, opacity) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(size / 12, size / 12);
+        ctx.beginPath();
+        ctx.moveTo(0, -3);
+        ctx.bezierCurveTo(-6, -8, -12, -2, 0, 6);
+        ctx.bezierCurveTo(12, -2, 6, -8, 0, -3);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255, 45, 107, ${opacity})`;
+        ctx.fill();
+        ctx.restore();
     }
 
-    window.addEventListener('resize', debounce(resizeCanvas, 200));
+    function drawSparkle(ctx, x, y, size, opacity, angle) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2;
+            const r = size;
+            if (i === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+            else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+            const a2 = a + Math.PI / 4;
+            const r2 = size * 0.3;
+            ctx.lineTo(Math.cos(a2) * r2, Math.sin(a2) * r2);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255, 45, 107, ${opacity * 0.8})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255, 45, 107, 0.5)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+    }
 
+    function animate(timestamp) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(p => {
+            const twinkle = Math.sin(timestamp * p.twinkleSpeed + p.twinklePhase);
+            const opacity = p.baseOpacity * (0.5 + 0.5 * twinkle);
+
+            if (p.type === 'sparkle') {
+                p.angle += 0.02;
+                drawSparkle(ctx, p.x, p.y, p.size * (0.8 + 0.2 * Math.sin(timestamp * 0.003)), opacity, p.angle);
+            } else {
+                ctx.shadowBlur = p.size > 1.5 ? 6 : 2;
+                ctx.shadowColor = p.color === '#ff2d6b' 
+                    ? 'rgba(255, 45, 107, 0.4)' 
+                    : 'rgba(255, 255, 255, 0.3)';
+                ctx.fillStyle = p.color === '#ff2d6b'
+                    ? `rgba(255, 45, 107, ${opacity})`
+                    : `rgba(255, 255, 255, ${opacity * (p.color === '#ffd700' ? 0.8 : 1)})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            p.x += p.driftX + (mouseX - canvas.width / 2) * 0.0001;
+            p.y += p.driftY;
+
+            if (p.x < -10) p.x = canvas.width + 10;
+            if (p.x > canvas.width + 10) p.x = -10;
+            if (p.y < -10) p.y = canvas.height + 10;
+            if (p.y > canvas.height + 10) p.y = -10;
+        });
+
+        hearts.forEach(h => {
+            const wobbleY = Math.sin(timestamp * h.wobbleSpeed + h.phase) * h.wobble;
+            h.y -= h.speed;
+            
+            if (h.y < -50) {
+                h.y = canvas.height + 50;
+                h.x = Math.random() * canvas.width;
+            }
+
+            const opacity = h.opacity * (0.6 + 0.4 * Math.sin(timestamp * 0.002 + h.phase));
+            drawHeart(ctx, h.x, h.y + wobbleY, h.size, opacity);
+        });
+
+        animationFrame = requestAnimationFrame(animate);
+    }
+
+    function handleMouseMove(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    }
+
+    document.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('resize', debounce(resizeCanvas, 200));
+    
     // Performans: Səhifə gizlənəndə animasiyanı dayandır
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             cancelAnimationFrame(animationFrame);
         } else {
-            animationFrame = requestAnimationFrame(drawStars);
+            animationFrame = requestAnimationFrame(animate);
+        }
+    });
+    
+    resizeCanvas();
+    animationFrame = requestAnimationFrame(animate);
         }
     });
 
