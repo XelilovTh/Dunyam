@@ -1443,8 +1443,58 @@ body {
 
 .fs-header { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; z-index: 2; }
 
+.fs-header-actions { display: flex; align-items: center; gap: 8px; }
+
 .fs-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); color: var(--text-primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); }
 .fs-btn:hover { background: rgba(255, 255, 255, 0.08); }
+
+/* Ürək favorit düyməsi */
+.fs-heart-btn { font-size: 1.1rem; }
+.fs-heart-btn.active { color: var(--accent-rose); }
+.fs-heart-btn.active i { font-weight: 900; }
+
+/* More menyu dropdown */
+.fs-more-container { position: relative; }
+
+.fs-more-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+  display: none;
+  z-index: 10;
+}
+
+.fs-more-dropdown.show { display: block; }
+
+.fs-more-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.fs-more-dropdown button:hover { background: rgba(255, 255, 255, 0.04); color: var(--text-primary); }
+.fs-more-dropdown button i { width: 18px; color: var(--text-tertiary); }
+.fs-more-dropdown .delete-option { color: var(--accent-rose); }
+.fs-more-dropdown .delete-option:hover { background: rgba(255, 107, 138, 0.06); }
 
 .fs-vinyl-container { position: relative; margin: 20px 0; }
 .fs-vinyl-record-wrapper { width: 180px; height: 180px; }
@@ -1478,12 +1528,16 @@ body {
 .fs-controls { display: flex; align-items: center; gap: 24px; margin: 16px 0; }
 .fs-btn-control { background: none; border: none; color: var(--text-tertiary); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); }
 .fs-btn-control:hover { color: var(--text-primary); }
+.fs-btn-control.active { color: var(--accent-blue); }
+.fs-btn-control.fs-skip { font-size: 0.9rem; }
 .fs-play { width: 56px; height: 56px; background: var(--accent-blue); border-radius: 50%; color: white; font-size: 1.2rem; box-shadow: 0 4px 16px rgba(91, 127, 255, 0.2); }
 .fs-play:hover { background: #4a6fef; }
 
 .fs-playlist-section { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(6, 10, 26, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.04); max-height: 200px; overflow-y: auto; }
 .fs-playlist-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; cursor: pointer; }
 .fs-playlist-header h4 { font-size: 0.8rem; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+.fs-playlist-header i { color: var(--text-tertiary); font-size: 0.85rem; transition: all var(--transition-fast); }
+.fs-playlist-header:hover i { color: var(--text-primary); }
 .fs-playlist-list { padding: 0 20px 10px; }
 
 /* ═══════════════════════════════════════════════════════════════════
