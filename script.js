@@ -2814,9 +2814,7 @@ function initStarsCanvas() {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    let pixels = [];
-    let pixelHearts = [];
-    let sparkles = [];
+    let particles = [];
     let animationFrame;
     let lastTimestamp = 0;
 
@@ -2827,164 +2825,37 @@ function initStarsCanvas() {
     }
 
     function initParticles() {
-        pixels = [];
-        pixelHearts = [];
-        sparkles = [];
-        
-        const pixelCount = Math.min(Math.floor(canvas.width * canvas.height / 6000), 60);
-        for (let i = 0; i < pixelCount; i++) {
-            pixels.push({
+        particles = [];
+        const count = Math.min(Math.floor(canvas.width * canvas.height / 8000), 30);
+        for (let i = 0; i < count; i++) {
+            particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                size: Math.floor(Math.random() * 3 + 2),
-                opacity: Math.random() * 0.6 + 0.2,
-                twinkleSpeed: Math.random() * 0.03 + 0.01,
-                twinklePhase: Math.random() * Math.PI * 2,
-                color: ['#FF69B4', '#00FFFF', '#33FF00', '#FF00FF', '#FFFF00', '#9933FF', '#FFFFFF'][Math.floor(Math.random() * 7)],
-                driftX: (Math.random() - 0.5) * 0.08,
-                driftY: (Math.random() - 0.5) * 0.05
-            });
-        }
-
-        const heartCount = Math.min(Math.floor(canvas.width * canvas.height / 25000), 3);
-        for (let i = 0; i < heartCount; i++) {
-            pixelHearts.push({
-                x: Math.random() * canvas.width,
-                y: canvas.height + 20 + Math.random() * 100,
-                size: Math.floor(Math.random() * 2 + 2),
-                speed: Math.random() * 0.2 + 0.08,
-                opacity: Math.random() * 0.04 + 0.01,
-                wobble: Math.random() * 1 + 0.5,
-                wobbleSpeed: Math.random() * 0.02 + 0.01,
+                size: Math.random() * 1.5 + 0.3,
+                opacity: Math.random() * 0.3 + 0.1,
+                speed: Math.random() * 0.02 + 0.005,
                 phase: Math.random() * Math.PI * 2
             });
         }
-
-        for (let i = 0; i < 5; i++) {
-            sparkles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: Math.floor(Math.random() * 2 + 1),
-                opacity: 0,
-                targetOpacity: Math.random() * 0.5 + 0.3,
-                life: 0,
-                maxLife: Math.random() * 200 + 100,
-                color: ['#FF69B4', '#00FFFF', '#FFFF00'][Math.floor(Math.random() * 3)]
-            });
-        }
-    }
-
-    function draw8BitHeart(x, y, size, opacity) {
-        const p = Math.max(1, Math.floor(size));
-        ctx.fillStyle = 'rgba(255, 105, 180, ' + opacity + ')';
-        
-        const heartPixels = [
-            [0,1,0,1,0],
-            [1,1,1,1,1],
-            [1,1,1,1,1],
-            [0,1,1,1,0],
-            [0,0,1,0,0]
-        ];
-        
-        const startX = Math.floor(x / p) * p - p * 2;
-        const startY = Math.floor(y / p) * p - p * 2;
-        
-        for (let row = 0; row < 5; row++) {
-            for (let col = 0; col < 5; col++) {
-                if (heartPixels[row][col]) {
-                    ctx.fillRect(startX + col * p, startY + row * p, p, p);
-                }
-            }
-        }
-    }
-
-    function drawPixelSparkle(x, y, size, color, opacity) {
-        const p = Math.max(1, Math.floor(size));
-        ctx.fillStyle = 'rgba(' + color + ', ' + opacity + ')';
-        ctx.fillRect(x - p, y, p, p);
-        ctx.fillRect(x, y, p, p);
-        ctx.fillRect(x + p, y, p, p);
-        ctx.fillRect(x, y - p, p, p);
-        ctx.fillRect(x, y + p, p, p);
     }
 
     function animate(timestamp) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (!lastTimestamp) lastTimestamp = timestamp;
-        
-        pixels.forEach(p => {
-            const twinkle = Math.sin(timestamp * p.twinkleSpeed + p.twinklePhase);
-            const opacity = p.opacity * (0.4 + 0.6 * (0.5 + 0.5 * twinkle));
-            
-            let r, g, b;
-            switch(p.color) {
-                case '#FF69B4': r=255; g=105; b=180; break;
-                case '#00FFFF': r=0; g=255; b=255; break;
-                case '#33FF00': r=51; g=255; b=0; break;
-                case '#FF00FF': r=255; g=0; b=255; break;
-                case '#FFFF00': r=255; g=255; b=0; break;
-                case '#9933FF': r=153; g=51; b=255; break;
-                default: r=255; g=255; b=255;
-            }
-            
-            ctx.shadowBlur = 6;
-            ctx.shadowColor = 'rgba(' + r + ', ' + g + ', ' + b + ', 0.3)';
-            ctx.fillStyle = 'rgba(' + r + ', ' + g + ', ' + b + ', ' + opacity + ')';
-            
-            const px = Math.floor(p.x);
-            const py = Math.floor(p.y);
-            ctx.fillRect(px, py, p.size, p.size);
-            ctx.shadowBlur = 0;
 
-            p.x += p.driftX;
-            p.y += p.driftY;
+        particles.forEach(p => {
+            const twinkle = Math.sin(timestamp * 0.001 + p.phase);
+            const opacity = p.opacity * (0.3 + 0.7 * (0.5 + 0.5 * twinkle));
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, ' + opacity + ')';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
 
-            if (p.x < -20) p.x = canvas.width + 20;
-            if (p.x > canvas.width + 20) p.x = -20;
-            if (p.y < -20) p.y = canvas.height + 20;
-            if (p.y > canvas.height + 20) p.y = -20;
-        });
-
-        pixelHearts.forEach(h => {
-            h.y -= h.speed;
-            const wobble = Math.sin(timestamp * h.wobbleSpeed + h.phase) * h.wobble;
-            
-            if (h.y < -50) {
-                h.y = canvas.height + 20;
-                h.x = Math.random() * canvas.width;
+            p.y -= p.speed;
+            if (p.y < -10) {
+                p.y = canvas.height + 10;
+                p.x = Math.random() * canvas.width;
             }
-            
-            const op = h.opacity * (0.5 + 0.5 * Math.sin(timestamp * 0.001 + h.phase));
-            draw8BitHeart(h.x + wobble, h.y, h.size, op);
-        });
-
-        sparkles.forEach(s => {
-            s.life++;
-            if (s.life > s.maxLife) {
-                s.life = 0;
-                s.x = Math.random() * canvas.width;
-                s.y = Math.random() * canvas.height;
-                s.maxLife = Math.random() * 300 + 100;
-            }
-            
-            const progress = s.life / s.maxLife;
-            let opacity = 0;
-            if (progress < 0.15) {
-                opacity = s.targetOpacity * (progress / 0.15);
-            } else if (progress > 0.8) {
-                opacity = s.targetOpacity * (1 - (progress - 0.8) / 0.2);
-            } else {
-                opacity = s.targetOpacity;
-            }
-            
-            let r, g, b;
-            switch(s.color) {
-                case '#FF69B4': r=255; g=105; b=180; break;
-                case '#00FFFF': r=0; g=255; b=255; break;
-                default: r=255; g=255; b=0;
-            }
-            
-            drawPixelSparkle(s.x, s.y, s.size, r + ',' + g + ',' + b, opacity * 0.6);
         });
 
         animationFrame = requestAnimationFrame(animate);
