@@ -1431,7 +1431,8 @@ body {
   align-items: center; justify-content: center;
   flex-direction: column;
 }
-.fullscreen-player.open { display: flex; }
+.fullscreen-player.open,
+.fullscreen-player.active { display: flex; }
 
 .fs-bg-glow {
   position: absolute;
